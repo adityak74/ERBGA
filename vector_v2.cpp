@@ -10,13 +10,11 @@ using namespace std;
 // Random number reference : https://www.daniweb.com/programming/software-development/threads/1769/c-random-numbers
  
 int get_random_number(int min, int max){
-    
    int random_integer; 
    int lowest=min, highest=max; 
    int range=(highest-lowest)+1; 
    random_integer = lowest+int((long)range*rand()/(RAND_MAX + 1.0)); 
    return random_integer;
-   
 }
 
 int main() {
