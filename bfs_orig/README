@@ -1,0 +1,78 @@
+README for BFS and the network library.
+
+Sharlee Climer, October/November 2009.
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+BFS:
+
+Breadth-First Search (BFS) is a simple exploration of a network, where each
+connected component is identified.  The nodes in each component are output.
+Pseudocode follows:
+----
+initialize an array visited[n] to all 0’s
+
+for each node v
+  if (visited[v] = 0)
+    put v in a queue 
+    visited[v] = 1
+    while (queue is not empty)
+      -remove node w from queue 
+      -add w to component
+      -add all unvisited nodes that are incident to w to queue and mark as visited
+    record component
+----
+
+The usage can be found by typing './bfs'  It follows:
+
+Fatal: Usage:
+  bfs input.gml output.bfs
+
+The input file must be in .gml format.  This common format is described in the 
+'formatSummary' file that can be found in this library.  It is a list of the 
+nodes and edges of a network.  
+
+The main output file has a suffix '.bfs' and a custom format, as described in 
+'formatSummary'.
+
+Files in .gml format can also be output for each component.  Components with 
+densities that are less than a threshold are output.  The density is equal to 
+the number of edges divided by the number of edges possible.  Adjust MIN_COMPLETE
+in 'network.h' to the desired minimum density.  The component will be printed out
+only if it has a density that is less than MIN_COMPLETE.  (We used 0.5 as a default
+value.)
+
+These component output files are named 'compx.gml' with 'x' equal to the number
+of component as it is written out.  These numbers start with zero and are 
+consecutive.  Each run will produce new compx.gml files, so the program aborts
+with a message if there is already a file named 'comp1.gml' in the directory.
+
+The node numbers in each 'compx.gml' file are consecutively numbered and start
+with '1'.  A companion file is output with each 'compx.gml'.  It is named 
+'compx.nn' and contains the original node numbers for the component.  'compx.nn'
+files are used for input to the annotation program 'annotate'.
+
+There is also an option to output a .wg2 file for each component.  Setting 
+BFS_WG2 to '1' in network.h will utilize this option.  .wg2 files can be used
+as input to Mark Newman's modularity program.  Their format is defined in 
+'formatSummary.txt'.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Network Library:
+
+The Network library is defined in network.h.  network.cpp and network.h are 
+object-oriented and are intended to be used by application programs.  The data
+is protected and can only be accessed through the Network object, as shown in 
+network.h.  
+
+When writing an application program using the Network objects, first create a
+network, then call the functions via that Network.  See bfsNet.cpp for an 
+example application program that uses these objects.
+
+Note that this library has been optimized for sparse networks and might not be
+very efficient for dense networks.
+
+
+   
+
