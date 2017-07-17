@@ -12,7 +12,9 @@
 #include "bfsNet.h"
 #include "network.h"
 
-
+float calculate_fitness() {
+	
+}
 
 int main(int argc, char ** argv) {
 
