@@ -9,6 +9,9 @@
 /   Print out component size summary (PRINTCOMPSIZES)
 /    added January 2011
 /
+/   Add New Edge to the front of the list
+/   July 2017
+/
 /**********************************************************/
 
 
@@ -74,17 +77,19 @@ int Vertex::addEdge(int endpt, double wt) // add an edge to vertex, return 1 if 
   Edge *edgePtr; // pointer to move through linked list of edges
   edgePtr = &firstEdge; // point to first edge
 
-  while (edgePtr->next != 0) // follow until find last edge
-    edgePtr = edgePtr->next; // pointer points at next edge in list
+  // while (edgePtr->next != 0) // follow until find last edge
+  //   edgePtr = edgePtr->next; // pointer points at next edge in list
 
   Edge *newEdge; // newEdge created
   if((newEdge = new Edge) == NULL)
     fatal("memory not allocated for edge");
 
-  edgePtr->next = newEdge; // add new edge to list
+  // edgePtr->next = newEdge; // add new edge to list
   newEdge->target = endpt; // assign properties to new edge
   newEdge->weight = wt;
-  newEdge->next = 0; // mark new edge as last on list
+  newEdge->next = edgePtr->next; // add new edge in the beginning of the list
+  firstEdge = *newEdge; // mark the new edge as the firstEdge
+  firstEdge.next = newEdge; // Update the firstEdge to point to the newEdge
 
   return 1;
 }
