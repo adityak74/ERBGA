@@ -16,9 +16,11 @@ float calculate_fitness() {
 	
 }
 
+
+
 int main(int argc, char ** argv) {
 
-
-
+	int Edges_ID[100];
+	
 	return 0;
 }

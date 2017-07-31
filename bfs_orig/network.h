@@ -79,7 +79,10 @@ class Network
   int haveEdge(int, int); // return 1 if edge is in graph
   void printEdges(char *); // print all edges in network
   void bfs(char *); // breadth-first search outputs connected components
+  void q_calc(char *); // clone of bfs with q_value calculation
+  // void printAllEdges(char *); // print all the edges of the Network
   double getEdgeWeight(int, int); // return weight of edge, given endpoints
+  void removeEdge(int, int); // remove edge (x,y) from the list
 
  private:
   int numVertices; // number of vertices

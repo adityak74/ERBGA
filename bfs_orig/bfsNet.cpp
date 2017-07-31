@@ -150,6 +150,7 @@ int main(int argc, char ** argv)
     std::cout << std::endl;
   }
 
+  // build IDinv for the network add arg : id* array to sparseNet call
   // create network with numNodes vertices
   Network sparseNet(numNodes, DIRECTED); // if DIRECTED = 0, undirected
   int dupEdges = 0; // record number of duplicate edges
@@ -194,11 +195,10 @@ int main(int argc, char ** argv)
     }
 
     //std::cout << ", weight: " << weight << std::endl;
-    
+    // (source, target, weight)
     if(!sparseNet.addEdge(idInv[source],idInv[target],weight))
-	  dupEdges++;
+      dupEdges++;
       //warning("Duplicate edge in input");
-    
     else
       numEdges++; // count number of edges
 
@@ -230,7 +230,14 @@ int main(int argc, char ** argv)
 
   std::cout << "\nFinding components and printing them to compX.gml files...\n" << std::endl;
 
-  sparseNet.bfs(argv[2]);
+  // calling q_calc instead
+  // sparseNet.bfs(argv[2]);
+  sparseNet.q_calc(argv[2]);
+
+  if(DEBUG) {
+    // print Edges to see the structure of the Network Class
+    sparseNet.printAllEdges("allEdges.txt");
+  }
 
   std::cout << numEdges << " edges explored" << std::endl;
   std::cout << dupEdges << " duplicate edges not counted in edge count" << std::endl;
