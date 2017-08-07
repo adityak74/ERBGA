@@ -81,7 +81,7 @@ int Vertex::addEdge(int endpt, double wt) // add an edge to vertex, return 1 if 
   newEdge->target = endpt; // assign properties to new edge
   newEdge->weight = wt;
   newEdge->next = edgePtr->next; // add new edge in the beginning of the list
-  firstEdge = *newEdge; // mark the new edge as the firstEdge
+  // firstEdge = *newEdge; // mark the new edge as the firstEdge
   firstEdge.next = newEdge; // Update the firstEdge to point to the newEdge
 
   return 1;
@@ -237,20 +237,21 @@ int Network::addEdge(int v1, int v2, double weight) // return 1 if successfully 
   return 1;
 }
 
-void Network::removeEdge(int v1, int v2) {
+int Network::removeEdge(int v1, int v2) {
 
   int start = (v1 < v2) ? v1 : v2;
   int end = (v1 < v2) ? v2 : v1; 
 
-  if ((start > numVertices-1) || (end > numVertices-1))
+  if ((start > numVertices - 1) || (end > numVertices - 1))
     fatal("Attempt to add edge to non-existent node");
   if ((start < 0) || (end < 0))
     fatal("Attempt to add edge to negative numbered node");
 
-  Edge *edgePtr, *prevEdgePtr;
+  struct Edge *edgePtr, *prevEdgePtr;
   int edgeFound = 0;
 
-  edgePtr = &vertices[start].firstEdge; // fix for first and last element deletion and decerement the degrees
+  // since this is initiliazed in stack no pointer reference. 
+  edgePtr = (struct Edge *)vertices[start].firstEdge.next; // fix for first and last element deletion and decerement the degrees
   prevEdgePtr = edgePtr; // prevEdge points to the first Edge for initial setup
   while (edgePtr->next != 0) { // follow until find last edge   
     prevEdgePtr = edgePtr;
@@ -262,13 +263,15 @@ void Network::removeEdge(int v1, int v2) {
   }
   if(edgeFound) {
     prevEdgePtr->next = edgePtr->next;
-    delete edgePtr;
+    delete edgePtr->next;
     numEdges--; // update number of edges
     vertices[start].degree--; // update degree of vertices
     if (!DIRECTED)
       vertices[end].degree--; // increase degree for both vertices if undirected
+    return true;
   } else {
     fatal("No such Edge in the List");
+    return false;
   }
   
 }

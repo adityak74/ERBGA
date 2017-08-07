@@ -75,9 +75,13 @@ int main(int argc, char ** argv)
       break; // stop when read in first "edge"
   }
 
-  std::cout << "\nNode numbers range from " << min <<" to " << max << std::endl
-;
+  std::cout << "\n Number of nodes read from the GML file : " << numNodes << std::endl;
+  std::cout << "\nNode numbers range from " << min <<" to " << max << std::endl;
   std::cout << "Reading in graph from " << argv[1] << "...\n" << std::endl;
+
+  //Create the SparseNetwork
+  Network sparseNet(numNodes, DIRECTED); // if DIRECTED = 0, undirected
+
 
   if (DESCRIPTIVE_OUTPUT)
     fprintf(output, "Node numbers range from %d to %d\n\n", min, max);
@@ -92,6 +96,8 @@ int main(int argc, char ** argv)
 
   // record node id numbers
   int ptr = 0; // pointer for filling nodeNumbers array
+
+  // Below will be moved to Network
   int *id; // hold the node IDs as given in input file
   if ((id = new int[numNodes]) == NULL)
     fatal("memory not allocated");
@@ -152,7 +158,7 @@ int main(int argc, char ** argv)
 
   // build IDinv for the network add arg : id* array to sparseNet call
   // create network with numNodes vertices
-  Network sparseNet(numNodes, DIRECTED); // if DIRECTED = 0, undirected
+  
   int dupEdges = 0; // record number of duplicate edges
 
   while (!feof(input)) { // read edges until reach end of file
@@ -234,9 +240,16 @@ int main(int argc, char ** argv)
   // sparseNet.bfs(argv[2]);
   sparseNet.q_calc(argv[2]);
 
+  //Trying to remove Edges - Testing
+  if(sparseNet.removeEdge(0,1)) {
+    std::cout << "Edge removed : (1,2)" << std::endl; 
+  }
+
+  sparseNet.q_calc(argv[2]);
+
   if(DEBUG) {
     // print Edges to see the structure of the Network Class
-    sparseNet.printAllEdges("allEdges.txt");
+    sparseNet.printEdges("allEdges.txt");
   }
 
   std::cout << numEdges << " edges explored" << std::endl;

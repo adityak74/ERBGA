@@ -52,6 +52,7 @@ class Vertex
   int index; // index number of node
   int degree; // out-degree of vertex (full degree for undirected)
   Edge firstEdge; // first edge eminating from vertex
+  // change to edgeListPlaceholder.next
   //int ID; // GML ID number of vertex
   //char *label; // GML label of vertex (NULL if none specified)
 
@@ -82,7 +83,7 @@ class Network
   void q_calc(char *); // clone of bfs with q_value calculation
   // void printAllEdges(char *); // print all the edges of the Network
   double getEdgeWeight(int, int); // return weight of edge, given endpoints
-  void removeEdge(int, int); // remove edge (x,y) from the list
+  int removeEdge(int, int); // remove edge (x,y) from the list return bool
 
  private:
   int numVertices; // number of vertices
