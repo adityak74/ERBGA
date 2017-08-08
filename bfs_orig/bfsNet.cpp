@@ -237,7 +237,7 @@ int main(int argc, char ** argv)
   // sparseNet.bfs(argv[2]);
   sparseNet.q_calc(argv[2]);
 
-  //Trying to remove Edges - Testing
+  // Trying to remove Edges - Testing
   if(sparseNet.removeEdge(0,1)) {
     std::cout << "Edge removed : (1,2)" << std::endl; 
   }

@@ -55,13 +55,13 @@ Vertex::Vertex() // create a new vertex
 Vertex::~Vertex() // destructor
 {
   Edge *edgePtr, *followPtr; // pointers to move through linked list of edges
-  edgePtr = &firstEdge; // point to first edge
-  followPtr = edgePtr;  
+  edgePtr = firstEdge.next; // point to first edge (head of the list)  
+  followPtr = edgePtr;
 
-  while (edgePtr->next != 0) {// follow until find last edge
-    edgePtr = edgePtr->next; // pointer points at next edge in list
-    delete followPtr;
-    followPtr = edgePtr;
+  while (edgePtr != NULL) {// follow until find last edge
+    followPtr = edgePtr->next; // pointer points at next edge in list
+    delete edgePtr; 
+    edgePtr = followPtr;
   }
 }
 
@@ -285,7 +285,7 @@ int Network::removeEdge(int v1, int v2) {
   }
   if(edgeFound) {
     prevEdgePtr->next = edgePtr->next;
-    delete edgePtr->next;
+    delete edgePtr;
     numEdges--; // update number of edges
     vertices[start].degree--; // update degree of vertices
     if (!DIRECTED)
