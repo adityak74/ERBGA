@@ -22,27 +22,37 @@
 
 using namespace std;
 
-
-Edge::Edge(int endpt, double wt) // create a new edge with default weight of 1
+// Edge Constructor
+// create a new edge with default weight of 1
+Edge::Edge(int endpt, double wt)
 {  
-  if (weight < 0-TOL) fatal("Negative edge weight");
-  if (endpt < 0)  fatal("Invalid endpoint for edge");
+  if (weight < 0-TOL)
+    fatal("Negative edge weight");
+  
+  if (endpt < 0)
+    fatal("Invalid endpoint for edge");
 
   target = endpt; // assign endpoint
   weight = wt; // assign weight
 }
 
-int Edge::getTarget() // get other edgepoint  
+// getTarget() returns int
+// get other edgepoint
+int Edge::getTarget()   
 {
   return target;
 }
-  
-double Edge::getWeight() // get weight of edge 
+
+// getWeight() returns double
+// get weight of edge
+double Edge::getWeight()  
 {
   return weight;  
 }
 
-Vertex::Vertex() // create a new vertex
+// Vertex Constructor
+// create a new vertex
+Vertex::Vertex() 
 {
   //if (indxNum < 0)  fatal("Vertex indices must be non-negative");
   //index = indxNum; // assign index of node
@@ -52,7 +62,9 @@ Vertex::Vertex() // create a new vertex
   firstEdge.next = 0; // first edge is pointed to by firstEdge.next
 }
 
-Vertex::~Vertex() // destructor
+
+// Vertex destructor
+Vertex::~Vertex()
 {
   Edge *edgePtr, *followPtr; // pointers to move through linked list of edges
   edgePtr = firstEdge.next; // point to first edge (head of the list)  
@@ -67,8 +79,10 @@ Vertex::~Vertex() // destructor
 
 //int Vertex::getID() // get GML ID number of vertex
 
-//note: firstEdge is a placeholder that points to true first edge
-int Vertex::addEdge(int endpt, double wt) // add an edge to vertex, return 1 if successful
+// Vertex addEdge() returns int
+// note: firstEdge is a placeholder that points to true first edge
+// add an edge to vertex, return 1 if successful
+int Vertex::addEdge(int endpt, double wt) 
 {
   if (endpt < 0) fatal("invalid endpoint for edge");
   if (wt < 0-TOL) fatal("invalid weight for edge");
@@ -88,7 +102,9 @@ int Vertex::addEdge(int endpt, double wt) // add an edge to vertex, return 1 if 
   return 1;
 }
 
-double Vertex::getWeight(int endpoint) // return weight of edge
+// Vertex::getWeight() returns double
+// return weight of edge
+double Vertex::getWeight(int endpoint)
 {
   Edge *edgePtr; // pointer to move through linked list of edges
   edgePtr = &firstEdge; // point to first edge
@@ -99,7 +115,9 @@ double Vertex::getWeight(int endpoint) // return weight of edge
   return edgePtr->weight;
 }
 
-void Vertex::changeWeight(int endpoint, double newWeight) // change weight of edge
+// Vertex::changeWeight()
+// change weight of edge
+void Vertex::changeWeight(int endpoint, double newWeight) 
 {
   Edge *edgePtr; // pointer to move through linked list of edges
   edgePtr = &firstEdge; // point to first edge
@@ -110,7 +128,9 @@ void Vertex::changeWeight(int endpoint, double newWeight) // change weight of ed
   edgePtr->weight = newWeight;
 }
 
-int Vertex::haveEdge(int endpoint) // return 1 if edge exists, 0 if not
+// Vertex::haveEdge() returns int
+// return 1 if edge exists, 0 if not
+int Vertex::haveEdge(int endpoint) 
 {
   Edge *edgePtr; // pointer to move through linked list of edges
   edgePtr = &firstEdge; // point to first edge
@@ -127,20 +147,26 @@ int Vertex::haveEdge(int endpoint) // return 1 if edge exists, 0 if not
   return 0;
 }
 
-int Vertex::getDegree() // get out-degree (full degree for undirected)
+// Vertex::getDegree() returns int
+// get out-degree (full degree for undirected)
+int Vertex::getDegree() 
 {
   return degree;
 }
 
 //char* Vertex::getLabel() // get GML label of vertex (NULL if none specified)
 
-Edge* Vertex::getEdges() // get copy of edges eminating from vertex
+// Vertex::getEdges() returns pointer to Edge list
+// get copy of edges eminating from vertex
+Edge* Vertex::getEdges() 
 {
   Edge* edge1; // FIX
   return edge1;
 }
 
-void Vertex::printEdges(int node, char *outputFile) // print edges eminating from vertex
+// Vertex::printEdges
+// print edges eminating from vertex
+void Vertex::printEdges(int node, char *outputFile) 
 {
   Edge *edgePtr; // pointer to move through linked list of edges
   edgePtr = &firstEdge; // point to first edge
@@ -161,7 +187,9 @@ void Vertex::printEdges(int node, char *outputFile) // print edges eminating fro
   fclose(output);
 }
 
-Network::Network(int numNodes, int dir, int min, int max) // create a network with num vertices
+// Network Constructor
+// create a network with num vertices, DIRECTED/INDIRECT, min and max nodeID
+Network::Network(int numNodes, int dir, int min, int max) 
 {
   if (numNodes < 1)  fatal("Network requires at least 1 vertex");
   numVertices = numNodes;
@@ -171,52 +199,67 @@ Network::Network(int numNodes, int dir, int min, int max) // create a network wi
 
   numEdges = 0; // no edges added yet
 
-  if ((id = new int[numNodes]) == NULL)
+  if ((id = new int[numNodes]) == NULL) // allocate memory to node IDs
     fatal("memory not allocated");
-  if ((invID = new int[max+1]) == NULL)
+  if ((invID = new int[max+1]) == NULL) // allote memory to invIDs
     fatal("memory not allocated");
   for (int i = 0; i < max+1; i++)
     invID[i] = -1; // initialize values for invID some values can be -1
 }
 
+// Network::assignID() 
+// assigns id and invID to each node
 void Network::assignID(int index, int nodeIdNum) {
   id[index] = nodeIdNum; // record node id number
   invID[id[index]] = index; // record index for given id number
 }
 
+// Network::getID() returns int
+// returns the lookup index for the vertex
 int Network::getID(int vertex) {
   return invID[vertex];
 }
 
-Network::~Network() // destructor
+// ~Network() destructor
+Network::~Network()
 {
   delete [] id;
   delete [] invID;
   delete [] vertices; 
 }
 
-int Network::getNvertices() // get number of vertices in network
+// Network::getNvertices() returns int
+// get number of vertices in network
+int Network::getNvertices() 
 {
   return numVertices;
 }
 
-int Network::getNumEdges() // get number of vertices in network
+// Network::getNumEdges() returns int
+// get number of vertices in network
+int Network::getNumEdges() 
 {
   return numEdges;
 }
 
-int Network::getDegree(int vertex) // get degree of node
+// Network::getDegree() returns int
+// get degree of node
+int Network::getDegree(int vertex) 
 {
   int degree = vertices[vertex].getDegree();
   return degree;
 }
 
-int Network::isDirected() // return 0 if undirected, 1 if directed network
+// Network::isDirected() 
+// return 0 if undirected, 1 if directed network
+int Network::isDirected()
 {
   return directed;
 }
 
-int Network::addEdge(int v1, int v2, double weight) // return 1 if successfully add edge
+// Network::addEdge() returns int
+// return 1 if successfully add edge from v1 to v2 with weight
+int Network::addEdge(int v1, int v2, double weight) 
 {
   // Lookup the actual ID for v1,v2
   v1 = invID[v1];
@@ -259,6 +302,8 @@ int Network::addEdge(int v1, int v2, double weight) // return 1 if successfully 
   return 1;
 }
 
+// Network::removeEdge() returns int
+// removes edge from v1 to v2, if success returns 1 else 0
 int Network::removeEdge(int v1, int v2) {
 
   int start = (v1 < v2) ? v1 : v2;
@@ -273,7 +318,7 @@ int Network::removeEdge(int v1, int v2) {
   int edgeFound = 0;
 
   // since this is initiliazed in stack no pointer reference. 
-  edgePtr = (struct Edge *)vertices[start].firstEdge.next; // fix for first and last element deletion and decerement the degrees
+  edgePtr = vertices[start].firstEdge.next; // fix for first and last element deletion and decerement the degrees
   prevEdgePtr = edgePtr; // prevEdge points to the first Edge for initial setup
   while (edgePtr->next != 0) { // follow until find last edge   
     prevEdgePtr = edgePtr;
@@ -298,6 +343,8 @@ int Network::removeEdge(int v1, int v2) {
   
 }
 
+// Network::printEdges()
+// prints the network to a file in GML format
 void Network::printEdges(char *outputFile) // print all edges in network
 {
   FILE *output;
@@ -321,7 +368,9 @@ void Network::printEdges(char *outputFile) // print all edges in network
   fclose(output);
 }
 
-double Network::getEdgeWeight(int v1, int v2) // get weight of edge between endpoints
+// Network::getEdgeWeight() returns double
+// get weight of edge between endpoints
+double Network::getEdgeWeight(int v1, int v2) 
 {
   if ((v1 > numVertices-1) || (v2 > numVertices-1)) 
     fatal("Attempt to get weight of edge to non-existent node");
@@ -346,7 +395,9 @@ double Network::getEdgeWeight(int v1, int v2) // get weight of edge between endp
   return wt;
 }
 
-int Network::haveEdge(int v1, int v2) // return 1 if edge is in graph
+// Network::haveEdge() returns int
+// return 1 if edge is in graph
+int Network::haveEdge(int v1, int v2) 
 {
   if ((v1 > numVertices-1) || (v2 > numVertices-1)) 
     fatal("Attempt to check edge to non-existent node");
@@ -782,7 +833,8 @@ void Network::bfs(char *outputFile)
   delete [] clusterNum;
 }
 
-// breadth-first search, outputs connected components
+// breadth-first search and Q_Value calculation, outputs connected components 
+// and respected Q_Value of communities and total q_value
 void Network::q_calc(char *outputFile) 
 {
   double q_value = 0.0f;    

@@ -124,7 +124,7 @@ int main(int argc, char ** argv)
         fatal("error while reading in node numbers");
 
 
-      // will be changed to sparseNet function assignID
+      // assign ID to nodeNum
       sparseNet.assignID(ptr++, num);
       //std::cout << ptr << ", " << id[ptr-1]<< std::endl;
     }
@@ -135,26 +135,6 @@ int main(int argc, char ** argv)
 
   if (ptr != numNodes)
     fatal("Error reading in node numbers");
-
-  // moved to Network.cpp
-  // int *idInv; // invert the ID numbers for easy look-up
-  // if ((idInv = new int[max+1]) == NULL)
-  //   fatal("memory not allocated");
-
-  //std::cout << "id: " ;
-  // for (int i = 0; i < max+1; i++)
-  //   idInv[i] = -1; // initialize values
-  //std::cout << std::endl;
-
-  // if (0) {
-  //   std::cout << "idInv: ";
-  //   for (int i = 0; i < max+1; i++)
-  //     std::cout << idInv[i] << " ";
-  //   std::cout << std::endl;
-  // }
-
-  // build IDinv for the network add arg : id* array to sparseNet call
-  // create network with numNodes vertices
   
   int dupEdges = 0; // record number of duplicate edges
 
@@ -223,8 +203,6 @@ int main(int argc, char ** argv)
     if(!strncmp(string, "edge", 4) == 0) // check for correct character
       fatal("No 'edge' declaration");
   }
-
-  //std::cout << std::endl;
  
   fclose(input);
 
@@ -238,20 +216,20 @@ int main(int argc, char ** argv)
   sparseNet.q_calc(argv[2]);
 
   // Trying to remove Edges - Testing
-  if(sparseNet.removeEdge(0,1)) {
+  if(sparseNet.removeEdge(0,1) && DEBUG) {
     std::cout << "Edge removed : (1,2)" << std::endl; 
   }
 
+  // calling q_calc again to check the removedEdge effect on q_value
   sparseNet.q_calc(argv[2]);
 
   std::cout << numEdges << " edges explored" << std::endl;
   std::cout << dupEdges << " duplicate edges not counted in edge count" << std::endl;
-  //if (dupEdges > 0)
-  //std::cout << "Highest edge weight recorded for duplicate edges" << std::endl;
-
+  
   t.stop("Timer stopped");
   std::cout << t << " seconds" << std::endl;
 
+  // check if all the nodes have invID lookups set
   if(DEBUG) {
     for (int i = min; i < max; ++i)
     {
