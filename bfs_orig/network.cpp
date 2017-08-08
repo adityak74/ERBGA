@@ -10,6 +10,8 @@
 /    added January 2011
 /
 /   Add New Edge to the front of the list
+/   Moved in ID and invID from BFS
+/   assignID and getID functions added
 /   July 2017
 /
 /**********************************************************/
@@ -81,7 +83,6 @@ int Vertex::addEdge(int endpt, double wt) // add an edge to vertex, return 1 if 
   newEdge->target = endpt; // assign properties to new edge
   newEdge->weight = wt;
   newEdge->next = edgePtr->next; // add new edge in the beginning of the list
-  // firstEdge = *newEdge; // mark the new edge as the firstEdge
   firstEdge.next = newEdge; // Update the firstEdge to point to the newEdge
 
   return 1;
