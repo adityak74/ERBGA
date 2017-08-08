@@ -3,7 +3,7 @@
 # October, 2007
 
 
-CC	= g++-4.8
+CC	= g++
 CFLAGS 	= -g
 TARGET	= bfs
 OBJS	= bfsNet.o network.o
