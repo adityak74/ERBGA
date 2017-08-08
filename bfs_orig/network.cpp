@@ -160,20 +160,37 @@ void Vertex::printEdges(int node, char *outputFile) // print edges eminating fro
   fclose(output);
 }
 
-Network::Network(int num, int dir) // create a network with num vertices
+Network::Network(int numNodes, int dir, int min, int max) // create a network with num vertices
 {
-  if (num < 1)  fatal("Network requires at least 1 vertex");
-  numVertices = num;
+  if (numNodes < 1)  fatal("Network requires at least 1 vertex");
+  numVertices = numNodes;
   directed = dir; // 0 if undirected, 1 if directed network
   if((vertices = new Vertex[numVertices]) == NULL)
     fatal("memory not allocated"); // allocate memory
 
   numEdges = 0; // no edges added yet
+
+  if ((id = new int[numNodes]) == NULL)
+    fatal("memory not allocated");
+  if ((invID = new int[max+1]) == NULL)
+    fatal("memory not allocated");
+  for (int i = 0; i < max+1; i++)
+    invID[i] = -1; // initialize values for invID some values can be -1
 }
 
+void Network::assignID(int index, int nodeIdNum) {
+  id[index] = nodeIdNum; // record node id number
+  invID[id[index]] = index; // record index for given id number
+}
+
+int Network::getID(int vertex) {
+  return invID[vertex];
+}
 
 Network::~Network() // destructor
 {
+  delete [] id;
+  delete [] invID;
   delete [] vertices; 
 }
 
@@ -200,6 +217,10 @@ int Network::isDirected() // return 0 if undirected, 1 if directed network
 
 int Network::addEdge(int v1, int v2, double weight) // return 1 if successfully add edge
 {
+  // Lookup the actual ID for v1,v2
+  v1 = invID[v1];
+  v2 = invID[v2];
+  
   if ((v1 > numVertices-1) || (v2 > numVertices-1))
     fatal("Attempt to add edge to non-existent node");
   if ((v1 < 0) || (v2 < 0))

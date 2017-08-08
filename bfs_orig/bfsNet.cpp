@@ -80,7 +80,7 @@ int main(int argc, char ** argv)
   std::cout << "Reading in graph from " << argv[1] << "...\n" << std::endl;
 
   //Create the SparseNetwork
-  Network sparseNet(numNodes, DIRECTED); // if DIRECTED = 0, undirected
+  Network sparseNet(numNodes, DIRECTED, min, max); // if DIRECTED = 0, undirected, min, max
 
 
   if (DESCRIPTIVE_OUTPUT)
@@ -97,10 +97,10 @@ int main(int argc, char ** argv)
   // record node id numbers
   int ptr = 0; // pointer for filling nodeNumbers array
 
-  // Below will be moved to Network
-  int *id; // hold the node IDs as given in input file
-  if ((id = new int[numNodes]) == NULL)
-    fatal("memory not allocated");
+  // moved to Network.cpp
+  // int *id; // hold the node IDs as given in input file
+  // if ((id = new int[numNodes]) == NULL)
+  //   fatal("memory not allocated");
 
   while (1) { // throw away everything until get to "graph" declaration
     if(feof(input)) fatal("no graph to read in input file");
@@ -121,9 +121,11 @@ int main(int argc, char ** argv)
       int num = atoi(string);
 
       if((num < min) || (num > max))
-	fatal("error while reading in node numbers");
+        fatal("error while reading in node numbers");
 
-      id[ptr++] = num; // record node id number
+
+      // will be changed to sparseNet function assignID
+      sparseNet.assignID(ptr++, num);
       //std::cout << ptr << ", " << id[ptr-1]<< std::endl;
     }
 
@@ -134,27 +136,22 @@ int main(int argc, char ** argv)
   if (ptr != numNodes)
     fatal("Error reading in node numbers");
 
-  int *idInv; // invert the ID numbers for easy look-up
-  if ((idInv = new int[max+1]) == NULL)
-    fatal("memory not allocated");
+  // moved to Network.cpp
+  // int *idInv; // invert the ID numbers for easy look-up
+  // if ((idInv = new int[max+1]) == NULL)
+  //   fatal("memory not allocated");
 
   //std::cout << "id: " ;
-  for (int i = 0; i < max+1; i++)
-    idInv[i] = -1; // initialize values
-  for (int i = 0; i < numNodes; i++) {
-    //std::cout << id[i] << " ";
-    if(idInv[id[i]] != -1)
-      fatal("Error recording index for ID number");
-    idInv[id[i]] = i; // record index for given id number
-  }
+  // for (int i = 0; i < max+1; i++)
+  //   idInv[i] = -1; // initialize values
   //std::cout << std::endl;
 
-  if (0) {
-    std::cout << "idInv: ";
-    for (int i = 0; i < max+1; i++)
-      std::cout << idInv[i] << " ";
-    std::cout << std::endl;
-  }
+  // if (0) {
+  //   std::cout << "idInv: ";
+  //   for (int i = 0; i < max+1; i++)
+  //     std::cout << idInv[i] << " ";
+  //   std::cout << std::endl;
+  // }
 
   // build IDinv for the network add arg : id* array to sparseNet call
   // create network with numNodes vertices
@@ -202,7 +199,7 @@ int main(int argc, char ** argv)
 
     //std::cout << ", weight: " << weight << std::endl;
     // (source, target, weight)
-    if(!sparseNet.addEdge(idInv[source],idInv[target],weight))
+    if(!sparseNet.addEdge(source, target, weight))
       dupEdges++;
       //warning("Duplicate edge in input");
     else
@@ -247,11 +244,6 @@ int main(int argc, char ** argv)
 
   sparseNet.q_calc(argv[2]);
 
-  if(DEBUG) {
-    // print Edges to see the structure of the Network Class
-    sparseNet.printEdges("allEdges.txt");
-  }
-
   std::cout << numEdges << " edges explored" << std::endl;
   std::cout << dupEdges << " duplicate edges not counted in edge count" << std::endl;
   //if (dupEdges > 0)
@@ -260,13 +252,18 @@ int main(int argc, char ** argv)
   t.stop("Timer stopped");
   std::cout << t << " seconds" << std::endl;
 
+  if(DEBUG) {
+    for (int i = min; i < max; ++i)
+    {
+      std::cout << "GETID("<< i <<") : " <<sparseNet.getID(i) << std::endl;
+    }
+  }
+  
+
   if ((output = fopen(argv[2], "a")) == NULL)
     fatal("File could not be opened.\n");
   fprintf(output,"%f\n",t.timeVal());
   fclose(output);
-
-  delete [] id;
-  delete [] idInv;
 
   return 1;
 }

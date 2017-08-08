@@ -70,7 +70,7 @@ class Vertex
 class Network
 {
  public:
-  Network(int = 0, int = 0); // create a network with 0 vertices
+  Network(int = 0, int = 0, int = 0, int = 0); // create a network with 0 vertices, minimumIndex = 0 and maxIndex = 0
   ~Network(); // destructor
   int getNvertices(); // get number of vertices in network
   int getNumEdges(); // get number of edges in network
@@ -84,12 +84,16 @@ class Network
   // void printAllEdges(char *); // print all the edges of the Network
   double getEdgeWeight(int, int); // return weight of edge, given endpoints
   int removeEdge(int, int); // remove edge (x,y) from the list return bool
+  void assignID(int, int); // creates the ID and invID for easy lookup for (vertex, actualVertexID)
+  int getID(int); // return the ID for easy lookup
 
  private:
   int numVertices; // number of vertices
   int directed; // 0 if undirected, 1 if directed
   int numEdges; // number of edges
   Vertex *vertices; // vertices in network
+  int *id; // hold the node IDs as given in input network
+  int *invID; // inverted ID numbers for easy look-up
 };
 
 #endif
