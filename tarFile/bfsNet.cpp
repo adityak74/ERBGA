@@ -15,7 +15,6 @@
 
 #include "bfsNet.h"
 #include "network.h"
-#include "cd_spnet.h"
 
 
 int main(int argc, char ** argv)
@@ -76,13 +75,9 @@ int main(int argc, char ** argv)
       break; // stop when read in first "edge"
   }
 
-  std::cout << "\n Number of nodes read from the GML file : " << numNodes << std::endl;
-  std::cout << "\nNode numbers range from " << min <<" to " << max << std::endl;
+  std::cout << "\nNode numbers range from " << min <<" to " << max << std::endl
+;
   std::cout << "Reading in graph from " << argv[1] << "...\n" << std::endl;
-
-  //Create the SparseNetwork
-  Network sparseNet(numNodes, DIRECTED, min, max); // if DIRECTED = 0, undirected, min, max
-
 
   if (DESCRIPTIVE_OUTPUT)
     fprintf(output, "Node numbers range from %d to %d\n\n", min, max);
@@ -97,11 +92,9 @@ int main(int argc, char ** argv)
 
   // record node id numbers
   int ptr = 0; // pointer for filling nodeNumbers array
-
-  // moved to Network.cpp
-  // int *id; // hold the node IDs as given in input file
-  // if ((id = new int[numNodes]) == NULL)
-  //   fatal("memory not allocated");
+  int *id; // hold the node IDs as given in input file
+  if ((id = new int[numNodes]) == NULL)
+    fatal("memory not allocated");
 
   while (1) { // throw away everything until get to "graph" declaration
     if(feof(input)) fatal("no graph to read in input file");
@@ -122,11 +115,9 @@ int main(int argc, char ** argv)
       int num = atoi(string);
 
       if((num < min) || (num > max))
-        fatal("error while reading in node numbers");
+	fatal("error while reading in node numbers");
 
-
-      // assign ID to nodeNum
-      sparseNet.assignID(ptr++, num);
+      id[ptr++] = num; // record node id number
       //std::cout << ptr << ", " << id[ptr-1]<< std::endl;
     }
 
@@ -136,7 +127,31 @@ int main(int argc, char ** argv)
 
   if (ptr != numNodes)
     fatal("Error reading in node numbers");
-  
+
+  int *idInv; // invert the ID numbers for easy look-up
+  if ((idInv = new int[max+1]) == NULL)
+    fatal("memory not allocated");
+
+  //std::cout << "id: " ;
+  for (int i = 0; i < max+1; i++)
+    idInv[i] = -1; // initialize values
+  for (int i = 0; i < numNodes; i++) {
+    //std::cout << id[i] << " ";
+    if(idInv[id[i]] != -1)
+      fatal("Error recording index for ID number");
+    idInv[id[i]] = i; // record index for given id number
+  }
+  //std::cout << std::endl;
+
+  if (0) {
+    std::cout << "idInv: ";
+    for (int i = 0; i < max+1; i++)
+      std::cout << idInv[i] << " ";
+    std::cout << std::endl;
+  }
+
+  // create network with numNodes vertices
+  Network sparseNet(numNodes, DIRECTED); // if DIRECTED = 0, undirected
   int dupEdges = 0; // record number of duplicate edges
 
   while (!feof(input)) { // read edges until reach end of file
@@ -179,10 +194,11 @@ int main(int argc, char ** argv)
     }
 
     //std::cout << ", weight: " << weight << std::endl;
-    // (source, target, weight)
-    if(!sparseNet.addEdge(source, target, weight))
-      dupEdges++;
+    
+    if(!sparseNet.addEdge(idInv[source],idInv[target],weight))
+	  dupEdges++;
       //warning("Duplicate edge in input");
+    
     else
       numEdges++; // count number of edges
 
@@ -204,6 +220,8 @@ int main(int argc, char ** argv)
     if(!strncmp(string, "edge", 4) == 0) // check for correct character
       fatal("No 'edge' declaration");
   }
+
+  //std::cout << std::endl;
  
   fclose(input);
 
@@ -212,45 +230,23 @@ int main(int argc, char ** argv)
 
   std::cout << "\nFinding components and printing them to compX.gml files...\n" << std::endl;
 
-  // calling q_calc instead
-  // sparseNet.bfs(argv[2]);
-  sparseNet.q_calc(argv[2]);
-
-  // Trying to remove Edges - Testing
-  // if(sparseNet.removeEdge(1,2) && DEBUG) {
-  //   std::cout << "Edge removed : (1,2)" << std::endl;
-  //   sparseNet.q_calc(argv[2]); 
-  // }
-
-  // calling q_calc again to check the removedEdge effect on q_value
+  sparseNet.bfs(argv[2]);
 
   std::cout << numEdges << " edges explored" << std::endl;
   std::cout << dupEdges << " duplicate edges not counted in edge count" << std::endl;
-  
+  //if (dupEdges > 0)
+  //std::cout << "Highest edge weight recorded for duplicate edges" << std::endl;
+
   t.stop("Timer stopped");
   std::cout << t << " seconds" << std::endl;
-
-  // check if all the nodes have invID lookups set
-  if(DEBUG) {
-    for (int i = min; i < max; ++i)
-    {
-      std::cout << "GETID("<< i <<") : " <<sparseNet.getID(i) << std::endl;
-    }
-  }
-  
 
   if ((output = fopen(argv[2], "a")) == NULL)
     fatal("File could not be opened.\n");
   fprintf(output,"%f\n",t.timeVal());
   fclose(output);
 
-  // GA params
-  int popSize = 1000;
-  // Genetic Part Starts here
-  GA sparseGA(&sparseNet, popSize, numNodes, numEdges);
-
-  std::cout << "Genetic Testing : " << std::endl << "-------------------------------" << std::endl;
-  sparseGA.generate_GA();
+  delete [] id;
+  delete [] idInv;
 
   return 1;
 }

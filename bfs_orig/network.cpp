@@ -59,7 +59,7 @@ Vertex::Vertex()
   //ID = GML; // assign GML ID number
   //label = lbl; // assign GML label
   degree = 0; // no incident edges yet
-  firstEdge.next = 0; // first edge is pointed to by firstEdge.next
+  firstEdge.next = NULL; // first edge is pointed to by firstEdge.next
 }
 
 
@@ -71,9 +71,9 @@ Vertex::~Vertex()
   followPtr = edgePtr;
 
   while (edgePtr != NULL) {// follow until find last edge
-    followPtr = edgePtr->next; // pointer points at next edge in list
-    delete edgePtr; 
-    edgePtr = followPtr;
+    edgePtr = edgePtr->next; // pointer points at next edge in list
+    delete followPtr; 
+    followPtr = edgePtr;
   }
 }
 
@@ -123,7 +123,7 @@ void Vertex::changeWeight(int endpoint, double newWeight)
   edgePtr = &firstEdge; // point to first edge
 
   for (int i = 0; i < endpoint; i++)
-	edgePtr = edgePtr->next; // pointer points at next edge in list
+	 edgePtr = edgePtr->next; // pointer points at next edge in list
 
   edgePtr->weight = newWeight;
 }
@@ -187,6 +187,8 @@ void Vertex::printEdges(int node, char *outputFile)
   fclose(output);
 }
 
+
+
 // Network Constructor
 // create a network with num vertices, DIRECTED/INDIRECT, min and max nodeID
 Network::Network(int numNodes, int dir, int min, int max) 
@@ -205,6 +207,11 @@ Network::Network(int numNodes, int dir, int min, int max)
     fatal("memory not allocated");
   for (int i = 0; i < max+1; i++)
     invID[i] = -1; // initialize values for invID some values can be -1
+  // allocate memory for edgeIDs
+  if ((originalEdgeIDS = new int[numNodes]) == NULL)
+    fatal("memory not allocated");
+  for (int i = 0; i < numNodes; i++)
+    originalEdgeIDS[i] = -1; // initialize values for edgeIDs to -1
 }
 
 // Network::assignID() 
@@ -220,12 +227,20 @@ int Network::getID(int vertex) {
   return invID[vertex];
 }
 
+void Network::getOriginalEdgeIDS() {
+  for (int i = 0; i < numVertices; ++i)
+    {
+      std::cout << originalEdgeIDS[i] << std::endl;
+    }  
+}
+
 // ~Network() destructor
 Network::~Network()
 {
   delete [] id;
   delete [] invID;
-  delete [] vertices; 
+  delete [] vertices;
+  delete [] originalEdgeIDS; 
 }
 
 // Network::getNvertices() returns int
@@ -288,6 +303,20 @@ int Network::addEdge(int v1, int v2, double weight)
 
   vertices[v1].addEdge(v2, weight); // add edge
 
+  // generateEdgeID and populate the originalEdgeIDS array
+  int pos = -1;
+  for (int i = 0; i < numVertices; ++i)
+  {
+    if (originalEdgeIDS[i] == -1)
+    {
+      pos = i;
+      break;
+    }
+  }
+  // std::cout << "Edge ID for edge : (" << v1 << "," << v2 << ") : " << v1*numVertices + v2 << endl;
+  originalEdgeIDS[pos] = v1*numVertices + v2;
+  // end of generateEdgeIDS
+
   if(RETAINSYMMETRIC) { // retain both (i,j) and (j,i)
     if(vertices[v2].haveEdge(v1)) // edge already exists, return failure
       return 0;
@@ -302,23 +331,12 @@ int Network::addEdge(int v1, int v2, double weight)
   return 1;
 }
 
-// Network::removeEdge() returns int
-// removes edge from v1 to v2, if success returns 1 else 0
-int Network::removeEdge(int v1, int v2) {
-
-  int start = (v1 < v2) ? v1 : v2;
-  int end = (v1 < v2) ? v2 : v1; 
-
-  if ((start > numVertices - 1) || (end > numVertices - 1))
-    fatal("Attempt to add edge to non-existent node");
-  if ((start < 0) || (end < 0))
-    fatal("Attempt to add edge to negative numbered node");
-
-  struct Edge *edgePtr, *prevEdgePtr;
+int Vertex::removeEdge(int end) {
+  Edge *edgePtr, *prevEdgePtr;
   int edgeFound = 0;
 
   // since this is initiliazed in stack no pointer reference. 
-  edgePtr = vertices[start].firstEdge.next; // fix for first and last element deletion and decerement the degrees
+  edgePtr = firstEdge.next; // fix for first and last element deletion and decerement the degrees
   prevEdgePtr = edgePtr; // prevEdge points to the first Edge for initial setup
   while (edgePtr->next != 0) { // follow until find last edge   
     prevEdgePtr = edgePtr;
@@ -331,16 +349,34 @@ int Network::removeEdge(int v1, int v2) {
   if(edgeFound) {
     prevEdgePtr->next = edgePtr->next;
     delete edgePtr;
-    numEdges--; // update number of edges
-    vertices[start].degree--; // update degree of vertices
-    if (!DIRECTED)
-      vertices[end].degree--; // increase degree for both vertices if undirected
-    return true;
+    return 1;
   } else {
     fatal("No such Edge in the List");
-    return false;
+    return 0;
   }
-  
+
+}
+
+// Network::removeEdge() returns int
+// removes edge from v1 to v2, if success returns 1 else 0
+int Network::removeEdge(int v1, int v2) {
+
+  int start = (v1 < v2) ? v1 : v2;
+  int end = (v1 < v2) ? v2 : v1;
+
+  if ((start > numVertices - 1) || (end > numVertices - 1))
+    fatal("Attempt to add edge to non-existent node");
+  if ((start < 0) || (end < 0))
+    fatal("Attempt to add edge to negative numbered node");
+
+  int ret = vertices[start].removeEdge(end);
+  if(ret) {
+    vertices[start].degree--; // update degree of vertices
+    numEdges--; // update number of edges
+    if (!DIRECTED)
+      vertices[end].degree--; // increase degree for both vertices if undirected
+    return 1;
+  }
 }
 
 // Network::printEdges()
@@ -963,14 +999,12 @@ void Network::q_calc(char *outputFile)
 
           // At this point we have the vertices and edges in a community.
           // Calcluating the q_value here
-          std::cout << "Previous q_value :" << q_value << ", totalEdges : " << numEdges << std::endl;
           q_value += (float)numberEdges/numEdges - (((float)ptr*(ptr-1))/(numVertices*(numVertices-1)));
-          std::cout << "P1 : " << (float)numberEdges/numEdges << ", P2 : " << (((float)ptr*(ptr-1))/(numVertices*(numVertices-1)));
           std::cout << std::endl;
 
         if (1) {
           std::cout << numNonSingle << ": " << ptr << " vertices, " << numberEdges << " edges (";
-          std::cout << complete << " complete), q_value : " << q_value << std::endl;
+          std::cout << complete << " complete), q_value : " << (float)numberEdges/numEdges - (((float)ptr*(ptr-1))/(numVertices*(numVertices-1))) << std::endl;
         }
         
         if (0) 
@@ -1108,6 +1142,8 @@ void Network::q_calc(char *outputFile)
   std::cout << numSingle << " vertices with degree zero" << std::endl;
   std::cout << numTwo << " components with only 2 vertices" << std::endl;
   std::cout << numComp3orMore << " components with 3 or more vertices" << std::endl;
+
+  std::cout << "Total Qs value for the given network : " << q_value << std::endl;
 
   fprintf(output, "%d singletons, %d components with only 2 vertices,\n%d components with 3 or more vertices\n", numSingle, numTwo, numComp3orMore);
 

@@ -1,26 +1,46 @@
 /****************************************************************************
 *
 *	cd_spnet.cpp:	Code for finding communities using Genetic Programming. 
-						Outputs optimal Q value.
+						Outputs optimal Qs value.
 *
 *                       Aditya Karnam
-*                       July 2017
+*                       August 2017
 *
 ****************************************************************************/
   
 
-#include "bfsNet.h"
 #include "network.h"
+#include "cd_spnet.h"
 
-float calculate_fitness() {
-	
+// need to filter which EdgeID exist in original network
+// how to access network here?
+int GA::removeEdgeByID(int edgeID) {
+	gaSparseNetwork->removeEdge(edgeID / networkNumVertices, edgeID % networkNumVertices);
+	return 0;
 }
 
+GA::GA(Network *sparseNetwork, int populationSize, int numNodes, int numEdges) {
+	if ((individuals = new Individual[populationSize]) == NULL) // allocate memory to set of individuals
+    	fatal("memory not allocated");
+    networkNumVertices = numNodes;
+    networkNumEdges = numEdges;
+    gaSparseNetwork = sparseNetwork;
+}
 
+GA::~GA() {
+	delete [] individuals;
+}
 
-int main(int argc, char ** argv) {
+// generate random number in range (min, max)
+int GA::generateRandomNumber(int min, int max) {
+	return ((rand() % max) + min); 	
+}
 
-	int Edges_ID[100];
-	
-	return 0;
+// max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
+//num of edges removed can be a max upto (0, networkNumEdges/2)
+void GA::generate_GA() {
+	std::cout << "Before removing edge : " << gaSparseNetwork->getNumEdges() << std::endl;
+	gaSparseNetwork->getOriginalEdgeIDS();
+	removeEdgeByID(23);
+	std::cout << "After removing edge : " << gaSparseNetwork->getNumEdges() << std::endl;
 }

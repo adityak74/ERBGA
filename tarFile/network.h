@@ -52,7 +52,6 @@ class Vertex
   int index; // index number of node
   int degree; // out-degree of vertex (full degree for undirected)
   Edge firstEdge; // first edge eminating from vertex
-  // change to edgeListPlaceholder.next
   //int ID; // GML ID number of vertex
   //char *label; // GML label of vertex (NULL if none specified)
 
@@ -63,16 +62,14 @@ class Vertex
   int getDegree(); // get out-degree of vertex (full degree for undirected)
   Edge* getEdges(); // get copy of edges eminating from vertex
   void printEdges(int, char *); // print edges eminating from vertex
-  int removeEdge(int end); // remove edge from the edge list eminating from vertex
   //int getID(); // get GML ID number of vertex (-1 if none specified)
   //char *getLabel(); // get GML label of vertex (NULL if none specified)
 };
 
 class Network
 {
-  friend class GA;
  public:
-  Network(int = 0, int = 0, int = 0, int = 0); // create a network with 0 vertices, minimumIndex = 0 and maxIndex = 0
+  Network(int = 0, int = 0); // create a network with 0 vertices
   ~Network(); // destructor
   int getNvertices(); // get number of vertices in network
   int getNumEdges(); // get number of edges in network
@@ -82,22 +79,13 @@ class Network
   int haveEdge(int, int); // return 1 if edge is in graph
   void printEdges(char *); // print all edges in network
   void bfs(char *); // breadth-first search outputs connected components
-  void q_calc(char *); // clone of bfs with q_value calculation
-  // void printAllEdges(char *); // print all the edges of the Network
   double getEdgeWeight(int, int); // return weight of edge, given endpoints
-  int removeEdge(int, int); // remove edge (x,y) from the list return bool
-  void assignID(int, int); // creates the ID and invID for easy lookup for (vertex, actualVertexID)
-  int getID(int); // return the ID for easy lookup
-  void getOriginalEdgeIDS(); // returns the EdgeIDS for the network
 
  private:
   int numVertices; // number of vertices
   int directed; // 0 if undirected, 1 if directed
   int numEdges; // number of edges
   Vertex *vertices; // vertices in network
-  int *id; // hold the node IDs as given in input network
-  int *invID; // inverted ID numbers for easy look-up
-  int *originalEdgeIDS; // network EdgeIDs for lookup in Genetic Algo
 };
 
 #endif
