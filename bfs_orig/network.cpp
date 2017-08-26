@@ -311,8 +311,12 @@ int Vertex::removeEdge(int end) {
   int edgeFound = 0;
 
   // since this is initiliazed in stack no pointer reference. 
-  edgePtr = firstEdge.next; // fix for first and last element deletion and decerement the degrees
+  edgePtr = &firstEdge; // fix for first and last element deletion and decerement the degrees
   prevEdgePtr = edgePtr; // prevEdge points to the first Edge for initial setup
+  
+  if (edgePtr->next == 0) // no edges for this vertex
+    return 0;
+
   while (edgePtr->next != 0) { // follow until find last edge   
     prevEdgePtr = edgePtr;
     edgePtr = edgePtr->next; // pointer points at next edge in list
@@ -346,9 +350,9 @@ int Network::removeEdge(int v1, int v2) {
 
   int ret = vertices[start].removeEdge(end);
 
-  if(RETAINSYMMETRIC) {
-    vertices[end].removeEdge(start);
-  }
+  // if(RETAINSYMMETRIC) {
+  //   vertices[end].removeEdge(start);
+  // }
 
   if(ret) {
     vertices[start].degree--; // update degree of vertices

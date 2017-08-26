@@ -103,7 +103,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     // generate initial population
     for (int i = 0; i < populationSize; ++i) {
     	for (int j = 0; j < networkNumVertices; ++j) {
-    		simpleGAChromosome[i][j] = generateRandomNumber(0, networkNumVertices/2);
+    		simpleGAChromosome[i][j] = generateRandomNumber(0, networkNumVertices/4);
     	}
     }
 
@@ -131,17 +131,20 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 	    	Edge *edgePtr;
 	    	edgePtr = &gaSparseNetwork->vertices[j].firstEdge;
 
+	    	
+
 	    	if (edgePtr->next == 0) // no edges for this vertex
 	    		continue;
 
 	    	while(edgePtr->next != 0) {
 	    		edgePtr = edgePtr->next;
-	    		
 	    		// Avoid RETAINSYMMETRIC
 	    		if(j < edgePtr->target){
+
 	    			if(simpleGAChromosome[i][j] != simpleGAChromosome[i][edgePtr->target]) {
 	    				std::cout << j << " : " << edgePtr->target << std::endl;
-	    				removeEdgeByID(networkNumVertices*(j)+(edgePtr->target));
+	    				if(gaSparseNetwork->haveEdge(j, edgePtr->target))
+	    					removeEdgeByID(networkNumVertices*(j)+(edgePtr->target));
 	    				edgeIDState[getEdgeIDIndex(j, edgePtr->target)] = -1;
 	    			}
 	    		}
@@ -154,6 +157,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     			std::cout << originalEdgeIDS[k] << "\t";
     		}
 	    }
+	    std::cout << std::endl;
 
     }
 
