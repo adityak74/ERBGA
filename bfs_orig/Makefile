@@ -17,7 +17,7 @@ bfsNet.o:	bfsNet.cpp bfsNet.h timer.h
 network.o:	network.cpp network.h
 		$(CC) $(CFLAGS) -c network.cpp
 
-cd_spnet.o:	cd_spnet.cpp cd_spnet.h
+cd_spnet.o:	cd_spnet.cpp cd_spnet.h network.h
 		$(CC) $(CFLAGS) -c cd_spnet.cpp
 
 clean:

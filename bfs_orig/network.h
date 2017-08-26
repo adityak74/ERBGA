@@ -32,6 +32,7 @@ const double TOL = 0.000001; // tolerance
 
 class Edge
 {
+  friend class GA;
   friend class Vertex; // Vertex class allowed access to private data
   friend class Network; 
 private: 
@@ -46,6 +47,7 @@ private:
 class Vertex
 {
   friend class Network; // Network class allowed access to private functions
+  friend class GA;
  private:
   Vertex(); // create a new vertex
   ~Vertex(); // destructor
@@ -88,7 +90,6 @@ class Network
   int removeEdge(int, int); // remove edge (x,y) from the list return bool
   void assignID(int, int); // creates the ID and invID for easy lookup for (vertex, actualVertexID)
   int getID(int); // return the ID for easy lookup
-  void getOriginalEdgeIDS(); // returns the EdgeIDS for the network
 
  private:
   int numVertices; // number of vertices
@@ -97,7 +98,6 @@ class Network
   Vertex *vertices; // vertices in network
   int *id; // hold the node IDs as given in input network
   int *invID; // inverted ID numbers for easy look-up
-  int *originalEdgeIDS; // network EdgeIDs for lookup in Genetic Algo
 };
 
 #endif

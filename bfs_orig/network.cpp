@@ -207,11 +207,8 @@ Network::Network(int numNodes, int dir, int min, int max)
     fatal("memory not allocated");
   for (int i = 0; i < max+1; i++)
     invID[i] = -1; // initialize values for invID some values can be -1
-  // allocate memory for edgeIDs
-  if ((originalEdgeIDS = new int[numNodes]) == NULL)
-    fatal("memory not allocated");
-  for (int i = 0; i < numNodes; i++)
-    originalEdgeIDS[i] = -1; // initialize values for edgeIDs to -1
+  // allocate memory for edgeIDs change to numEdges
+  
 }
 
 // Network::assignID() 
@@ -227,20 +224,12 @@ int Network::getID(int vertex) {
   return invID[vertex];
 }
 
-void Network::getOriginalEdgeIDS() {
-  for (int i = 0; i < numVertices; ++i)
-    {
-      std::cout << originalEdgeIDS[i] << std::endl;
-    }  
-}
-
 // ~Network() destructor
 Network::~Network()
 {
   delete [] id;
   delete [] invID;
-  delete [] vertices;
-  delete [] originalEdgeIDS; 
+  delete [] vertices; 
 }
 
 // Network::getNvertices() returns int
@@ -303,20 +292,6 @@ int Network::addEdge(int v1, int v2, double weight)
 
   vertices[v1].addEdge(v2, weight); // add edge
 
-  // generateEdgeID and populate the originalEdgeIDS array
-  int pos = -1;
-  for (int i = 0; i < numVertices; ++i)
-  {
-    if (originalEdgeIDS[i] == -1)
-    {
-      pos = i;
-      break;
-    }
-  }
-  // std::cout << "Edge ID for edge : (" << v1 << "," << v2 << ") : " << v1*numVertices + v2 << endl;
-  originalEdgeIDS[pos] = v1*numVertices + v2;
-  // end of generateEdgeIDS
-
   if(RETAINSYMMETRIC) { // retain both (i,j) and (j,i)
     if(vertices[v2].haveEdge(v1)) // edge already exists, return failure
       return 0;
@@ -370,6 +345,11 @@ int Network::removeEdge(int v1, int v2) {
     fatal("Attempt to add edge to negative numbered node");
 
   int ret = vertices[start].removeEdge(end);
+
+  if(RETAINSYMMETRIC) {
+    vertices[end].removeEdge(start);
+  }
+
   if(ret) {
     vertices[start].degree--; // update degree of vertices
     numEdges--; // update number of edges
