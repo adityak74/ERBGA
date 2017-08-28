@@ -63,7 +63,7 @@ class Vertex
   double getWeight(int); // return weight of edge
   void changeWeight(int, double); // change weight of edge
   int getDegree(); // get out-degree of vertex (full degree for undirected)
-  Edge* getEdges(); // get copy of edges eminating from vertex
+  void getEdges(); // get copy of edges eminating from vertex
   void printEdges(int, char *); // print edges eminating from vertex
   int removeEdge(int end); // remove edge from the edge list eminating from vertex
   //int getID(); // get GML ID number of vertex (-1 if none specified)
@@ -80,7 +80,7 @@ class Network
   int getNumEdges(); // get number of edges in network
   int getDegree(int); // get degree of vertex
   int isDirected(); // return 0 if undirected, 1 if directed network
-  int addEdge(int, int, double=1); // return 1 if edge successfully added
+  int addEdge(int, int, double=1); // add edge for class internal return 1 if edge successfully added
   int haveEdge(int, int); // return 1 if edge is in graph
   void printEdges(char *); // print all edges in network
   void bfs(char *); // breadth-first search outputs connected components
@@ -90,6 +90,7 @@ class Network
   int removeEdge(int, int); // remove edge (x,y) from the list return bool
   void assignID(int, int); // creates the ID and invID for easy lookup for (vertex, actualVertexID)
   int getID(int); // return the ID for easy lookup
+  int addEdgeFromGML(int, int, double=1); // add edge from GML file return 1 if edge successfully added
 
  private:
   int numVertices; // number of vertices

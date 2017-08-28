@@ -135,10 +135,10 @@ int Vertex::haveEdge(int endpoint)
   Edge *edgePtr; // pointer to move through linked list of edges
   edgePtr = &firstEdge; // point to first edge
 
-  if (edgePtr->next == 0) // no edges for this vertex
+  if (edgePtr->next == NULL) // no edges for this vertex
     return 0;
 
-  while (edgePtr->next != 0) { // follow until find last edge
+  while (edgePtr->next != NULL) { // follow until find last edge
     edgePtr = edgePtr->next; // pointer points at next edge in list
     if (edgePtr->target == endpoint)
       return 1;
@@ -158,10 +158,20 @@ int Vertex::getDegree()
 
 // Vertex::getEdges() returns pointer to Edge list
 // get copy of edges eminating from vertex
-Edge* Vertex::getEdges() 
+void Vertex::getEdges() 
 {
-  Edge* edge1; // FIX
-  return edge1;
+  Edge *edgePtr; // pointer to move through linked list of edges
+  edgePtr = &firstEdge; // point to first edge
+
+  if (edgePtr->next == NULL) return; // no edges from this node
+
+  while (edgePtr->next != NULL) { // follow until find last edge
+    edgePtr = edgePtr->next; // pointer points at next edge in list
+
+    // if(!RETAINSYMMETRIC || (node < edgePtr->target)) // print only once
+      std::cout << edgePtr->target << "->";
+  }
+  std::cout << "NULL" << std::endl;
 }
 
 // Vertex::printEdges
@@ -171,13 +181,13 @@ void Vertex::printEdges(int node, char *outputFile)
   Edge *edgePtr; // pointer to move through linked list of edges
   edgePtr = &firstEdge; // point to first edge
 
-  if (edgePtr->next == 0) return; // no edges from this node
+  if (edgePtr->next == NULL) return; // no edges from this node
 
   FILE *output; 
   if ((output = fopen(outputFile, "a")) == NULL)
       fatal ("Unable to open output file");
 
-  while (edgePtr->next != 0) { // follow until find last edge
+  while (edgePtr->next != NULL) { // follow until find last edge
     edgePtr = edgePtr->next; // pointer points at next edge in list
 
     if(!RETAINSYMMETRIC || (node < edgePtr->target)) // print only once
@@ -263,7 +273,7 @@ int Network::isDirected()
 
 // Network::addEdge() returns int
 // return 1 if successfully add edge from v1 to v2 with weight
-int Network::addEdge(int v1, int v2, double weight) 
+int Network::addEdgeFromGML(int v1, int v2, double weight) 
 {
   // Lookup the actual ID for v1,v2
   v1 = invID[v1];
@@ -306,6 +316,52 @@ int Network::addEdge(int v1, int v2, double weight)
   return 1;
 }
 
+// Network::addEdge() returns int
+// return 1 if successfully add edge from v1 to v2 with weight
+int Network::addEdge(int v1, int v2, double weight) 
+{
+  // Lookup the actual ID for v1,v2
+  // v1 = invID[v1];
+  // v2 = invID[v2];
+  
+  if ((v1 > numVertices-1) || (v2 > numVertices-1))
+    fatal("Attempt to add edge to non-existent node");
+  if ((v1 < 0) || (v2 < 0))
+    fatal("Attempt to add edge to negative numbered node");
+
+  if (!DIRECTED) {
+    if (v1 > v2) { // order v1 and v2
+      int temp = v1;
+      v1 = v2;
+      v2 = temp;
+    }
+  }
+
+  //std::cout << "v1 = " << v1 << ", v2 = " << v2 << std::endl;
+
+  if(vertices[v1].haveEdge(v2)) { // edge already exist
+  //  if (weight > vertices[v1].getWeight(v2))
+  //  vertices[v1].changeWeight(v2, weight); // use highest weight for edge
+    return 0; // signal no new edge added
+  }
+
+  vertices[v1].addEdge(v2, weight); // add edge
+
+  if(RETAINSYMMETRIC) { // retain both (i,j) and (j,i)
+    if(vertices[v2].haveEdge(v1)) // edge already exists, return failure
+      return 0;
+    vertices[v2].addEdge(v1, weight);
+  }
+
+  numEdges++; // update number of edges
+  vertices[v1].degree++; // update degree of vertices
+  if (!DIRECTED)
+    vertices[v2].degree++; // increase degree for both vertices if undirected
+
+  return 1;
+}
+
+// fix needed : segment falut 11
 int Vertex::removeEdge(int end) {
   Edge *edgePtr, *prevEdgePtr;
   int edgeFound = 0;
@@ -314,20 +370,24 @@ int Vertex::removeEdge(int end) {
   edgePtr = &firstEdge; // fix for first and last element deletion and decerement the degrees
   prevEdgePtr = edgePtr; // prevEdge points to the first Edge for initial setup
   
-  if (edgePtr->next == 0) // no edges for this vertex
+  if (edgePtr->next == NULL) // no edges for this vertex
     return 0;
 
-  while (edgePtr->next != 0) { // follow until find last edge   
+  while (edgePtr->next != NULL) { // follow until find last edge   
     prevEdgePtr = edgePtr;
     edgePtr = edgePtr->next; // pointer points at next edge in list
+
+    std::cout << "DEBUG | at here :->" << edgePtr->target << " |" <<std::endl;
     if (edgePtr->target == end){
       edgeFound = 1;
       break;
     }
   }
   if(edgeFound) {
+    std::cout << "DEBUG | edge found :->" << edgePtr->target << " |" <<std::endl;
     prevEdgePtr->next = edgePtr->next;
-    delete edgePtr;
+    if(edgePtr!=NULL)
+      delete edgePtr;
     return 1;
   } else {
     fatal("No such Edge in the List");
@@ -350,9 +410,12 @@ int Network::removeEdge(int v1, int v2) {
 
   int ret = vertices[start].removeEdge(end);
 
-  // if(RETAINSYMMETRIC) {
-  //   vertices[end].removeEdge(start);
-  // }
+  if(RETAINSYMMETRIC) {
+    if(vertices[end].haveEdge(start)){
+      // std::cout << "in RETAINSYMMETRIC " << std::endl;
+      vertices[end].removeEdge(start);
+    }
+  }
 
   if(ret) {
     vertices[start].degree--; // update degree of vertices
@@ -378,8 +441,10 @@ void Network::printEdges(char *outputFile) // print all edges in network
 
   fclose(output);
 
-  for (int i = 0; i < numVertices; i++)
+  for (int i = 0; i < numVertices; i++){
     vertices[i].printEdges(i, outputFile);
+    vertices[i].getEdges();
+  }
 
   if ((output = fopen(outputFile, "a")) == NULL)
       fatal ("Unable to open output file");
@@ -515,7 +580,7 @@ void Network::bfs(char *outputFile)
 		Edge *edgePtr; // pointer to move through linked list of edges
 		edgePtr = &(vertices[node].firstEdge); // point to first edge
 		
-		while (edgePtr->next != 0) { // follow until find last edge
+		while (edgePtr->next != NULL) { // follow until find last edge
 		  edgePtr = edgePtr->next; // pointer points at next edge in list
 		  int endpt = edgePtr->target; // find adjacent vertex 
 		  
@@ -658,7 +723,7 @@ void Network::bfs(char *outputFile)
 	    if(BFS_WG2)
 	      fprintf(outputWG2,"%d %d, X %d [ ",j, j, vertices[node].degree);  	    
 
-	    while (edgePtr->next != 0) { // follow until find last edge
+	    while (edgePtr->next != NULL) { // follow until find last edge
 	      edgePtr = edgePtr->next; // pointer points at next edge in list
 	      if (nn[edgePtr->target] < 0) fatal("node numbering array error");
 	      
@@ -932,7 +997,7 @@ void Network::q_calc(char *outputFile)
         Edge *edgePtr; // pointer to move through linked list of edges
         edgePtr = &(vertices[node].firstEdge); // point to first edge
         
-        while (edgePtr->next != 0) { // follow until find last edge
+        while (edgePtr->next != NULL) { // follow until find last edge
           edgePtr = edgePtr->next; // pointer points at next edge in list
           int endpt = edgePtr->target; // find adjacent vertex 
           
@@ -1080,7 +1145,7 @@ void Network::q_calc(char *outputFile)
         if(BFS_WG2)
           fprintf(outputWG2,"%d %d, X %d [ ",j, j, vertices[node].degree);          
 
-        while (edgePtr->next != 0) { // follow until find last edge
+        while (edgePtr->next != NULL) { // follow until find last edge
           edgePtr = edgePtr->next; // pointer points at next edge in list
           if (nn[edgePtr->target] < 0) fatal("node numbering array error");
           

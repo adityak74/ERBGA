@@ -45,8 +45,9 @@ class GA {
 		int networkNumEdges; // store the number of edges in the graph
 		int numGenerations; // number of generations of GA
 		int *originalEdgeIDS; // network EdgeIDs for lookup in Genetic Algo
-		int generateRandomNumber(int, int); // generate random number between min and max range
 		int **simpleGAChromosome; // basic chromosome to generate initial populations
+		int addEdgeByEdgeID(int); // add edge by EdgeID to the network
+		int generateRandomNumber(int, int); // generate random number between min and max range
 };
 
 #endif

@@ -180,7 +180,7 @@ int main(int argc, char ** argv)
 
     //std::cout << ", weight: " << weight << std::endl;
     // (source, target, weight)
-    if(!sparseNet.addEdge(source, target, weight))
+    if(!sparseNet.addEdgeFromGML(source, target, weight))
       dupEdges++;
       //warning("Duplicate edge in input");
     else
@@ -255,4 +255,3 @@ int main(int argc, char ** argv)
 
   return 1;
 }
-
