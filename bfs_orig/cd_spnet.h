@@ -17,7 +17,7 @@
 #include "timer.h"
 #include "network.h"
 
-const int GA_QUIET = 1;  // set to one to eliminate output to screen
+const int GA_QUIET = 0;  // set to one to eliminate output to screen
 const int GA_VERBOSE = 0;  // set to one to display maximum output to screen
 const int GA_DEBUG = 1; //set to one to display debugging for function
 
@@ -25,7 +25,7 @@ class Chromosome {
 	friend class Population; // Population class allowed access to private functions
 	friend class GA; // GA class allowed access to private functions
 	private:
-		int *edgeID; // variable number of edgeIDs for each chromosome
+		int *edgeIDS; // variable number of edgeIDs for each chromosome
 };
 
 class GA {

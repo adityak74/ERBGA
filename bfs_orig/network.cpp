@@ -344,7 +344,7 @@ int Network::addEdge(int v1, int v2, double weight)
   //  vertices[v1].changeWeight(v2, weight); // use highest weight for edge
     return 0; // signal no new edge added
   }
-
+  std::cout << v1 << " - " << v2 << " - " << weight << std::endl;
   vertices[v1].addEdge(v2, weight); // add edge
 
   if(RETAINSYMMETRIC) { // retain both (i,j) and (j,i)
@@ -377,14 +377,14 @@ int Vertex::removeEdge(int end) {
     prevEdgePtr = edgePtr;
     edgePtr = edgePtr->next; // pointer points at next edge in list
 
-    std::cout << "DEBUG | at here :->" << edgePtr->target << " |" <<std::endl;
+    // std::cout << "DEBUG | at here :->" << edgePtr->target << " |" <<std::endl;
     if (edgePtr->target == end){
       edgeFound = 1;
       break;
     }
   }
   if(edgeFound) {
-    std::cout << "DEBUG | edge found :->" << edgePtr->target << " |" <<std::endl;
+    // std::cout << "DEBUG | edge found :->" << edgePtr->target << " |" <<std::endl;
     prevEdgePtr->next = edgePtr->next;
     if(edgePtr!=NULL)
       delete edgePtr;

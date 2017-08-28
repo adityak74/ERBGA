@@ -48,8 +48,7 @@ int GA::removeEdgeByPosition(int v1, int v2) {
 }
 
 int GA::addEdgeByEdgeID(int edgeID) {
-	std::cout << "Adding edge : (" << edgeID / networkNumVertices << "," << edgeID % networkNumVertices << ") " << std::endl;
-	return gaSparseNetwork->addEdge(edgeID / networkNumVertices, edgeID % networkNumVertices);
+	return gaSparseNetwork->addEdge(edgeID / networkNumVertices, edgeID % networkNumVertices, 1.0);
 }
 
 // get index by using binary search
@@ -58,13 +57,16 @@ int GA::getEdgeIDIndex(int v1, int v2) {
 }
 
 GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int numEdges) {
-	if ((chromosomes = new Chromosome[popSize]) == NULL) // allocate memory to set of Chromosomes
-    	fatal("memory not allocated");
-    populationSize = popSize;
+
+	// set class data memebers
+	populationSize = popSize;
     networkNumVertices = numNodes;
     networkNumEdges = numEdges;
     gaSparseNetwork = &sparseNetwork;
     numGenerations = generations;
+
+	if ((chromosomes = new Chromosome[popSize]) == NULL) // allocate memory to set of Chromosomes
+    	fatal("memory not allocated");
 
     if ((simpleGAChromosome = new int*[popSize]) == NULL) // allocate memory to set of Basic GA Chromosomes
     	fatal("memory not allocated");
@@ -72,6 +74,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     // initalize size of basic GA chromosome to be equal to numVertices
     for (int i = 0; i < popSize; ++i) {
     	simpleGAChromosome[i] = new int[networkNumVertices]; // size of array equal to numVertices
+    	chromosomes[i].edgeIDS = new int[numEdges]; // size of each chromosome maximum to be all the edges
     }
 
     if ((originalEdgeIDS = new int[numEdges]) == NULL)
@@ -88,20 +91,18 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     	if (edgePtr->next == NULL) // no edges for this vertex
     		continue;
 
-    	std::cout << "#" << i << "->";
+    	
     	while(edgePtr->next != NULL) {
     		edgePtr = edgePtr->next;
-    		
-    		std::cout << (edgePtr->target) << "->";
 
     		// Avoid RETAINSYMMETRIC
     		if(i < edgePtr->target){
-    			if(!GA_DEBUG)
+    			if(GA_DEBUG)
     				std::cout << "#"<< edgePos << " :-: " << networkNumVertices * (i) << " + " << (edgePtr->target) << std::endl;
     			originalEdgeIDS[edgePos++] = networkNumVertices*(i)+(edgePtr->target);
     		}
     	}
-    	std::cout << "NULL" << std::endl;
+    	// std::cout << "NULL" << std::endl;
     }
 
     // sort originalEdgeIDS for binary search use
@@ -115,7 +116,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     }
 
     // initial population using Basic Chromosome (Community ID based)
-    if(!GA_DEBUG) {
+    if(GA_DEBUG) {
     	for (int i = 0; i < networkNumVertices; ++i) {
 	    	for (int j = 0; j < populationSize; ++j) {
 	    		std::cout << simpleGAChromosome[j][i] << "\t";
@@ -159,7 +160,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 	    		// Avoid RETAINSYMMETRIC
 	    		if(j < edgePtr->target){
 	    			if(simpleGAChromosome[i][j] != simpleGAChromosome[i][edgePtr->target]) {
-	    				std::cout << "(" << j << "," << edgePtr->target << ") EdgeID :-> " << originalEdgeIDS[getEdgeIDIndex(j, edgePtr->target)] << std::endl; 
+	    				// std::cout << "(" << j << "," << edgePtr->target << ") EdgeID :-> " << originalEdgeIDS[getEdgeIDIndex(j, edgePtr->target)] << std::endl; 
 	    				// overhead check can be removed as we are sure to be within bounds
 	    				if(gaSparseNetwork->haveEdge(j, edgePtr->target)){
 	    					removeEdgeByID(networkNumVertices*(j)+(edgePtr->target));
@@ -183,14 +184,15 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 
 	    // add edges back after generating chromosome
 	    // after one chromosome generation
-	    std::cout << "Removed edges for chromosome : "<< (i+1) << " : \n";
+	    if(GA_DEBUG)
+	    	std::cout << "Removed edges for chromosome : "<< (i+1) << " : \n";
 	    for (int k = 0; k < networkNumEdges; ++k){
     		if(edgeIDState[k] == -1){
-    			std::cout << "Removed edge: "<< originalEdgeIDS[k] << " : \n";
     			edgeIDState[k] = addEdgeByEdgeID(originalEdgeIDS[k]);
     		}
 	    }
-	    std::cout << "\n";
+	    if(GA_DEBUG)
+	    	std::cout << "\n";
     }
 
 }

@@ -21,7 +21,7 @@
 #include <time.h>
 #include "bfsNet.h"
 
-const int RETAINSYMMETRIC = 1;// 1 to retain both (i,j) and (j,i) (use for BFS)
+const int RETAINSYMMETRIC = 0;// 1 to retain both (i,j) and (j,i) (use for BFS)
 const int DESCRIPTIVE_OUTPUT = 0; // 0 for just cluster membership numbers
 const int PRINTCOMPSIZES = 1; // 1 to print summary of component sizes out to "saveCompSizes.txt"
 const int BFS_GML = 0; // 1 to output BFS components to .gml files
@@ -35,8 +35,8 @@ class Edge
   friend class GA;
   friend class Vertex; // Vertex class allowed access to private data
   friend class Network; 
-private: 
-  Edge(int = 0, double = 1); // create a new edge with default weight of 1
+private:
+  Edge(int = 0, double = 1.0); // create a new edge with default weight of 1
   int getTarget(); // get other edgepoint  
   double getWeight(); // get weight of edge 
   int target; // other edgepoint
@@ -58,7 +58,7 @@ class Vertex
   //int ID; // GML ID number of vertex
   //char *label; // GML label of vertex (NULL if none specified)
 
-  int addEdge(int, double=1); // add an edge to vertex, return 1 if successful
+  int addEdge(int, double=1.0); // add an edge to vertex, return 1 if successful
   int haveEdge(int); // check to see if edge already exists, return 0 if not
   double getWeight(int); // return weight of edge
   void changeWeight(int, double); // change weight of edge
@@ -90,7 +90,7 @@ class Network
   int removeEdge(int, int); // remove edge (x,y) from the list return bool
   void assignID(int, int); // creates the ID and invID for easy lookup for (vertex, actualVertexID)
   int getID(int); // return the ID for easy lookup
-  int addEdgeFromGML(int, int, double=1); // add edge from GML file return 1 if edge successfully added
+  int addEdgeFromGML(int, int, double=1.0); // add edge from GML file return 1 if edge successfully added
 
  private:
   int numVertices; // number of vertices
