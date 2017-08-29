@@ -189,19 +189,24 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 
 	    // add edges back after generating chromosome
 	    // after one chromosome generation
+	    int chromosome_edgeID_pos = 0;
 	    if(GA_DEBUG)
 	    	std::cout << "Removed edges for chromosome : "<< (i+1) << " : \n";
 	    for (int k = 0; k < networkNumEdges; ++k){
     		if(edgeIDState[k] == -1){
     			edgeIDState[k] = addEdgeByEdgeID(originalEdgeIDS[k]);
-    			chromosomes[i].edgeIDS[k] = originalEdgeIDS[k];
+    			chromosomes[i].edgeIDS[chromosome_edgeID_pos++] = originalEdgeIDS[k];
     		}
 	    }
 	    if(GA_DEBUG)
 	    	std::cout << "\n";
     }
 
-    if(GA_DEBUG) {
+    if(!GA_DEBUG) {
+    	std::cout << "Actual Chromosomes : " << std::endl;
+    	for (int i = 0; i < populationSize; ++i)
+    		std::cout << "P#" << (i+1) << "\t";
+    	std::cout << std::endl;
     	for (int i = 0; i < networkNumEdges; ++i) {
 	    	for (int j = 0; j < populationSize; ++j) {
 	    		std::cout << chromosomes[j].edgeIDS[i] << "\t";

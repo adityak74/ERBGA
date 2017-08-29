@@ -344,7 +344,7 @@ int Network::addEdge(int v1, int v2, double weight)
   //  vertices[v1].changeWeight(v2, weight); // use highest weight for edge
     return 0; // signal no new edge added
   }
-  std::cout << v1 << " - " << v2 << " - " << weight << std::endl;
+  
   vertices[v1].addEdge(v2, weight); // add edge
 
   if(RETAINSYMMETRIC) { // retain both (i,j) and (j,i)
