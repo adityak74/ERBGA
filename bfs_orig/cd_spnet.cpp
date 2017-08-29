@@ -108,6 +108,13 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     // sort originalEdgeIDS for binary search use
     std::sort(originalEdgeIDS, originalEdgeIDS + networkNumEdges);
 
+    // initialize each chromosome with -1 (empty)
+    for (int i = 0; i < populationSize; ++i) {
+    	for (int j = 0; j < networkNumEdges; ++j) {
+    		chromosomes[i].edgeIDS[j] = -1;
+    	}
+    }
+
     // generate initial population
     for (int i = 0; i < populationSize; ++i) {
     	for (int j = 0; j < networkNumVertices; ++j) {
@@ -150,8 +157,6 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 	    	Edge *edgePtr;
 	    	edgePtr = &gaSparseNetwork->vertices[j].firstEdge;
 
-	    	
-
 	    	if (edgePtr->next == NULL) // no edges for this vertex
 	    		continue;
 
@@ -189,10 +194,20 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 	    for (int k = 0; k < networkNumEdges; ++k){
     		if(edgeIDState[k] == -1){
     			edgeIDState[k] = addEdgeByEdgeID(originalEdgeIDS[k]);
+    			chromosomes[i].edgeIDS[k] = originalEdgeIDS[k];
     		}
 	    }
 	    if(GA_DEBUG)
 	    	std::cout << "\n";
+    }
+
+    if(GA_DEBUG) {
+    	for (int i = 0; i < networkNumEdges; ++i) {
+	    	for (int j = 0; j < populationSize; ++j) {
+	    		std::cout << chromosomes[j].edgeIDS[i] << "\t";
+	    	}
+	    	std::cout << std::endl;
+	    }
     }
 
 }

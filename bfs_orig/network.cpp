@@ -26,7 +26,7 @@ using namespace std;
 // create a new edge with default weight of 1
 Edge::Edge(int endpt, double wt)
 {  
-  if (weight < 0-TOL)
+  if (wt < 0-TOL) // fixed was weight instead of wt
     fatal("Negative edge weight");
   
   if (endpt < 0)
