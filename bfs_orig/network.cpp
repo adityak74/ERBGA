@@ -920,7 +920,7 @@ void Network::bfs(char *outputFile)
 
 // breadth-first search and Q_Value calculation, outputs connected components 
 // and respected Q_Value of communities and total q_value
-void Network::q_calc(char *outputFile) 
+double Network::q_calc(char *outputFile) 
 {
   double q_value = 0.0f;    
   FILE *output;
@@ -1340,6 +1340,8 @@ void Network::q_calc(char *outputFile)
   delete [] component;
   delete [] queue;
   delete [] clusterNum;
+
+  return q_value;
 }
 
 

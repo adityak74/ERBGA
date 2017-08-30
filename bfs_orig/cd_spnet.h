@@ -24,6 +24,8 @@ const int GA_DEBUG = 0; //set to one to display debugging for function
 class Chromosome {
 	friend class Population; // Population class allowed access to private functions
 	friend class GA; // GA class allowed access to private functions
+	public:
+		// float getFitness(); // Calculate the fitness of the chromosome
 	private:
 		int *edgeIDS; // variable number of edgeIDs for each chromosome
 };
@@ -37,6 +39,7 @@ class GA {
 		void getOriginalEdgeIDS(); // returns the EdgeIDS for the network
 		int removeEdgeByPosition(int, int); // removes edge by (v1,v2) position
 		int getEdgeIDIndex(int, int); // get index of EdgeID from originalEdgeIDS
+		double getFitness(int); // Calculate the fitness of the chromosome "i"
 	private:
 		Network *gaSparseNetwork; // generated network reference
 		Chromosome *chromosomes; // array of individuals/chromosomes

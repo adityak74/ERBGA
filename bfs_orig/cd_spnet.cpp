@@ -12,6 +12,23 @@
 #include "network.h"
 #include "cd_spnet.h"
 
+double GA::getFitness(int chr_index) {
+	for (int i = 0; i < networkNumEdges; ++i)
+		if(chromosomes[chr_index].edgeIDS[i] != -1){
+			gaSparseNetwork->removeEdge(chromosomes[chr_index].edgeIDS[i] / networkNumVertices, chromosomes[chr_index].edgeIDS[i] % networkNumVertices);
+		}
+
+	double fitness = gaSparseNetwork->q_calc("ga.out");
+	std::cout << "#" << (chr_index+1) << " :-> " << fitness << std::endl;
+
+	for (int i = 0; i < networkNumEdges; ++i)
+		if(chromosomes[chr_index].edgeIDS[i] != -1){
+			gaSparseNetwork->addEdge(chromosomes[chr_index].edgeIDS[i] / networkNumVertices, chromosomes[chr_index].edgeIDS[i] % networkNumVertices, 1.0);
+		}
+
+	return fitness;
+}
+
 // binary search part
 // A recursive binary search function. It returns location of x in
 // given array arr[l..r] is present, otherwise -1
@@ -238,5 +255,8 @@ int GA::generateRandomNumber(int min, int max) {
 // max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
 //num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
-	
+	for (int i = 0; i < populationSize; ++i)
+	{
+		getFitness(i);
+	}
 }
