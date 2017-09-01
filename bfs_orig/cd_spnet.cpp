@@ -12,23 +12,6 @@
 #include "network.h"
 #include "cd_spnet.h"
 
-double GA::getFitness(int chr_index) {
-	for (int i = 0; i < networkNumEdges; ++i)
-		if(chromosomes[chr_index].edgeIDS[i] != -1){
-			gaSparseNetwork->removeEdge(chromosomes[chr_index].edgeIDS[i] / networkNumVertices, chromosomes[chr_index].edgeIDS[i] % networkNumVertices);
-		}
-
-	double fitness = gaSparseNetwork->q_calc("ga.out");
-	std::cout << "#" << (chr_index+1) << " :-> " << fitness << std::endl;
-
-	for (int i = 0; i < networkNumEdges; ++i)
-		if(chromosomes[chr_index].edgeIDS[i] != -1){
-			gaSparseNetwork->addEdge(chromosomes[chr_index].edgeIDS[i] / networkNumVertices, chromosomes[chr_index].edgeIDS[i] % networkNumVertices, 1.0);
-		}
-
-	return fitness;
-}
-
 // binary search part
 // A recursive binary search function. It returns location of x in
 // given array arr[l..r] is present, otherwise -1
@@ -54,6 +37,38 @@ int binarySearch(int arr[], int l, int r, int x)
 }
 // ends
 
+double Chromosome::getFitness() { 
+	return fitness;
+}
+
+double Chromosome::calculateFitness() {
+
+	for (int i = 0; i < networkNumEdgesChr; ++i)
+		if(edgeIDS[i] != -1){
+			gaSparseNetworkChr->removeEdge(edgeIDS[i] / networkNumVerticesChr, edgeIDS[i] % networkNumVerticesChr);
+		}
+
+	double calc_fitness = gaSparseNetworkChr->q_calc("ga.out");
+
+	for (int i = 0; i < networkNumEdgesChr; ++i)
+		if(edgeIDS[i] != -1){
+			gaSparseNetworkChr->addEdge(edgeIDS[i] / networkNumVerticesChr, edgeIDS[i] % networkNumVerticesChr, 1.0);
+		}
+
+	fitness = calc_fitness;
+
+	return fitness;
+}
+
+// if chr_index = -1 then all else calcu fitness of chromosome[chr_index]
+void GA::calculateFitness(int chr_index) {
+	if(chr_index == -1)
+		for (int i = 0; i < populationSize; ++i)
+			chromosomes[i].calculateFitness();
+	else
+		chromosomes[chr_index].calculateFitness();
+}
+
 // need to filter which EdgeID exist in original network
 // how to access network here?
 int GA::removeEdgeByID(int edgeID) {
@@ -75,6 +90,7 @@ int GA::getEdgeIDIndex(int v1, int v2) {
 
 GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int numEdges) {
 
+	srand (time(NULL));
 	// set class data memebers
 	populationSize = popSize;
     networkNumVertices = numNodes;
@@ -92,6 +108,9 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     for (int i = 0; i < popSize; ++i) {
     	simpleGAChromosome[i] = new int[networkNumVertices]; // size of array equal to numVertices
     	chromosomes[i].edgeIDS = new int[numEdges]; // size of each chromosome maximum to be all the edges
+    	chromosomes[i].gaSparseNetworkChr = &sparseNetwork; // store the reference for use in Chromosome class
+    	chromosomes[i].networkNumVerticesChr = networkNumVertices;
+    	chromosomes[i].networkNumEdgesChr = networkNumEdges;
     }
 
     if ((originalEdgeIDS = new int[numEdges]) == NULL)
@@ -135,7 +154,8 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     // generate initial population
     for (int i = 0; i < populationSize; ++i) {
     	for (int j = 0; j < networkNumVertices; ++j) {
-    		simpleGAChromosome[i][j] = generateRandomNumber(0, networkNumVertices/4);
+    		simpleGAChromosome[i][j] = generateRandomNumber(0, GA_NUM_COMMUNITY);
+    		// originalNUmClusters - command line/ header
     	}
     }
 
@@ -219,10 +239,10 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 	    	std::cout << "\n";
     }
 
-    if(!GA_DEBUG) {
+    if(GA_DEBUG) {
     	std::cout << "Actual Chromosomes : " << std::endl;
     	for (int i = 0; i < populationSize; ++i)
-    		std::cout << "P#" << (i+1) << "\t";
+    		std::cout << "CHR#" << (i+1) << "\t";
     	std::cout << std::endl;
     	for (int i = 0; i < networkNumEdges; ++i) {
 	    	for (int j = 0; j < populationSize; ++j) {
@@ -230,6 +250,31 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 	    	}
 	    	std::cout << std::endl;
 	    }
+
+	    if(GA_DEBUG && GA_DEBUG_FILE){
+	    	char* outputFile = "chromosomes.ga";
+		    FILE *output;
+			if ((output = fopen(outputFile, "w")) == NULL)
+				fatal ("Unable to open output file");
+
+			fprintf(output,"Actual Chromosomes\n");  
+
+			for (int i = 0; i < populationSize; ++i)
+				fprintf(output,"CHR#%d\t\t", i+1);
+			fprintf(output,"\n");
+			for (int i = 0; i < networkNumEdges; ++i) {
+		    	for (int j = 0; j < populationSize; ++j) {
+		    		fprintf(output,"%d\t", chromosomes[j].edgeIDS[i]);
+		    		fprintf(output,"\t\t");		
+		    	}
+		    	fprintf(output,"\n");
+		    }
+
+			if ((output = fopen(outputFile, "a")) == NULL)
+			 	fatal ("Unable to open output file");
+  
+			fclose(output);
+		}
     }
 
 }
@@ -247,9 +292,29 @@ void GA::getOriginalEdgeIDS() {
     std::cout <<  std::endl;
 }
 
+// taken from http://preshing.com/20121224/how-to-generate-a-sequence-of-unique-random-integers/
+unsigned int permuteQPR(unsigned int x)
+{
+    static const unsigned int prime = 4294967291;
+    if (x >= prime)
+        return x;  // The 5 integers out of range are mapped to themselves.
+    unsigned int residue = ((unsigned long long) x * x) % prime;
+    return (x <= prime / 2) ? residue : prime - residue;
+}
+
 // generate random number in range (min, max)
 int GA::generateRandomNumber(int min, int max) {
-	return ((rand() % max) + min); 	
+	return ((permuteQPR(rand()) % max) + min); 	
+}
+
+double GA::averageFitnessForPopulation() {
+	double total_fitness = 0.0;
+	for (int i = 0; i < populationSize; ++i)
+	{
+		chromosomes[i].calculateFitness();
+		total_fitness += chromosomes[i].getFitness();
+	}
+	return (total_fitness/populationSize);
 }
 
 // max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
@@ -257,6 +322,16 @@ int GA::generateRandomNumber(int min, int max) {
 void GA::generate_GA() {
 	for (int i = 0; i < populationSize; ++i)
 	{
-		getFitness(i);
+		chromosomes[i].calculateFitness();
 	}
+	for (int i = 0; i < populationSize; ++i)
+	{
+		std::cout << "Fitness for CHR#" << (i+1) << " :-> " <<chromosomes[i].getFitness() << std::endl;
+	}
+	double avg_fitness = averageFitnessForPopulation();
+	std::cout << "Average Fitness : " << avg_fitness << std::endl;
+
+	// tournament selection
+
+
 }
