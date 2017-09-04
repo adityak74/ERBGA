@@ -1,0 +1,7 @@
+115 nodes 26 clusters 200 edges
+0 1 2 3 4 5 2 2 2 0 6 5 7 2 7 8 0 0 9 10 11 12 2 2 5 13 14 0 5 10 15 16 2 13 9 0 9 9 17 2 18 4 -1 7 10 2 12 8 19 -1 20 12 3 12 2 0 21 19 2 2 8 8 2 0 2 22 2 23 20 5 2 7 18 2 5 2 24 25 2 7 7 0 2 0 6 14 2 22 0 0 2 7 0 2 0 2 22 2 3 0 0 2 6 1 0 2 0 3 4 0 0 4 0 2 0 
+
+2 singletons, 6 components with only 2 vertices,
+20 components with 3 or more vertices
+29 vertices in largest component overall
+7 components are not cliques

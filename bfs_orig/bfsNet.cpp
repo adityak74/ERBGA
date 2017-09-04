@@ -20,6 +20,8 @@
 
 int main(int argc, char ** argv)
 {
+
+  srand (time(NULL));
   if (argc != 3)
     fatal("Usage:\n  bfs input.gml output.bfs"); 
 
@@ -246,7 +248,7 @@ int main(int argc, char ** argv)
   fclose(output);
 
   // GA params
-  int popSize = 100; 
+  int popSize = 10; 
   int generations = 10;
   // Genetic Part Starts here
   GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);

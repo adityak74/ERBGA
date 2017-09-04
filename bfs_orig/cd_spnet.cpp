@@ -320,8 +320,8 @@ unsigned int permuteQPR(unsigned int x)
 
 // generate random number in range (min, max)
 int GA::generateRandomNumber(int min, int max) {
-	srand (time(NULL));
-	return ((permuteQPR(rand()) % max) + min); 	
+	
+	return (((rand()) % max) + min); 	
 }
 
 double GA::averageFitnessForPopulation() {
@@ -337,32 +337,36 @@ double GA::averageFitnessForPopulation() {
 // max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
 //num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
-	// for (int i = 0; i < populationSize; ++i)
-	// {
-	// 	chromosomes[i].calculateFitness();
-	// }
-	// for (int i = 0; i < populationSize; ++i)
-	// {
-	// 	std::cout << "Fitness for CHR#" << (i+1) << " :-> " <<chromosomes[i].getFitness() << std::endl;
-	// }
-	// double avg_fitness = averageFitnessForPopulation();
-	// std::cout << "Average Fitness : " << avg_fitness << std::endl;
+
+	for (int i = 0; i < populationSize; ++i)
+	{
+		chromosomes[i].calculateFitness();
+	}
+	for (int i = 0; i < populationSize; ++i)
+	{
+		std::cout << "Fitness for CHR#" << (i+1) << " :-> " <<chromosomes[i].getFitness() << std::endl;
+	}
+	double avg_fitness = averageFitnessForPopulation();
+	std::cout << "Average Fitness : " << avg_fitness << std::endl;
 
 	// tournament selection
 
 	int parentsForCrossover[2]; // 2 parents for crossover
-	int nextGenChromosomeState[populationSize];
+	int nextGenChromosomeState[populationSize];		
+
 	for (int pi = 0; pi < 2; ++pi) {
-		for (int i = 0; i < populationSize; ++i) {
+		
+		for (int i = 0; i < populationSize; ++i)
 			nextGenChromosomeState[i] = 0; // no chromosome is selected 0, if selected 1
-		}
 
 		int start_index = 999999999;
 		for (int i = 0; i < GA_TOURNAMENT_SIZE; ++i) {
+			// srand (time(NULL));
 			int index = generateRandomNumber(0, populationSize);
 			while(nextGenChromosomeState[index]) {
 				index = generateRandomNumber(0, populationSize);
 			}
+			std::cout << "-----INDEX GENERATED :-> " << index << std::endl; 
 			if(start_index>index)
 				start_index = index;
 			nextGenChromosomeState[index] = 1;
@@ -391,6 +395,7 @@ void GA::generate_GA() {
 					max_fitness = chr_fitness;
 					max_fitness_chr = i;
 				}
+				
 			}
 		}
 		parentsForCrossover[pi] = max_fitness_chr;
