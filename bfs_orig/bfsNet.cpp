@@ -214,7 +214,8 @@ int main(int argc, char ** argv)
 
   // calling q_calc instead
   // sparseNet.bfs(argv[2]);
-  sparseNet.q_calc(argv[2]);
+  // sparseNet.q_calc(argv[2]);
+  // sparseNet.printEdges("testFile-original.gml");
 
   // Trying to remove Edges - Testing
   // if(sparseNet.removeEdge(1,2) && DEBUG) {
@@ -234,7 +235,7 @@ int main(int argc, char ** argv)
   if(DEBUG) {
     for (int i = min; i < max; ++i)
     {
-      std::cout << "GETID("<< i <<") : " <<sparseNet.getID(i) << std::endl;
+      std::cout << "GETID("<< i <<") : " << sparseNet.getID(i) << std::endl;
     }
   }
   
@@ -245,7 +246,7 @@ int main(int argc, char ** argv)
   fclose(output);
 
   // GA params
-  int popSize = 5;
+  int popSize = 20; 
   int generations = 10;
   // Genetic Part Starts here
   GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);

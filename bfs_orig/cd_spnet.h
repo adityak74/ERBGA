@@ -19,8 +19,8 @@
 
 const int GA_QUIET = 0;  // set to one to eliminate output to screen
 const int GA_VERBOSE = 0;  // set to one to display maximum output to screen
-const int GA_DEBUG = 1; // set to one to display debugging for function
-const int GA_DEBUG_FILE = 0; // prints debug to file
+const int GA_DEBUG = 0; // set to one to display debugging for function
+const int GA_DEBUG_FILE = 1; // prints debug to file
 const int GA_TOURNAMENT_SIZE = 3; // tournament size for the seleciton operator
 const int GA_NUM_COMMUNITY = 3; // original community size to start with
 
@@ -47,7 +47,7 @@ class GA {
 		int removeEdgeByID(int); // remove edge by EdgeID 
 		void getOriginalEdgeIDS(); // returns the EdgeIDS for the network
 		int removeEdgeByPosition(int, int); // removes edge by (v1,v2) position
-		int getEdgeIDIndex(int, int); // get index of EdgeID from originalEdgeIDS
+		int getEdgeIDIndex(int); // get index of EdgeID from originalEdgeIDS
 		void getFitness(); // Calculate the fitness of the chromosome "i"
 		void calculateFitness(int = -1); // calculates the fitness of the chromosome
 		double averageFitnessForPopulation();

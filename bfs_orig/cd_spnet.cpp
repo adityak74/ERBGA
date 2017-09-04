@@ -84,8 +84,8 @@ int GA::addEdgeByEdgeID(int edgeID) {
 }
 
 // get index by using binary search
-int GA::getEdgeIDIndex(int v1, int v2) {
-	return binarySearch(originalEdgeIDS, 0, networkNumVertices-1, v1*networkNumVertices+v2);
+int GA::getEdgeIDIndex(int edgeID) {
+	return binarySearch(originalEdgeIDS, 0, networkNumEdges, edgeID);
 }
 
 GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int numEdges) {
@@ -143,6 +143,15 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 
     // sort originalEdgeIDS for binary search use
     std::sort(originalEdgeIDS, originalEdgeIDS + networkNumEdges);
+
+    // original Edge ID Array Print
+    if(GA_DEBUG){
+	    std::cout << "original Edge ID Array : \n";
+	    for (int k = 0; k < networkNumEdges; ++k){
+		    		std::cout << originalEdgeIDS[k] << "\t";
+			    }
+		std::cout << "\n-=-=-=-=-=-=-=-=-=-=-=-=-=-" << std::endl;
+	}
 
     // initialize each chromosome with -1 (empty)
     for (int i = 0; i < populationSize; ++i) {
@@ -205,8 +214,12 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 	    				// std::cout << "(" << j << "," << edgePtr->target << ") EdgeID :-> " << originalEdgeIDS[getEdgeIDIndex(j, edgePtr->target)] << std::endl; 
 	    				// overhead check can be removed as we are sure to be within bounds
 	    				if(gaSparseNetwork->haveEdge(j, edgePtr->target)){
-	    					removeEdgeByID(networkNumVertices*(j)+(edgePtr->target));
-	    					edgeIDState[getEdgeIDIndex(j, edgePtr->target)] = -1;
+	    					int edgeIDToRemove = networkNumVertices*(j)+(edgePtr->target);
+	    					removeEdgeByID(edgeIDToRemove);
+	    					// fix here
+	    					edgeIDState[getEdgeIDIndex(edgeIDToRemove)] = -1;
+	    					if(GA_DEBUG)
+	    						std::cout << "Edge state update :-> " << edgeIDToRemove << " :-> " << getEdgeIDIndex(edgeIDToRemove) << std::endl;
 	    				}
 	    			}
 	    		}
@@ -237,6 +250,9 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 	    }
 	    if(GA_DEBUG)
 	    	std::cout << "\n";
+
+	    
+
     }
 
     if(GA_DEBUG) {
@@ -320,18 +336,41 @@ double GA::averageFitnessForPopulation() {
 // max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
 //num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
-	for (int i = 0; i < populationSize; ++i)
-	{
-		chromosomes[i].calculateFitness();
-	}
-	for (int i = 0; i < populationSize; ++i)
-	{
-		std::cout << "Fitness for CHR#" << (i+1) << " :-> " <<chromosomes[i].getFitness() << std::endl;
-	}
-	double avg_fitness = averageFitnessForPopulation();
-	std::cout << "Average Fitness : " << avg_fitness << std::endl;
+	// for (int i = 0; i < populationSize; ++i)
+	// {
+	// 	chromosomes[i].calculateFitness();
+	// }
+	// for (int i = 0; i < populationSize; ++i)
+	// {
+	// 	std::cout << "Fitness for CHR#" << (i+1) << " :-> " <<chromosomes[i].getFitness() << std::endl;
+	// }
+	// double avg_fitness = averageFitnessForPopulation();
+	// std::cout << "Average Fitness : " << avg_fitness << std::endl;
 
 	// tournament selection
+	int nextGenChromosomeState[populationSize];
+	for (int i = 0; i < populationSize; ++i) {
+		nextGenChromosomeState[i] = 0; // no chromosome is selected 0, if selected 1
+	}
+
+	for (int i = 0; i < GA_TOURNAMENT_SIZE; ++i) {
+		int index = generateRandomNumber(0, populationSize);
+		while(nextGenChromosomeState[index]) {
+			index = generateRandomNumber(0, populationSize);
+		}
+		nextGenChromosomeState[index] = 1;
+	}
+
+	for (int i = 0; i < populationSize; ++i) {
+		std::cout << nextGenChromosomeState[i] << "\t";
+		if ((i+1)%5==0 && i>0)
+		{
+			std::cout << std::endl;
+		}
+	}
+	std::cout << std::endl;
+
+
 
 
 }

@@ -169,9 +169,7 @@ void Vertex::getEdges()
     edgePtr = edgePtr->next; // pointer points at next edge in list
 
     // if(!RETAINSYMMETRIC || (node < edgePtr->target)) // print only once
-      std::cout << edgePtr->target << "->";
   }
-  std::cout << "NULL" << std::endl;
 }
 
 // Vertex::printEdges
