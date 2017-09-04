@@ -361,15 +361,16 @@ void GA::generate_GA() {
 		nextGenChromosomeState[index] = 1;
 	}
 
-	for (int i = 0; i < populationSize; ++i) {
-		std::cout << nextGenChromosomeState[i] << "\t";
-		if ((i+1)%5==0 && i>0)
-		{
-			std::cout << std::endl;
+	if(!GA_DEBUG){
+		for (int i = 0; i < populationSize; ++i) {
+			std::cout << nextGenChromosomeState[i] << "\t";
+			if ((i+1)%5==0 && i>0)
+			{
+				std::cout << std::endl;
+			}
 		}
+		std::cout << std::endl;
 	}
-	std::cout << std::endl;
-
 
 
 
