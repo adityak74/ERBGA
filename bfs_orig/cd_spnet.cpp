@@ -320,6 +320,7 @@ unsigned int permuteQPR(unsigned int x)
 
 // generate random number in range (min, max)
 int GA::generateRandomNumber(int min, int max) {
+	srand (time(NULL));
 	return ((permuteQPR(rand()) % max) + min); 	
 }
 
@@ -348,30 +349,59 @@ void GA::generate_GA() {
 	// std::cout << "Average Fitness : " << avg_fitness << std::endl;
 
 	// tournament selection
+
+	int parentsForCrossover[2]; // 2 parents for crossover
 	int nextGenChromosomeState[populationSize];
-	for (int i = 0; i < populationSize; ++i) {
-		nextGenChromosomeState[i] = 0; // no chromosome is selected 0, if selected 1
-	}
-
-	for (int i = 0; i < GA_TOURNAMENT_SIZE; ++i) {
-		int index = generateRandomNumber(0, populationSize);
-		while(nextGenChromosomeState[index]) {
-			index = generateRandomNumber(0, populationSize);
-		}
-		nextGenChromosomeState[index] = 1;
-	}
-
-	if(!GA_DEBUG){
+	for (int pi = 0; pi < 2; ++pi) {
 		for (int i = 0; i < populationSize; ++i) {
-			std::cout << nextGenChromosomeState[i] << "\t";
-			if ((i+1)%5==0 && i>0)
-			{
-				std::cout << std::endl;
+			nextGenChromosomeState[i] = 0; // no chromosome is selected 0, if selected 1
+		}
+
+		int start_index = 999999999;
+		for (int i = 0; i < GA_TOURNAMENT_SIZE; ++i) {
+			int index = generateRandomNumber(0, populationSize);
+			while(nextGenChromosomeState[index]) {
+				index = generateRandomNumber(0, populationSize);
+			}
+			if(start_index>index)
+				start_index = index;
+			nextGenChromosomeState[index] = 1;
+		}
+
+		if(GA_DEBUG){
+			for (int i = 0; i < populationSize; ++i) {
+				std::cout << nextGenChromosomeState[i] << "\t";
+				if ((i+1)%5==0 && i>0)
+				{
+					std::cout << std::endl;
+				}
+			}
+			std::cout << std::endl;
+			std::cout << "Min Index : " << start_index << std::endl;
+		}
+
+		// start_index helps to jump to the first minimum to skip few iterations
+		double max_fitness = chromosomes[start_index].calculateFitness();
+		int max_fitness_chr = start_index;
+
+		for (int i = start_index+1; i < populationSize; ++i) {
+			if(nextGenChromosomeState[i]){
+				double chr_fitness = chromosomes[i].calculateFitness();
+				if(max_fitness < chr_fitness){
+					max_fitness = chr_fitness;
+					max_fitness_chr = i;
+				}
 			}
 		}
-		std::cout << std::endl;
+		parentsForCrossover[pi] = max_fitness_chr;
+		
 	}
 
-
+	for (int i = 0; i < 2; ++i)
+	{
+		std::cout << "parentsForCrossover #" << i << " :-> " << parentsForCrossover[i] << std::endl;
+	}
+	
+	
 
 }
