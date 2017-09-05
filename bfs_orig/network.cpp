@@ -542,7 +542,7 @@ void Network::bfs(char *outputFile)
   if(BFS_WG2 && !RETAINSYMMETRIC) 
     fatal("Need to retain symmetric edges for .wg2 output");
 
-  srand(time(NULL)); // assign random value between 1 - 1000
+  // srand(time(NULL)); // assign random value between 1 - 1000
   randomVal = rand() % 1000 + 1;
 
   if(((visited = new int[numVertices]) == NULL)||((component = new int[numVertices]) == NULL))
@@ -959,7 +959,7 @@ double Network::q_calc(char *outputFile)
   if(BFS_WG2 && !RETAINSYMMETRIC) 
     fatal("Need to retain symmetric edges for .wg2 output");
 
-  srand(time(NULL)); // assign random value between 1 - 1000
+  // srand(time(NULL)); // assign random value between 1 - 1000
   randomVal = rand() % 1000 + 1;
 
   if(((visited = new int[numVertices]) == NULL)||((component = new int[numVertices]) == NULL))

@@ -19,8 +19,8 @@
 
 const int GA_QUIET = 0;  // set to one to eliminate output to screen
 const int GA_VERBOSE = 0;  // set to one to display maximum output to screen
-const int GA_DEBUG = 1; // set to one to display debugging for function
-const int GA_DEBUG_FILE = 1; // prints debug to file
+const int GA_DEBUG = 0; // set to one to display debugging for function
+const int GA_DEBUG_FILE = 0; // prints debug to file
 const int GA_TOURNAMENT_SIZE = 2; // tournament size for the seleciton operator
 const int GA_NUM_COMMUNITY = 3; // original community size to start with
 
@@ -36,6 +36,7 @@ class Chromosome {
 		Network *gaSparseNetworkChr; // generated network reference
 		int networkNumVerticesChr; // store the number of vertices in the graph
 		int networkNumEdgesChr; // store the number of edges in the graph
+		// non negative chromsome length
 };
 
 class GA {

@@ -90,7 +90,7 @@ int GA::getEdgeIDIndex(int edgeID) {
 
 GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int numEdges) {
 
-	srand (time(NULL));
+	// srand (time(NULL));
 	// set class data memebers
 	populationSize = popSize;
     networkNumVertices = numNodes;
