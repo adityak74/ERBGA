@@ -248,7 +248,7 @@ int main(int argc, char ** argv)
   fclose(output);
 
   // GA params
-  int popSize = 10; 
+  int popSize = 20; 
   int generations = 10;
   // Genetic Part Starts here
   GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);

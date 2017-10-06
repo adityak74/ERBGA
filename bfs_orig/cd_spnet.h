@@ -23,6 +23,7 @@ const int GA_DEBUG = 0; // set to one to display debugging for function
 const int GA_DEBUG_FILE = 0; // prints debug to file
 const int GA_TOURNAMENT_SIZE = 2; // tournament size for the seleciton operator
 const int GA_NUM_COMMUNITY = 3; // original community size to start with
+const double GA_CROSSOVER_SIZE_PERCENT = 0.6; // max chr size used for crossover
 
 class Chromosome {
 	friend class Population; // Population class allowed access to private functions
@@ -36,7 +37,7 @@ class Chromosome {
 		Network *gaSparseNetworkChr; // generated network reference
 		int networkNumVerticesChr; // store the number of vertices in the graph
 		int networkNumEdgesChr; // store the number of edges in the graph
-		// non negative chromsome length
+		int length; // non negative chromsome length
 };
 
 class GA {
@@ -51,7 +52,7 @@ class GA {
 		int getEdgeIDIndex(int); // get index of EdgeID from originalEdgeIDS
 		void getFitness(); // Calculate the fitness of the chromosome "i"
 		void calculateFitness(int = -1); // calculates the fitness of the chromosome
-		double averageFitnessForPopulation();
+		double averageFitnessForPopulation(); // calculates the average fitness of population
 	private:
 		Network *gaSparseNetwork; // generated network reference
 		Chromosome *chromosomes; // array of individuals/chromosomes
@@ -61,6 +62,7 @@ class GA {
 		int networkNumEdges; // store the number of edges in the graph
 		int *originalEdgeIDS; // network EdgeIDs for lookup in Genetic Algo
 		int **simpleGAChromosome; // basic chromosome to generate initial populations
+		char ***chromosomesBitArr; // show edge state (0=in network, 1=removed)
 		int addEdgeByEdgeID(int); // add edge by EdgeID to the network
 		int generateRandomNumber(int, int); // generate random number between min and max range
 };
