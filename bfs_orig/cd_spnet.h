@@ -19,11 +19,14 @@
 
 const int GA_QUIET = 0;  // set to one to eliminate output to screen
 const int GA_VERBOSE = 0;  // set to one to display maximum output to screen
-const int GA_DEBUG = 0; // set to one to display debugging for function
+const int GA_DEBUG = 1; // set to one to display debugging for function
 const int GA_DEBUG_FILE = 0; // prints debug to file
 const int GA_TOURNAMENT_SIZE = 2; // tournament size for the seleciton operator
 const int GA_NUM_COMMUNITY = 3; // original community size to start with
 const double GA_CROSSOVER_SIZE_PERCENT = 0.6; // max chr size used for crossover
+
+// macro for calculating the size from actual array to bit array size
+#define ARRAY_SIZE(x) (x/8+(!!(x%8)))
 
 class Chromosome {
 	friend class Population; // Population class allowed access to private functions
@@ -53,6 +56,9 @@ class GA {
 		void getFitness(); // Calculate the fitness of the chromosome "i"
 		void calculateFitness(int = -1); // calculates the fitness of the chromosome
 		double averageFitnessForPopulation(); // calculates the average fitness of population
+		char get_bit(char *array, int index); // get the bit value for chromosomeBitArr
+		void toggle_bit(char *array, int index); // toggle the bit value for chromosomeBitArr
+		char getBitAt(int chrIndex, int pos, int popState); // gets the bit value at position
 	private:
 		Network *gaSparseNetwork; // generated network reference
 		Chromosome *chromosomes; // array of individuals/chromosomes
@@ -62,9 +68,9 @@ class GA {
 		int networkNumEdges; // store the number of edges in the graph
 		int *originalEdgeIDS; // network EdgeIDs for lookup in Genetic Algo
 		int **simpleGAChromosome; // basic chromosome to generate initial populations
-		char ***chromosomesBitArr; // show edge state (0=in network, 1=removed)
 		int addEdgeByEdgeID(int); // add edge by EdgeID to the network
 		int generateRandomNumber(int, int); // generate random number between min and max range
+		char ***chromosomesBitArr; // bit array for edge state in the chromosome
 };
 
 #endif

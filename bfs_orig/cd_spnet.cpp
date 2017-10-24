@@ -88,9 +88,18 @@ int GA::getEdgeIDIndex(int edgeID) {
 	return binarySearch(originalEdgeIDS, 0, networkNumEdges, edgeID);
 }
 
+// toggle bit at index in array
+void GA::toggle_bit(char *array, int index) {
+    array[index / 8] ^= 1 << (index % 8);
+}
+ 
+// get the bit value at index in the array
+char GA::get_bit(char *array, int index) {
+    return 1 & (array[index / 8] >> (index % 8));
+}
+
 GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int numEdges) {
 
-	// srand (time(NULL));
 	// set class data memebers
 	populationSize = popSize;
     networkNumVertices = numNodes;
@@ -113,8 +122,68 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     	chromosomes[i].networkNumEdgesChr = networkNumEdges;
     }
 
+
+
     if ((originalEdgeIDS = new int[numEdges]) == NULL)
     	fatal("memory not allocated");
+
+    // allocate space for bit locations
+    // show edge state (0=removed, 1=in_network)		
+    int bit_arr_pop_size = (popSize);
+    int bit_arr_num_edges = ARRAY_SIZE(numEdges);
+
+    if ((chromosomesBitArr = new char**[bit_arr_pop_size]) == NULL) // allocate memory to set of Basic GA Chromosomes
+    	fatal("memory not allocated");
+
+    for (int i = 0; i < bit_arr_pop_size; ++i)
+    {
+    	if ((chromosomesBitArr[i] = new char*[bit_arr_num_edges]) == NULL) // allocate memory to set of Basic GA Chromosomes
+    		fatal("memory not allocated");
+    }
+
+    for (int i = 0; i < bit_arr_pop_size; ++i)
+    {
+    	for (int j = 0; j < bit_arr_num_edges; ++j)
+    	{
+    		if ((chromosomesBitArr[i][j] = new char[2]) == NULL) // allocate memory to set of Basic GA Chromosomes
+    			fatal("memory not allocated");	
+    	}
+    }
+
+    for (int i = 0; i < 2; ++i)
+    {
+    	for (int j = 0; j < bit_arr_num_edges; ++j)
+    	{
+    		for (int k = 0; k < bit_arr_pop_size; ++k)
+    		{
+    			chromosomesBitArr[k][j][i] = 0;
+    		}
+    	}
+    }
+
+    if(GA_DEBUG) {
+    	std::cout << "BitArr Dimensions : " << bit_arr_pop_size << " : " << bit_arr_num_edges << std::endl;
+    	std::cout << "SIZE OF BIT ARRAY : " << sizeof(chromosomesBitArr) << std::endl;
+    	std::cout << "--- BIT ARRAY ---\n\n";
+    	for (int i = 0; i < 2; ++i)
+	    {
+	    	std::cout << "Depth (" << (i+1) << ") :" << std::endl;
+	    	for (int j = 0; j < bit_arr_pop_size; ++j)
+		    {
+		    	for (int k = 0; k < bit_arr_num_edges; ++k)
+		    	{
+		    		int index = 0;
+		    		while(index < 9){
+		    			std::cout << (k*8)+index << " : (" << j << "," <<  k << "," << i << ")";
+		    			std::cout << (1 & (chromosomesBitArr[j][k][i] >> (index % 8))) << "\n";
+		    			index++;
+		    		}
+		    	}
+		    	std::cout << std::endl;
+		    }
+		    std::cout << "End of Depth\n\n";		
+	    }
+    }
 
     int edgePos = 0;
 
@@ -339,6 +408,10 @@ double GA::averageFitnessForPopulation() {
 	return (total_fitness/populationSize);
 }
 
+char GA::getBitAt(int chrIndex, int pos, int popState) {
+	return (1 & chromosomesBitArr[chrIndex][pos/8][popState] >> (pos % 8 - 1));
+}
+
 // max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
 //num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
@@ -430,17 +503,8 @@ void GA::generate_GA() {
 		 		maxLenForStateArr = chromosomes[ parentsForCrossover[i] ].edgeIDS[ candidateCrossoverChromosomeIndex[i][j] ];
 		 } 
 	}
-	
-	// for (int i = 0; i < 2; ++i) {
-	// 	for (int j = 0; j < minLenForCrossover; ++j)
-	// 	 {
-	// 	 	std::cout << candidateCrossoverChromosomeIndex[i][j] << "\t"; 
-	// 	 }
-	// 	 std::cout << "\n"; 
-	// }
 
 	for (int i = 0; i < 2; ++i) {
-		std::cout << "-----------------------------------------------\n";
 		for (int j = 0; j < minLenForCrossover; ++j)
 		 {
 		 	std::cout << chromosomes[ parentsForCrossover[i] ].edgeIDS[ candidateCrossoverChromosomeIndex[i][j]] << "\t"; 
@@ -448,7 +512,7 @@ void GA::generate_GA() {
 		 std::cout << "\n"; 
 	}
 	 
-	
+	// 
 
 
 	
