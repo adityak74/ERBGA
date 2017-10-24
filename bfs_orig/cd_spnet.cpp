@@ -156,7 +156,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     	{
     		for (int k = 0; k < bit_arr_pop_size; ++k)
     		{
-    			chromosomesBitArr[k][j][i] = 4;
+    			chromosomesBitArr[k][j][i] = 0;
     		}
     	}
     }
