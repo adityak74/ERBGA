@@ -58,7 +58,7 @@ class GA {
 		double averageFitnessForPopulation(); // calculates the average fitness of population
 		char get_bit(char *array, int index); // get the bit value for chromosomeBitArr
 		void toggle_bit(char *array, int index); // toggle the bit value for chromosomeBitArr
-		char getBitAt(int chrIndex, int pos, int popState); // gets the bit value at position
+		int getBitAt(int chrIndex, int pos, int popState); // gets the bit value at position
 	private:
 		Network *gaSparseNetwork; // generated network reference
 		Chromosome *chromosomes; // array of individuals/chromosomes

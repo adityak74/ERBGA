@@ -1,7 +1,7 @@
 15 nodes 4 clusters 4 edges
-0 -1 -1 -1 -1 1 -1 -1 0 -1 2 2 3 3 -1 
+-1 -1 0 0 1 -1 -1 -1 2 2 1 -1 -1 3 3 
 
-8 singletons, 3 components with only 2 vertices,
-1 components with 3 or more vertices
+7 singletons, 4 components with only 2 vertices,
+0 components with 3 or more vertices
 2 vertices in largest component overall
 0 components are not cliques

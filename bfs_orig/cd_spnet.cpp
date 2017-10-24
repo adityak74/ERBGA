@@ -156,7 +156,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     	{
     		for (int k = 0; k < bit_arr_pop_size; ++k)
     		{
-    			chromosomesBitArr[k][j][i] = 0;
+    			chromosomesBitArr[k][j][i] = 4;
     		}
     	}
     }
@@ -173,9 +173,9 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 		    	for (int k = 0; k < bit_arr_num_edges; ++k)
 		    	{
 		    		int index = 0;
-		    		while(index < 9){
-		    			std::cout << (k*8)+index << " : (" << j << "," <<  k << "," << i << ")";
-		    			std::cout << (1 & (chromosomesBitArr[j][k][i] >> (index % 8))) << "\n";
+		    		while(index < 8){
+		    			std::cout << (k*8)+index << " : (" << j << "," <<  k << "," << i << "," << index << ") -> ";
+		    			std::cout << (1 & (chromosomesBitArr[j][k][i] >> (index))) << "\n";
 		    			index++;
 		    		}
 		    	}
@@ -408,8 +408,10 @@ double GA::averageFitnessForPopulation() {
 	return (total_fitness/populationSize);
 }
 
-char GA::getBitAt(int chrIndex, int pos, int popState) {
-	return (1 & chromosomesBitArr[chrIndex][pos/8][popState] >> (pos % 8 - 1));
+// params : chromosomeIndex, edgeIndex, depth(0-prev, 1-next)
+int GA::getBitAt(int chrIndex, int pos, int popState) {
+	int return_val = (1 & chromosomesBitArr[chrIndex][pos/8][popState] >> (pos - (8 * (pos/8))) );
+	return return_val;
 }
 
 // max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
@@ -511,9 +513,6 @@ void GA::generate_GA() {
 		 }
 		 std::cout << "\n"; 
 	}
-	 
-	// 
-
 
 	
 	
