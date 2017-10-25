@@ -416,6 +416,21 @@ int GA::getBitAt(int chrIndex, int pos, int popState) {
 	return return_val;
 }
 
+// toggle the bit at chromosomeIndex, edgeIndex, depth(0-prev, 1-next)
+void GA::toggle_bit(int chrIndex, int pos, int popState) {
+    chromosomesBitArr[chrIndex][pos/8][popState] ^= 1 << (pos - (8 * (pos/8)));
+}
+
+// sets bit at chromosomeIndex, edgeIndex, depth(0-prev, 1-next)
+void GA::set_bit(int chrIndex, int pos, int popState) {
+    chromosomesBitArr[chrIndex][pos/8][popState] |= 1 << (pos - (8 * (pos/8)));
+}
+
+// unsets bit at chromosomeIndex, edgeIndex, depth(0-prev, 1-next)
+void GA::unset_bit(int chrIndex, int pos, int popState) {
+    chromosomesBitArr[chrIndex][pos/8][popState] &= ~(1 << (pos - (8 * (pos/8))));
+}
+
 void GA::initializeRates() {
 
 	crossover_rate = GA_CROSSOVER_RATE;
@@ -541,6 +556,7 @@ void GA::generate_GA() {
 	// CROSSOVER
 
 	
+
 	
 
 }

@@ -61,7 +61,10 @@ class GA {
 		char get_bit(char *array, int index); // get the bit value for chromosomeBitArr
 		void toggle_bit(char *array, int index); // toggle the bit value for chromosomeBitArr
 		int getBitAt(int chrIndex, int pos, int popState); // gets the bit value at position
+		void toggle_bit(int chrIndex, int pos, int popState); // toggles the bit value
 		void initializeRates(); // initalize GA params , normalize if needed
+		void set_bit(int chrIndex, int pos, int popState); // set bit
+		void unset_bit(int chrIndex, int pos, int popState); // unsets bit
 	private:
 		Network *gaSparseNetwork; // generated network reference
 		Chromosome *chromosomes; // array of individuals/chromosomes
