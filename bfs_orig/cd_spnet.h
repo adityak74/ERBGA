@@ -23,7 +23,9 @@ const int GA_DEBUG = 1; // set to one to display debugging for function
 const int GA_DEBUG_FILE = 0; // prints debug to file
 const int GA_TOURNAMENT_SIZE = 2; // tournament size for the seleciton operator
 const int GA_NUM_COMMUNITY = 3; // original community size to start with
-const double GA_CROSSOVER_SIZE_PERCENT = 0.6; // max chr size used for crossover
+const double GA_CROSSOVER_RATE = 0.8; // max chr size used for crossover
+const double GA_REPRODUCTION_RATE = 0.1; // rate of reproduction producing the offsprings
+const double GA_MUTATION_RATE = 0.2; // rate of mutation producing the offspring
 
 // macro for calculating the size from actual array to bit array size
 #define ARRAY_SIZE(x) (x/8+(!!(x%8)))
@@ -59,6 +61,7 @@ class GA {
 		char get_bit(char *array, int index); // get the bit value for chromosomeBitArr
 		void toggle_bit(char *array, int index); // toggle the bit value for chromosomeBitArr
 		int getBitAt(int chrIndex, int pos, int popState); // gets the bit value at position
+		void initializeRates(); // initalize GA params , normalize if needed
 	private:
 		Network *gaSparseNetwork; // generated network reference
 		Chromosome *chromosomes; // array of individuals/chromosomes
@@ -71,6 +74,9 @@ class GA {
 		int addEdgeByEdgeID(int); // add edge by EdgeID to the network
 		int generateRandomNumber(int, int); // generate random number between min and max range
 		char ***chromosomesBitArr; // bit array for edge state in the chromosome
+		double crossover_rate; // crossover produced offsprings
+		double mutation_rate; // mutation produced offsprings
+		double reproduction_rate; // reproduction produced offsprings
 };
 
 #endif

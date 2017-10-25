@@ -2,6 +2,8 @@
 # Sharlee Climer
 # October, 2007
 
+# Added cleaning *.out objects
+
 
 CC	= g++
 CFLAGS 	= -g
@@ -21,4 +23,4 @@ cd_spnet.o:	cd_spnet.cpp cd_spnet.h network.h
 		$(CC) $(CFLAGS) -c cd_spnet.cpp
 
 clean:
-		/bin/rm -f *.o $(TARGET)
+		/bin/rm -f *.o $(TARGET) *.out

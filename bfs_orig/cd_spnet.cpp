@@ -107,6 +107,8 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     gaSparseNetwork = &sparseNetwork;
     numGenerations = generations;
 
+    initializeRates();
+
 	if ((chromosomes = new Chromosome[popSize]) == NULL) // allocate memory to set of Chromosomes
     	fatal("memory not allocated");
 
@@ -414,8 +416,30 @@ int GA::getBitAt(int chrIndex, int pos, int popState) {
 	return return_val;
 }
 
+void GA::initializeRates() {
+
+	crossover_rate = GA_CROSSOVER_RATE;
+	mutation_rate = GA_MUTATION_RATE;
+	reproduction_rate = GA_REPRODUCTION_RATE;
+
+	double total_rates_sum = crossover_rate + mutation_rate + reproduction_rate;
+	double delta = (1 - total_rates_sum) / 3;
+	crossover_rate += delta;
+	mutation_rate += delta;
+	reproduction_rate += delta;
+
+	if(GA_DEBUG) {
+		std::cout << "- - - GA RATES - - - " << std::endl;
+		std::cout << "NORMALIZED CROSSOVER RATE : " << crossover_rate << std::endl;
+		std::cout << "NORMALIZED MUTATION RATE : " << mutation_rate << std::endl;
+		std::cout << "NORMALIZED REPRODUCTION RATE : " << reproduction_rate << std::endl;
+		std::cout << "- - - - - - - - - - -" << std::endl;
+	}
+
+}
+
 // max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
-//num of edges removed can be a max upto (2, networkNumEdges/2)
+// num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
 
 	for (int i = 0; i < populationSize; ++i)
@@ -492,7 +516,7 @@ void GA::generate_GA() {
 	int minLength = (chromosomes[parentsForCrossover[0]].length < chromosomes[parentsForCrossover[1]].length) ? chromosomes[parentsForCrossover[0]].length : chromosomes[parentsForCrossover[1]].length;
 	// crossover
 
-	int minLenForCrossover = (int)round(GA_CROSSOVER_SIZE_PERCENT * minLength);
+	int minLenForCrossover = (int)round(GA_CROSSOVER_RATE * minLength);
 	
 	int maxLenForStateArr = 0;
 
@@ -513,6 +537,8 @@ void GA::generate_GA() {
 		 }
 		 std::cout << "\n"; 
 	}
+
+	// CROSSOVER
 
 	
 	
