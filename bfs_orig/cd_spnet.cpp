@@ -163,30 +163,6 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     	}
     }
 
-    if(GA_DEBUG) {
-    	std::cout << "BitArr Dimensions : " << bit_arr_pop_size << " : " << bit_arr_num_edges << std::endl;
-    	std::cout << "SIZE OF BIT ARRAY : " << sizeof(chromosomesBitArr) << std::endl;
-    	std::cout << "--- BIT ARRAY ---\n\n";
-    	for (int i = 0; i < 2; ++i)
-	    {
-	    	std::cout << "Depth (" << (i+1) << ") :" << std::endl;
-	    	for (int j = 0; j < bit_arr_pop_size; ++j)
-		    {
-		    	for (int k = 0; k < bit_arr_num_edges; ++k)
-		    	{
-		    		int index = 0;
-		    		while(index < 8){
-		    			std::cout << (k*8)+index << " : (" << j << "," <<  k << "," << i << "," << index << ") -> ";
-		    			std::cout << (1 & (chromosomesBitArr[j][k][i] >> (index))) << "\n";
-		    			index++;
-		    		}
-		    	}
-		    	std::cout << std::endl;
-		    }
-		    std::cout << "End of Depth\n\n";		
-	    }
-    }
-
     int edgePos = 0;
 
     // generate originalEdgeIDS for future use
@@ -319,6 +295,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     		if(edgeIDState[k] == -1){
     			edgeIDState[k] = addEdgeByEdgeID(originalEdgeIDS[k]);
     			chromosomes[i].edgeIDS[chromosome_edgeID_pos++] = originalEdgeIDS[k];
+    			set_bit(i, k, 0);
     		}
 	    }
 	    // assign length to the chromosome
@@ -327,8 +304,30 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 	    if(GA_DEBUG)
 	    	std::cout << "\n";
 
-	    
+    }
 
+    if(GA_DEBUG) {
+    	std::cout << "BitArr Dimensions : " << bit_arr_pop_size << " : " << bit_arr_num_edges << std::endl;
+    	std::cout << "SIZE OF BIT ARRAY : " << sizeof(chromosomesBitArr) << std::endl;
+    	std::cout << "--- BIT ARRAY ---\n\n";
+    	for (int i = 0; i < 2; ++i)
+	    {
+	    	std::cout << "Depth (" << (i+1) << ") :" << std::endl;
+	    	for (int j = 0; j < bit_arr_pop_size; ++j)
+		    {
+		    	for (int k = 0; k < bit_arr_num_edges; ++k)
+		    	{
+		    		int index = 0;
+		    		while(index < 8){
+		    			std::cout << (k*8)+index << " : (" << j << "," <<  k << "," << i << "," << index << ") -> ";
+		    			std::cout << (1 & (chromosomesBitArr[j][k][i] >> (index))) << "\n";
+		    			index++;
+		    		}
+		    	}
+		    	std::cout << std::endl;
+		    }
+		    std::cout << "End of Depth\n\n";		
+	    }
     }
 
     if(GA_DEBUG) {
@@ -372,6 +371,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 }
 
 GA::~GA() {
+	delete [] chromosomesBitArr;
 	delete [] chromosomes;
 	delete [] originalEdgeIDS;
 	delete [] simpleGAChromosome;
@@ -468,95 +468,193 @@ void GA::generate_GA() {
 	
 	// double avg_fitness = averageFitnessForPopulation();
 	// std::cout << "Average Fitness : " << avg_fitness << std::endl;
+	int populationIndex = 0;
 
-	// tournament selection
+	while( populationIndex != populationSize ) {
 
-	int parentsForCrossover[2]; // 2 parents for crossover
-	int nextGenChromosomeState[populationSize];		
+		// tournament selection
 
-	for (int pi = 0; pi < 2; ++pi) {
-		
-		for (int i = 0; i < populationSize; ++i)
-			nextGenChromosomeState[i] = 0; // no chromosome is selected 0, if selected 1
+		int parentsForCrossover[2]; // 2 parents for crossover
+		int nextGenChromosomeState[populationSize];		
 
-		int start_index = 999999999;
-		for (int i = 0; i < GA_TOURNAMENT_SIZE; ++i) {
-			// srand (time(NULL));
-			int index = generateRandomNumber(0, populationSize);
-			while(nextGenChromosomeState[index]) {
-				index = generateRandomNumber(0, populationSize);
+		for (int pi = 0; pi < 2; ++pi) {
+			
+			for (int i = 0; i < populationSize; ++i)
+				nextGenChromosomeState[i] = 0; // no chromosome is selected 0, if selected 1
+
+			int start_index = 999999999;
+			for (int i = 0; i < GA_TOURNAMENT_SIZE; ++i) {
+				// srand (time(NULL));
+				int index = generateRandomNumber(0, populationSize);
+				while(nextGenChromosomeState[index]) {
+					index = generateRandomNumber(0, populationSize);
+				}
+				if(start_index>index)
+					start_index = index;
+				nextGenChromosomeState[index] = 1;
 			}
-			if(start_index>index)
-				start_index = index;
-			nextGenChromosomeState[index] = 1;
+
+			if(GA_DEBUG){
+				for (int i = 0; i < populationSize; ++i) {
+					std::cout << nextGenChromosomeState[i] << "\t";
+					if ((i+1)%5==0 && i>0)
+					{
+						std::cout << std::endl;
+					}
+				}
+				std::cout << std::endl;
+				std::cout << "Min Index : " << start_index << std::endl;
+			}
+
+			// start_index helps to jump to the first minimum to skip few iterations
+			double max_fitness = chromosomes[start_index].calculateFitness();
+			int max_fitness_chr = start_index;
+
+			for (int i = start_index+1; i < populationSize; ++i) {
+				if(nextGenChromosomeState[i]){
+					double chr_fitness = chromosomes[i].calculateFitness();
+					if(max_fitness < chr_fitness){
+						max_fitness = chr_fitness;
+						max_fitness_chr = i;
+					}
+					
+				}
+			}
+			parentsForCrossover[pi] = max_fitness_chr;
+			
 		}
 
-		if(GA_DEBUG){
-			for (int i = 0; i < populationSize; ++i) {
-				std::cout << nextGenChromosomeState[i] << "\t";
-				if ((i+1)%5==0 && i>0)
+		for (int i = 0; i < 2; ++i)
+		{
+			std::cout << "parentsForCrossover #" << i << " :-> " << parentsForCrossover[i] << std::endl;
+			std::cout << "parentsForCrossoverLen #" << i << " :-> " << chromosomes[parentsForCrossover[i]].length << std::endl;
+		}
+
+
+		int minLength = (chromosomes[parentsForCrossover[0]].length < chromosomes[parentsForCrossover[1]].length) ? chromosomes[parentsForCrossover[0]].length : chromosomes[parentsForCrossover[1]].length;
+		
+		int maxLenForStateArr = 0;
+
+		int candidateCrossoverChromosomeIndex[2][networkNumEdges];
+		for (int i = 0; i < 2; ++i) {
+			for (int j = 0; j < networkNumEdges; ++j)
+			{
+				candidateCrossoverChromosomeIndex[i][j] = generateRandomNumber(0, chromosomes[parentsForCrossover[i]].length);
+				if(maxLenForStateArr <= chromosomes[ parentsForCrossover[i] ].edgeIDS[ candidateCrossoverChromosomeIndex[i][j] ] )
+					maxLenForStateArr = chromosomes[ parentsForCrossover[i] ].edgeIDS[ candidateCrossoverChromosomeIndex[i][j] ];
+			} 
+		}
+
+		// CROSSOVER
+
+		int currentGeneration = 0;
+		int randomBitVector[networkNumEdges];
+		int populationCounter = 0;
+		int next = 1, prev = 0;
+		
+
+		if(GA_DEBUG_L2) {
+			for (int i = 0; i < 2; ++i)
+			{
+				std::cout << "PARENTS # " << parentsForCrossover[i] << std::endl;
+				for (int j = 0; j < networkNumEdges; ++j)
 				{
-					std::cout << std::endl;
+					std::cout << getBitAt( parentsForCrossover[i], j, 0 ) << std::endl;
 				}
-			}
-			std::cout << std::endl;
-			std::cout << "Min Index : " << start_index << std::endl;
-		}
-
-		// start_index helps to jump to the first minimum to skip few iterations
-		double max_fitness = chromosomes[start_index].calculateFitness();
-		int max_fitness_chr = start_index;
-
-		for (int i = start_index+1; i < populationSize; ++i) {
-			if(nextGenChromosomeState[i]){
-				double chr_fitness = chromosomes[i].calculateFitness();
-				if(max_fitness < chr_fitness){
-					max_fitness = chr_fitness;
-					max_fitness_chr = i;
-				}
-				
+				std::cout << "---" << std::endl;
 			}
 		}
-		parentsForCrossover[pi] = max_fitness_chr;
-		
+
+		int minCrossoverSize = (int) GA_CROSSOVER_SIZE_RATE * networkNumEdges;
+		int numCrossoverSites = generateRandomNumber(minCrossoverSize, networkNumEdges - 1);
+
+		for (int i = 0; i < networkNumEdges; ++i)
+			randomBitVector[i] = 0;
+
+		while(numCrossoverSites) {
+			int crossoverSite = generateRandomNumber(0, networkNumEdges);
+			while(randomBitVector[crossoverSite])
+				crossoverSite = generateRandomNumber(0, networkNumEdges);
+			randomBitVector[crossoverSite] = 1;
+			numCrossoverSites--;
+		}
+
+		for (int i = 0; i < networkNumEdges; ++i)
+		{
+			// perform crossover at sites
+			if(randomBitVector[i]) {
+				// swap values at i
+				if( getBitAt( parentsForCrossover[1], i, prev ) )
+					set_bit ( populationIndex, i, next );
+				else
+					unset_bit( populationIndex, i, next );
+
+				if( getBitAt( parentsForCrossover[0], i, prev ) )
+					set_bit ( populationIndex+1, i, next );
+				else
+					unset_bit( populationIndex+1, i, next );
+
+			}else {
+				if( getBitAt( parentsForCrossover[0], i, prev ) )
+					set_bit ( populationIndex, i, next );
+				else
+					unset_bit( populationIndex, i, next );
+
+				if( getBitAt( parentsForCrossover[1], i, prev ) )
+					set_bit ( populationIndex+1, i, next );
+				else
+					unset_bit( populationIndex+1, i, next );
+			}
+		}
+
+		if(GA_DEBUG) {
+			std::cout << "Printing bits : " << std::endl;
+	    	for (int i = 0; i < 2; ++i)
+	    	{
+	    		for (int j = 0; j < networkNumEdges; ++j)
+				{
+					std::cout << getBitAt( i, j, next ) << "\t";
+				}
+				std::cout << std::endl;	
+	    	}
+	    }
+
+	    populationIndex += 2;
 	}
 
-	for (int i = 0; i < 2; ++i)
-	{
-		std::cout << "parentsForCrossover #" << i << " :-> " << parentsForCrossover[i] << std::endl;
-		std::cout << "parentsForCrossoverLen #" << i << " :-> " << chromosomes[parentsForCrossover[i]].length << std::endl;
-	}
 
+	// END OF CROSSOVER
 
-	int minLength = (chromosomes[parentsForCrossover[0]].length < chromosomes[parentsForCrossover[1]].length) ? chromosomes[parentsForCrossover[0]].length : chromosomes[parentsForCrossover[1]].length;
-	// crossover
+	// MUTATION
 
-	int minLenForCrossover = (int)round(GA_CROSSOVER_RATE * minLength);
 	
-	int maxLenForStateArr = 0;
 
-	int candidateCrossoverChromosomeIndex[2][minLenForCrossover];
-	for (int i = 0; i < 2; ++i) {
-		for (int j = 0; j < minLenForCrossover; ++j)
-		 {
-		 	candidateCrossoverChromosomeIndex[i][j] = generateRandomNumber(0, chromosomes[parentsForCrossover[i]].length);
-		 	if(maxLenForStateArr <= chromosomes[ parentsForCrossover[i] ].edgeIDS[ candidateCrossoverChromosomeIndex[i][j] ] )
-		 		maxLenForStateArr = chromosomes[ parentsForCrossover[i] ].edgeIDS[ candidateCrossoverChromosomeIndex[i][j] ];
-		 } 
-	}
 
-	for (int i = 0; i < 2; ++i) {
-		for (int j = 0; j < minLenForCrossover; ++j)
-		 {
-		 	std::cout << chromosomes[ parentsForCrossover[i] ].edgeIDS[ candidateCrossoverChromosomeIndex[i][j]] << "\t"; 
-		 }
-		 std::cout << "\n"; 
-	}
 
-	// CROSSOVER
-
-	
-
-	
+	if(GA_DEBUG) {
+		int bit_arr_pop_size = (populationSize);
+    	int bit_arr_num_edges = ARRAY_SIZE(networkNumEdges);
+    	std::cout << "BitArr Dimensions : " << bit_arr_pop_size << " : " << bit_arr_num_edges << std::endl;
+    	std::cout << "SIZE OF BIT ARRAY : " << sizeof(chromosomesBitArr) << std::endl;
+    	std::cout << "--- BIT ARRAY ---\n\n";
+    	for (int i = 0; i < 2; ++i)
+	    {
+	    	std::cout << "Depth (" << (i+1) << ") :" << std::endl;
+	    	for (int j = 0; j < bit_arr_pop_size; ++j)
+		    {
+		    	for (int k = 0; k < bit_arr_num_edges; ++k)
+		    	{
+		    		int index = 0;
+		    		while(index < 8){
+		    			std::cout << (k*8)+index << " : (" << j << "," <<  k << "," << i << "," << index << ") -> ";
+		    			std::cout << (1 & (chromosomesBitArr[j][k][i] >> (index))) << "\n";
+		    			index++;
+		    		}
+		    	}
+		    	std::cout << std::endl;
+		    }
+		    std::cout << "End of Depth\n\n";		
+	    }
+    }
 
 }

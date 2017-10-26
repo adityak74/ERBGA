@@ -21,8 +21,12 @@ const int GA_QUIET = 0;  // set to one to eliminate output to screen
 const int GA_VERBOSE = 0;  // set to one to display maximum output to screen
 const int GA_DEBUG = 1; // set to one to display debugging for function
 const int GA_DEBUG_FILE = 0; // prints debug to file
+const int GA_DEBUG_L2 = 0; // level 2 debugging
+
+
 const int GA_TOURNAMENT_SIZE = 2; // tournament size for the seleciton operator
 const int GA_NUM_COMMUNITY = 3; // original community size to start with
+const int GA_CROSSOVER_SIZE_RATE = 0.6; // percentage of chromosome used for crossover
 const double GA_CROSSOVER_RATE = 0.8; // max chr size used for crossover
 const double GA_REPRODUCTION_RATE = 0.1; // rate of reproduction producing the offsprings
 const double GA_MUTATION_RATE = 0.2; // rate of mutation producing the offspring
