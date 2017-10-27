@@ -14,6 +14,9 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <iostream>
+#include <unistd.h>
+#include <fstream>
 #include "timer.h"
 #include "network.h"
 
@@ -30,6 +33,8 @@ const int GA_CROSSOVER_SIZE_RATE = 0.6; // percentage of chromosome used for cro
 const double GA_CROSSOVER_RATE = 0.8; // max chr size used for crossover
 const double GA_REPRODUCTION_RATE = 0.1; // rate of reproduction producing the offsprings
 const double GA_MUTATION_RATE = 0.2; // rate of mutation producing the offspring
+
+const std::string GA_LOG_FILE = "ga_run.log"; // log filename
 
 // macro for calculating the size from actual array to bit array size
 #define ARRAY_SIZE(x) (x/8+(!!(x%8)))
@@ -60,15 +65,16 @@ class GA {
 		int removeEdgeByPosition(int, int); // removes edge by (v1,v2) position
 		int getEdgeIDIndex(int); // get index of EdgeID from originalEdgeIDS
 		void getFitness(); // Calculate the fitness of the chromosome "i"
-		void calculateFitness(int = -1); // calculates the fitness of the chromosome
+		double calculateFitness(int = -1); // calculates the fitness of the chromosome
 		double averageFitnessForPopulation(); // calculates the average fitness of population
-		char get_bit(char *array, int index); // get the bit value for chromosomeBitArr
 		void toggle_bit(char *array, int index); // toggle the bit value for chromosomeBitArr
-		int getBitAt(int chrIndex, int pos, int popState); // gets the bit value at position
+		int get_bit(int chrIndex, int pos, int popState); // gets the bit value at position
 		void toggle_bit(int chrIndex, int pos, int popState); // toggles the bit value
 		void initializeRates(); // initalize GA params , normalize if needed
 		void set_bit(int chrIndex, int pos, int popState); // set bit
 		void unset_bit(int chrIndex, int pos, int popState); // unsets bit
+		void mutate(int, int); // does mutation on the chromosome index
+		void chromosome_g2p(int); // maps the bitArr to chromosomes
 	private:
 		Network *gaSparseNetwork; // generated network reference
 		Chromosome *chromosomes; // array of individuals/chromosomes
@@ -84,6 +90,8 @@ class GA {
 		double crossover_rate; // crossover produced offsprings
 		double mutation_rate; // mutation produced offsprings
 		double reproduction_rate; // reproduction produced offsprings
+		int next = 1;
+		int prev = 0;
 };
 
 #endif

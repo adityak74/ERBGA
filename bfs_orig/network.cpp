@@ -406,8 +406,11 @@ int Network::removeEdge(int v1, int v2) {
   if ((start < 0) || (end < 0))
     fatal("Attempt to add edge to negative numbered node");
 
+  if(!vertices[v1].haveEdge(v2)) {
+    return 0; // no such edge in the list
+  }
+  
   int ret = vertices[start].removeEdge(end);
-
   if(RETAINSYMMETRIC) {
     if(vertices[end].haveEdge(start)){
       // std::cout << "in RETAINSYMMETRIC " << std::endl;
