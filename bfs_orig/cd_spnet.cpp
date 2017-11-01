@@ -465,7 +465,7 @@ void swap(int &a, int &b) {
 
 void GA::printPopData(int depth) {
 	std :: fstream file; // declare an object of fstream class
-    file.open(GA_POP_FILE, std :: ios :: out | std :: ios :: app); // open file in append mode
+    file.open(GA_POP_FILE.c_str(), std :: ios :: out | std :: ios :: app); // open file in append mode
    	
    	for (int i = 0; i < populationSize; ++i)
    	{
@@ -484,7 +484,7 @@ void GA::printPopData(int depth) {
 
 void GA::printChromosome(int chr_index, int depth) {
 	std :: fstream file; // declare an object of fstream class
-    file.open(GA_BST_FILE, std :: ios :: out | std :: ios :: app); // open file in append mode
+    file.open(GA_BST_FILE.c_str(), std :: ios :: out | std :: ios :: app); // open file in append mode
    	file << "BEST CHR INDEX : " << chr_index << std::endl;
 	for (int j = 0; j < networkNumEdges; ++j)
 	{
@@ -513,9 +513,9 @@ void GA::generate_GA() {
     	perror( "Error deleting file" );
 
 	std :: fstream file, pop_file; // declare an object of fstream class
-    file.open(GA_LOG_FILE, std :: ios :: out | std :: ios :: app); // open file in append mode
+    file.open(GA_LOG_FILE.c_str(), std :: ios :: out | std :: ios :: app); // open file in append mode
 
-    pop_file.open(GA_POP_FILE, std :: ios :: out | std :: ios :: app); // open file in append mode
+    pop_file.open(GA_POP_FILE.c_str(), std :: ios :: out | std :: ios :: app); // open file in append mode
     pop_file << "originalEdgeIDS : " << std::endl;
     for (int i = 0; i < networkNumEdges; ++i)
     {
