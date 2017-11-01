@@ -661,13 +661,13 @@ void GA::generate_GA() {
 			for (int i = 0; i < networkNumEdges; ++i)
 				randomBitVector[i] = 0;
 
-			while(numCrossoverSites) {
-				int crossoverSite = generateRandomNumber(0, networkNumEdges);
-				while(randomBitVector[crossoverSite])
-					crossoverSite = generateRandomNumber(0, networkNumEdges);
-				randomBitVector[crossoverSite] = 1;
-				numCrossoverSites--;
-			}
+			// while(numCrossoverSites) {
+			// 	int crossoverSite = generateRandomNumber(0, networkNumEdges);
+			// 	while(randomBitVector[crossoverSite])
+			// 		crossoverSite = generateRandomNumber(0, networkNumEdges);
+			// 	randomBitVector[crossoverSite] = 1;
+			// 	numCrossoverSites--;
+			// }
 
 			for (int i = 0; i < networkNumEdges; ++i)
 			{
