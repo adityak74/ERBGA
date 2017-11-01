@@ -23,7 +23,7 @@
 
 const int RETAINSYMMETRIC = 0;// 1 to retain both (i,j) and (j,i) (use for BFS)
 const int DESCRIPTIVE_OUTPUT = 0; // 0 for just cluster membership numbers
-const int PRINTCOMPSIZES = 1; // 1 to print summary of component sizes out to "saveCompSizes.txt"
+const int PRINTCOMPSIZES = 0; // 1 to print summary of component sizes out to "saveCompSizes.txt"
 const int BFS_GML = 0; // 1 to output BFS components to .gml files
 const int BFS_WG2 = 0; // 1 to output BFS components to .wg2 files
 const double MIN_COMPLETE = 1.1; // print comp. only if less than this value (0.5)

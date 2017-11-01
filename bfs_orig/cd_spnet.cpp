@@ -43,38 +43,28 @@ double Chromosome::getFitness() {
 
 double Chromosome::calculateFitness() {
 
-	for (int i = 0; i < networkNumEdgesChr; ++i)
-		if(edgeIDS[i] != -1){
-			gaSparseNetworkChr->removeEdge(edgeIDS[i] / networkNumVerticesChr, edgeIDS[i] % networkNumVerticesChr);
-		}
-
 	double calc_fitness = gaSparseNetworkChr->q_calc("ga.out");
-
-	for (int i = 0; i < networkNumEdgesChr; ++i)
-		if(edgeIDS[i] != -1){
-			gaSparseNetworkChr->addEdge(edgeIDS[i] / networkNumVerticesChr, edgeIDS[i] % networkNumVerticesChr, 1.0);
-		}
-
 	fitness = calc_fitness;
-	return fitness;
+	return calc_fitness;
 }
 
 // if chr_index = -1 then all else calcu fitness of chromosome[chr_index]
-double GA::calculateFitness(int chr_index) {
-	double fitness = 0;
-	if(chr_index == -1) {
+double GA::calculateFitness(int chr_index, int depth) {
+	double fitness = 0.0;
+	if(chr_index < 0) {
+		fatal("Invalid chromosomeindex");
 	}
 	else {
-		chromosome_g2p(chr_index);
+		chromosome_g2p(chr_index, depth);
 		fitness = chromosomes[chr_index].calculateFitness();
 	}
 	return fitness;
 }
 
-void GA::chromosome_g2p(int chromosomeIndex) {
+void GA::chromosome_g2p(int chromosomeIndex, int depth) {
 	for (int i = 0; i < networkNumEdges; ++i)
 	{
-		if( get_bit ( chromosomeIndex, i, next) )
+		if( get_bit ( chromosomeIndex, i, depth) )
 			removeEdgeByID( originalEdgeIDS[i] );
 		else
 			addEdgeByEdgeID( originalEdgeIDS[i] );
@@ -283,7 +273,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     		std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-" << std::endl;
 	    	std::cout << " Edge State ID Array after removing edges " << std::endl;
 	    	std::cout << " Total Num Edges : " << gaSparseNetwork->getNumEdges() << std::endl;
-	    	for (int k = 0; k < networkNumEdges; ++k){
+	    	for (int k = 0; k < networkNumEdges; ++k) {
 	    		std::cout << edgeIDState[k] << "\t";
 		    }
 	    	std::cout << "\n-=-=-=-=-=-=-=-=-=-=-=-=-=-" << std::endl;
@@ -467,12 +457,72 @@ void GA::mutate(int chromosomeIndex, int popState) {
 	}
 }
 
+void swap(int &a, int &b) {
+	int temp = a;
+	a = b;
+	b = temp;
+}
+
+void GA::printPopData(int depth) {
+	std :: fstream file; // declare an object of fstream class
+    file.open(GA_POP_FILE, std :: ios :: out | std :: ios :: app); // open file in append mode
+   	
+   	for (int i = 0; i < populationSize; ++i)
+   	{
+   		for (int j = 0; j < networkNumEdges; ++j)
+   		{
+   			file << get_bit(i, j, depth) << "\t";
+   		}
+   		file << "(" << calculateFitness(i, depth) << ")";
+   		file << std::endl;
+   	}
+   	file << std::endl;
+   	file << "----------------------";
+   	file << std::endl;
+   	file.close();
+}
+
+void GA::printChromosome(int chr_index, int depth) {
+	std :: fstream file; // declare an object of fstream class
+    file.open(GA_BST_FILE, std :: ios :: out | std :: ios :: app); // open file in append mode
+   	file << "BEST CHR INDEX : " << chr_index << std::endl;
+	for (int j = 0; j < networkNumEdges; ++j)
+	{
+		file << get_bit(chr_index, j, depth) << "\t";
+	}
+	file << "(" << calculateFitness(chr_index, depth) << ")";
+	file << std::endl;
+   	
+   	file << std::endl;
+   	file << "----------------------";
+   	file << std::endl;
+   	file.close();
+}
+
 // max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
 // num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
 
-	std :: fstream file; // declare an object of fstream class
+	if( remove( GA_LOG_FILE.c_str() ) != 0 )
+    	perror( "Error deleting file" );
+
+    if( remove( GA_POP_FILE.c_str() ) != 0 )
+    	perror( "Error deleting file" );
+
+    if( remove( GA_BST_FILE.c_str() ) != 0 )
+    	perror( "Error deleting file" );
+
+	std :: fstream file, pop_file; // declare an object of fstream class
     file.open(GA_LOG_FILE, std :: ios :: out | std :: ios :: app); // open file in append mode
+
+    pop_file.open(GA_POP_FILE, std :: ios :: out | std :: ios :: app); // open file in append mode
+    pop_file << "originalEdgeIDS : " << std::endl;
+    for (int i = 0; i < networkNumEdges; ++i)
+    {
+    	pop_file << originalEdgeIDS[i] << "\t";
+    }
+    pop_file << std::endl << std::endl;
+    pop_file.close();
 
 	int currentGeneration = 0;
 	int minCrossoverSize = (int) GA_CROSSOVER_SIZE_RATE * networkNumEdges;
@@ -481,13 +531,17 @@ void GA::generate_GA() {
 	if(GA_DEBUG) {
 		double total_fitness = 0.0;
 		for (int i = 0; i < populationSize; ++i) {
-			chromosomes[i].calculateFitness();
+			calculateFitness(i, prev);
 			total_fitness += chromosomes[i].getFitness();
 		}
 		file << "averageFitnessForGen #0 : " << total_fitness/populationSize << std::endl;
 	}
 
-	while(currentGeneration < numGenerations) {
+	printPopData(0);
+	double threshold_fitness = 0.95;
+	double max_fitness_generation = 0.0;
+
+	while(currentGeneration < numGenerations && max_fitness_generation <= threshold_fitness) {
 
 		int populationIndex = 0;
 
@@ -496,79 +550,96 @@ void GA::generate_GA() {
 			// tournament selection
 
 			int parentsForCrossover[2]; // 2 parents for crossover
-			int nextGenChromosomeState[populationSize];		
-
-			for (int pi = 0; pi < 2; ++pi) {
+			int nextGenChromosomeState[populationSize];
 				
-				for (int i = 0; i < populationSize; ++i)
-					nextGenChromosomeState[i] = 0; // no chromosome is selected 0, if selected 1
+			for (int i = 0; i < populationSize; ++i)
+				nextGenChromosomeState[i] = 0; // no chromosome is selected 0, if selected 1
 
-				int start_index = 999999999;
-				for (int i = 0; i < GA_TOURNAMENT_SIZE; ++i) {
-					// srand (time(NULL));
-					int index = generateRandomNumber(0, populationSize);
-					while(nextGenChromosomeState[index]) {
-						index = generateRandomNumber(0, populationSize);
-					}
-					if(start_index>index)
-						start_index = index;
-					nextGenChromosomeState[index] = 1;
+			int start_index = 999999999;
+			for (int i = 0; i < GA_TOURNAMENT_SIZE; ++i) {
+				// srand (time(NULL));
+				int index = generateRandomNumber(0, populationSize);
+				while(nextGenChromosomeState[index]) {
+					index = generateRandomNumber(0, populationSize);
 				}
-
-				if(GA_DEBUG){
-					for (int i = 0; i < populationSize; ++i) {
-						std::cout << nextGenChromosomeState[i] << "\t";
-						if ((i+1)%5==0 && i>0)
-						{
-							std::cout << std::endl;
-						}
-					}
-					std::cout << std::endl;
-					std::cout << "Min Index : " << start_index << std::endl;
-				}
-
-				// start_index helps to jump to the first minimum to skip few iterations
-				double max_fitness = chromosomes[start_index].calculateFitness();
-				int max_fitness_chr = start_index;
-
-				for (int i = start_index+1; i < populationSize; ++i) {
-					if(nextGenChromosomeState[i]){
-						double chr_fitness = chromosomes[i].calculateFitness();
-						if(max_fitness < chr_fitness){
-							max_fitness = chr_fitness;
-							max_fitness_chr = i;
-						}
-						
-					}
-				}
-				parentsForCrossover[pi] = max_fitness_chr;
-				
+				if(start_index>index)
+					start_index = index;
+				nextGenChromosomeState[index] = 1;
 			}
 
-			if( GA_DEBUG_L2 )
+			if(GA_DEBUG) {
+				for (int i = 0; i < populationSize; ++i) {
+					std::cout << nextGenChromosomeState[i] << "\t";
+					if ((i+1)%5==0 && i>0)
+					{
+						std::cout << std::endl;
+					}
+				}
+				std::cout << std::endl;
+				std::cout << "Min Index : " << start_index << std::endl;
+
+				file << "TOURNAMENT SELECTION (nextGenChromosomeState) : " << std::endl;
+				for (int i = 0; i < populationSize; ++i)
+				{
+					file << nextGenChromosomeState[i] << "\t";
+				}
+				file << std::endl;
+			}
+
+			// start_index helps to jump to the first minimum to skip few iterations
+			double max_fitness = 0.00 - GA_TOL;
+			int parent_chr_1 = -1;
+			int parent_chr_2 = -1;
+
+			int next_start_index = start_index + 1;
+			while( nextGenChromosomeState[next_start_index] != 1 )
+				next_start_index += 1;
+
+			double f_c1 = calculateFitness(start_index, prev);
+			double f_c2 = calculateFitness(next_start_index, prev);
+
+			parent_chr_1 = start_index;
+			parent_chr_2 = next_start_index;
+			// make the first chr to be the highest
+			if(f_c1 < f_c2) {
+				swap(parent_chr_1, parent_chr_2);
+				double f_temp = f_c1;
+				f_c1 = f_c2;
+				f_c2 = f_temp;
+			}
+
+			int iter = (parent_chr_1 < parent_chr_2) ? parent_chr_2 : parent_chr_1;
+
+			for (int i = iter+1; i < populationSize; i++) {
+				if(nextGenChromosomeState[i]) {
+					double chr_fitness = calculateFitness(i, prev);
+					if(chr_fitness > f_c1) {
+						parent_chr_2 = parent_chr_1;
+						f_c2 = f_c1;
+						parent_chr_1 = i;
+						f_c1 = chr_fitness;
+					} else if ( chr_fitness > f_c2 ) {
+						parent_chr_2 = i;
+						f_c2 = chr_fitness;
+					}
+				}
+			}
+
+			parentsForCrossover[0] = parent_chr_1;
+			parentsForCrossover[1] = parent_chr_2;
+			
+
+			if( GA_DEBUG )
 				for (int i = 0; i < 2; ++i)
 				{
 					std::cout << "parentsForCrossover #" << i << " :-> " << parentsForCrossover[i] << std::endl;
-					std::cout << "parentsForCrossoverLen #" << i << " :-> " << chromosomes[parentsForCrossover[i]].length << std::endl;
+					std::cout << "parentsForCrossoverFitness #" << i << " :-> " << chromosomes[parentsForCrossover[i]].getFitness() << std::endl;
+
+					file << "parentsForCrossover #" << i << " :-> " << parentsForCrossover[i] << std::endl;
+					file << "parentsForCrossoverFitness #" << i << " :-> " << chromosomes[parentsForCrossover[i]].getFitness() << std::endl;
 				}
 
-
-			int minLength = (chromosomes[parentsForCrossover[0]].length < chromosomes[parentsForCrossover[1]].length) ? chromosomes[parentsForCrossover[0]].length : chromosomes[parentsForCrossover[1]].length;
-			
-			int maxLenForStateArr = 0;
-
-			int candidateCrossoverChromosomeIndex[2][networkNumEdges];
-			for (int i = 0; i < 2; ++i) {
-				for (int j = 0; j < networkNumEdges; ++j)
-				{
-					candidateCrossoverChromosomeIndex[i][j] = generateRandomNumber(0, chromosomes[parentsForCrossover[i]].length);
-					if(maxLenForStateArr <= chromosomes[ parentsForCrossover[i] ].edgeIDS[ candidateCrossoverChromosomeIndex[i][j] ] )
-						maxLenForStateArr = chromosomes[ parentsForCrossover[i] ].edgeIDS[ candidateCrossoverChromosomeIndex[i][j] ];
-				} 
-			}
-
 			// CROSSOVER
-
 			
 			int randomBitVector[networkNumEdges];
 			int populationCounter = 0;
@@ -639,36 +710,55 @@ void GA::generate_GA() {
 		    }
 
 		    populationIndex += 2;
+
+		    // MUTATE SOME INDIVIDUAL
+		    int mutated_chr = 0;
+			while(mutated_chr < mutation_pop_size) {
+				int mutation_chr = generateRandomNumber(0, populationIndex);
+				mutate(mutation_chr, next);
+				mutated_chr++;
+				if(GA_DEBUG_L2)
+					std::cout << "MUTATION CHR#: " << mutation_chr << std::endl;
+
+			}
+		    
 		}
 
-		// MUTATION
-	    int mutated_chr = 0;
-		while(mutated_chr < mutation_pop_size) {
-			int mutation_chr = generateRandomNumber(0, populationIndex);
-			mutate(mutation_chr, next);
-			mutated_chr++;
+		
+	    
 
-			if(GA_DEBUG_L2)
-				std::cout << "MUTATION CHR#: " << mutation_chr << std::endl;
+		
+		// END OF CROSSOVER AND MUTATION
+		// print population data after each run
+		printPopData(next);
+		
+		// STATS
+		if(GA_DEBUG) {
+			double max_fitness = 0.0;
+			int max_fitness_chr = -1, i = 0;
+			double total_fitness = 0.0;
+			for (i = 0; i < populationSize; ++i) {
+				calculateFitness(i, next);
+				total_fitness += chromosomes[i].getFitness();
+				if( max_fitness < chromosomes[i].getFitness() ) {
+					max_fitness_chr = i;
+					max_fitness = chromosomes[i].getFitness();
+				}
+			}
+			file << "averageFitnessForGen #" << currentGeneration << " : " << (double)total_fitness/populationSize << std::endl;
+			file << "Best Chr# " << max_fitness_chr << " -> Fitness : " << max_fitness << std::endl;
+			printChromosome(max_fitness_chr, next);
+			max_fitness_generation = max_fitness;
 
+			std :: fstream test_file; // declare an object of fstream class
+    		test_file.open("ga_bst_test.log", std :: ios :: out | std :: ios :: app); // open file in append mode
+    		test_file << max_fitness_generation << std::endl;
+    		test_file.close();
 		}
 
 		prev = !prev;
 		next = !next;
-		// END OF CROSSOVER AND MUTATION
 		currentGeneration++;
-		sleep(0.2);
-		// STATS
-		if(GA_DEBUG) {
-			double total_fitness = 0.0;
-			for (int i = 0; i < populationSize; ++i) {
-				// std::cout << "Fitness for CHR#" << (i+1) << " :-> " << chromosomes[i].getFitness() << std::endl;
-				calculateFitness(i);
-				// sleep(2);
-				total_fitness += chromosomes[i].getFitness();
-			}
-			file << "averageFitnessForGen #" << currentGeneration << " : " << (double)total_fitness/populationSize << std::endl;
-		}
 
 	}
 
