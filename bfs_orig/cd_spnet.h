@@ -27,8 +27,9 @@ const int GA_DEBUG = 1; // set to one to display debugging for function
 const int GA_DEBUG_FILE = 0; // prints debug to file
 const int GA_DEBUG_L2 = 0; // level 2 debugging
 
+const double GA_RANDOM_POP_PERCENT = 0.01;
 const int GA_TOURNAMENT_SIZE = 7; // tournament size for the seleciton operator
-const int GA_NUM_COMMUNITY = 3; // original community size to start with
+//const int GA_NUM_COMMUNITY = 20; // original community size to start with
 const int GA_CROSSOVER_SIZE_RATE = 0.6; // percentage of chromosome used for crossover
 const double GA_CROSSOVER_RATE = 0.8; // max chr size used for crossover
 const double GA_REPRODUCTION_RATE = 0.1; // rate of reproduction producing the offsprings
@@ -81,6 +82,7 @@ class GA {
 		void chromosome_g2p(int, int); // maps the bitArr to chromosomes
 		void printPopData(int = 0); // prints the current population
 		void printChromosome(int, int); // prints the chromosome to log file
+		void move_chromosome_to_next_gen(int, int); // moves chromosome to next generation
 	private:
 		Network *gaSparseNetwork; // generated network reference
 		Chromosome *chromosomes; // array of individuals/chromosomes
@@ -98,6 +100,12 @@ class GA {
 		double reproduction_rate; // reproduction produced offsprings
 		int next = 1;
 		int prev = 0;
+};
+
+typedef struct chromosome_map
+{
+	double fitness;
+	int chromosome_index;
 };
 
 #endif
