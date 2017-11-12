@@ -4,7 +4,9 @@
 						Outputs optimal Qs value.
 *
 *                       Aditya Karnam
-*                       August 2017
+*                       Aug-Nov 2017
+*						v 0.1 - Added Genetic operators
+*						v 0.2 - Added Elitism Operator
 *
 ****************************************************************************/
   
