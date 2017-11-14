@@ -2,8 +2,10 @@
 # Sharlee Climer
 # October, 2007
 
+# Aditya Karnam
+# October, 2017
 # Added cleaning *.out objects
-
+# Added cleaning *.log files
 
 CC	= g++
 CFLAGS 	= -g
@@ -24,3 +26,6 @@ cd_spnet.o:	cd_spnet.cpp cd_spnet.h network.h
 
 clean:
 		/bin/rm -f *.o $(TARGET) *.out
+
+cleanlog:
+		/bin/rm -f *.log
