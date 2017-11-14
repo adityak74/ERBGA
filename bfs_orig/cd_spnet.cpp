@@ -99,8 +99,8 @@ void GA::toggle_bit(char *array, int index) {
 }
 
 GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int numEdges) {
-
-	the_date[0] = '\0';
+	
+    the_date[0] = '\0';
 	now = time(NULL);
 	strftime(the_date, 256, "-%F-%T.log", gmtime(&now));
 
@@ -480,6 +480,7 @@ void GA::printPopData(int depth) {
 	std :: fstream file; // declare an object of fstream class
     char filename[256] = {0};
     strcpy(filename, GA_POP_FILE.c_str());
+    strcat(filename, dataset_name);
     strcat(filename, the_date);
     file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
    	
@@ -502,6 +503,7 @@ void GA::printChromosome(int chr_index, int depth) {
 	std :: fstream file; // declare an object of fstream class
 	char filename[256] = {0};
     strcpy(filename, GA_BST_FILE.c_str());
+    strcat(filename, dataset_name);
     strcat(filename, the_date);
     file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
    	file << "BEST CHR INDEX : " << chr_index << std::endl;
@@ -545,6 +547,7 @@ void GA::generate_GA() {
     
 	char filename[256] = {0};
     strcpy(filename, GA_LOG_FILE.c_str());
+    strcat(filename, dataset_name);
     strcat(filename, the_date);
     file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
 
@@ -559,6 +562,7 @@ void GA::generate_GA() {
     memset(filename, 0, sizeof(filename));
 
     strcpy(filename, GA_POP_FILE.c_str());
+    strcat(filename, dataset_name);
     strcat(filename, the_date);
     pop_file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
     pop_file << "originalEdgeIDS : " << std::endl;
@@ -600,7 +604,8 @@ void GA::generate_GA() {
 			std :: fstream test_file; // declare an object of fstream class
     		char filename[256] = {0};
     		strcpy(filename, GA_BST_AVG_FITNESS_RUN.c_str());
-    		strcat(filename, the_date);
+    		strcat(filename, dataset_name);
+            strcat(filename, the_date);
     		test_file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
     		test_file << max_fitness_generation << "\t" << (double)total_fitness/populationSize << std::endl;
     		test_file.close();
@@ -829,7 +834,8 @@ void GA::generate_GA() {
 			std :: fstream test_file; // declare an object of fstream class
     		char filename[256] = {0};
     		strcpy(filename, GA_BST_AVG_FITNESS_RUN.c_str());
-    		strcat(filename, the_date);
+    		strcat(filename, dataset_name);
+            strcat(filename, the_date);
     		test_file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
     		test_file << max_fitness_generation << "\t" << (double)total_fitness/populationSize << std::endl;
     		test_file.close();

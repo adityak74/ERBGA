@@ -39,10 +39,10 @@ const double GA_MUTATION_RATE = 0.2; // rate of mutation producing the offspring
 
 const double GA_TOL = 0.0000000001;
 
-const std::string GA_LOG_FILE = "ga_run"; // log filename
-const std::string GA_POP_FILE = "ga_pop"; // random filename
-const std::string GA_BST_FILE = "ga_bst"; // best solutions log
-const std::string GA_BST_AVG_FITNESS_RUN = "ga_bst_avg_run"; // reports best and mean fitness
+const std::string GA_LOG_FILE = "ga_run-"; // log filename
+const std::string GA_POP_FILE = "ga_pop-"; // random filename
+const std::string GA_BST_FILE = "ga_bst-"; // best solutions log
+const std::string GA_BST_AVG_FITNESS_RUN = "ga_bst_avg_run-"; // reports best and mean fitness
 
 // macro for calculating the size from actual array to bit array size
 #define ARRAY_SIZE(x) (x/8+(!!(x%8)))
