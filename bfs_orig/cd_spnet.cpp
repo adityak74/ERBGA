@@ -1,7 +1,7 @@
 /****************************************************************************
 *
 *	cd_spnet.cpp:	Code for finding communities using Genetic Programming. 
-						Outputs optimal Qs value.
+*						Outputs optimal Qs value.
 *
 *                       Aditya Karnam
 *                       Aug-Nov 2017
@@ -13,6 +13,9 @@
 
 #include "network.h"
 #include "cd_spnet.h"
+
+time_t now;
+char the_date[256];
 
 // binary search part
 // A recursive binary search function. It returns location of x in
@@ -96,6 +99,10 @@ void GA::toggle_bit(char *array, int index) {
 }
 
 GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int numEdges) {
+
+	the_date[0] = '\0';
+	now = time(NULL);
+	strftime(the_date, 256, "-%F-%T.log", gmtime(&now));
 
 	// set class data memebers
 	populationSize = popSize;
@@ -471,7 +478,10 @@ void swap(int &a, int &b) {
 
 void GA::printPopData(int depth) {
 	std :: fstream file; // declare an object of fstream class
-    file.open(GA_POP_FILE.c_str(), std :: ios :: out | std :: ios :: app); // open file in append mode
+    char filename[256] = {0};
+    strcpy(filename, GA_POP_FILE.c_str());
+    strcat(filename, the_date);
+    file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
    	
    	for (int i = 0; i < populationSize; ++i)
    	{
@@ -490,7 +500,10 @@ void GA::printPopData(int depth) {
 
 void GA::printChromosome(int chr_index, int depth) {
 	std :: fstream file; // declare an object of fstream class
-    file.open(GA_BST_FILE.c_str(), std :: ios :: out | std :: ios :: app); // open file in append mode
+	char filename[256] = {0};
+    strcpy(filename, GA_BST_FILE.c_str());
+    strcat(filename, the_date);
+    file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
    	file << "BEST CHR INDEX : " << chr_index << std::endl;
 	for (int j = 0; j < networkNumEdges; ++j)
 	{
@@ -519,23 +532,35 @@ void GA::move_chromosome_to_next_gen(int chromosomeIndex, int populationIndex) {
 	}
 }
 
+void GA::set_data_name(char *name) { 
+	dataset_name = (char *)malloc(sizeof(name));
+	strcpy(dataset_name, name);
+}
+
 // max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
 // num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
 
-	if( remove( GA_LOG_FILE.c_str() ) != 0 )
-    	perror( "Error deleting file" );
-
-    if( remove( GA_POP_FILE.c_str() ) != 0 )
-    	perror( "Error deleting file" );
-
-    if( remove( GA_BST_FILE.c_str() ) != 0 )
-    	perror( "Error deleting file" );
-
 	std :: fstream file, pop_file; // declare an object of fstream class
-    file.open(GA_LOG_FILE.c_str(), std :: ios :: out | std :: ios :: app); // open file in append mode
+    
+	char filename[256] = {0};
+    strcpy(filename, GA_LOG_FILE.c_str());
+    strcat(filename, the_date);
+    file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
 
-    pop_file.open(GA_POP_FILE.c_str(), std :: ios :: out | std :: ios :: app); // open file in append mode
+    file << "------ GA RUN PARAMS ------" << std::endl;
+    file << "DATASET NAME : " << dataset_name << std::endl;
+    file << "GENERATIONS : " << numGenerations << std::endl;
+    file << "POPULATION SIZE : " << populationSize << std::endl;
+    file << "GRAPH NUM VERTICES : " << networkNumVertices << std::endl;
+    file << "GRAPH NUM EDGES : " << networkNumEdges << std::endl;
+    file << "------ GA RUN PARAMS ------" << std::endl;
+
+    memset(filename, 0, sizeof(filename));
+
+    strcpy(filename, GA_POP_FILE.c_str());
+    strcat(filename, the_date);
+    pop_file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
     pop_file << "originalEdgeIDS : " << std::endl;
     for (int i = 0; i < networkNumEdges; ++i)
     {
@@ -573,7 +598,10 @@ void GA::generate_GA() {
 			max_fitness_generation = max_fitness;
 
 			std :: fstream test_file; // declare an object of fstream class
-    		test_file.open("ga_bst_test.log", std :: ios :: out | std :: ios :: app); // open file in append mode
+    		char filename[256] = {0};
+    		strcpy(filename, GA_BST_AVG_FITNESS_RUN.c_str());
+    		strcat(filename, the_date);
+    		test_file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
     		test_file << max_fitness_generation << "\t" << (double)total_fitness/populationSize << std::endl;
     		test_file.close();
 		}
@@ -799,7 +827,10 @@ void GA::generate_GA() {
 			max_fitness_generation = max_fitness;
 
 			std :: fstream test_file; // declare an object of fstream class
-    		test_file.open("ga_bst_test.log", std :: ios :: out | std :: ios :: app); // open file in append mode
+    		char filename[256] = {0};
+    		strcpy(filename, GA_BST_AVG_FITNESS_RUN.c_str());
+    		strcat(filename, the_date);
+    		test_file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
     		test_file << max_fitness_generation << "\t" << (double)total_fitness/populationSize << std::endl;
     		test_file.close();
 		}

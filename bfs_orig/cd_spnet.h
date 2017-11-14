@@ -18,6 +18,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <fstream>
+#include <cstdarg>
+#include <time.h>
 #include "timer.h"
 #include "network.h"
 
@@ -37,9 +39,10 @@ const double GA_MUTATION_RATE = 0.2; // rate of mutation producing the offspring
 
 const double GA_TOL = 0.0000000001;
 
-const std::string GA_LOG_FILE = "ga_run.log"; // log filename
-const std::string GA_POP_FILE = "ga_pop.log"; // random filename
-const std::string GA_BST_FILE = "ga_bst.log"; // best solutions log
+const std::string GA_LOG_FILE = "ga_run"; // log filename
+const std::string GA_POP_FILE = "ga_pop"; // random filename
+const std::string GA_BST_FILE = "ga_bst"; // best solutions log
+const std::string GA_BST_AVG_FITNESS_RUN = "ga_bst_avg_run"; // reports best and mean fitness
 
 // macro for calculating the size from actual array to bit array size
 #define ARRAY_SIZE(x) (x/8+(!!(x%8)))
@@ -83,6 +86,7 @@ class GA {
 		void printPopData(int = 0); // prints the current population
 		void printChromosome(int, int); // prints the chromosome to log file
 		void move_chromosome_to_next_gen(int, int); // moves chromosome to next generation
+		void set_data_name(char*); //set dataset name
 	private:
 		Network *gaSparseNetwork; // generated network reference
 		Chromosome *chromosomes; // array of individuals/chromosomes
@@ -100,6 +104,7 @@ class GA {
 		double reproduction_rate; // reproduction produced offsprings
 		int next = 1;
 		int prev = 0;
+		char *dataset_name;
 };
 
 typedef struct chromosome_map

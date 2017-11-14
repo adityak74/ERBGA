@@ -248,11 +248,11 @@ int main(int argc, char ** argv)
   fclose(output);
 
   // GA params
-  int popSize = 100; 
-  int generations = 250;
+  int popSize = 50; 
+  int generations = 100;
   // Genetic Part Starts here
   GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);
-
+  sparseGA.set_data_name(argv[1]);
   std::cout << "Genetic Testing : " << std::endl << "-------------------------------" << std::endl;
   sparseGA.generate_GA();
 
