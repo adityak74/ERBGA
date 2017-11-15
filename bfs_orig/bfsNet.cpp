@@ -256,5 +256,5 @@ int main(int argc, char ** argv)
   std::cout << "Genetic Testing : " << std::endl << "-------------------------------" << std::endl;
   sparseGA.generate_GA();
 
-  return 1;
+  return 0;
 }
