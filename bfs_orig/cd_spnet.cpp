@@ -456,6 +456,7 @@ void GA::initializeRates() {
 		std::cout << "NORMALIZED CROSSOVER RATE : " << crossover_rate << std::endl;
 		std::cout << "NORMALIZED MUTATION RATE : " << mutation_rate << std::endl;
 		std::cout << "NORMALIZED REPRODUCTION RATE : " << reproduction_rate << std::endl;
+        std::cout << "TOURNAMENT SIZE : " << GA_TOURNAMENT_SIZE << std::endl;
 		std::cout << "- - - - - - - - - - -" << std::endl;
 	}
 
@@ -557,6 +558,7 @@ void GA::generate_GA() {
     file << "POPULATION SIZE : " << populationSize << std::endl;
     file << "GRAPH NUM VERTICES : " << networkNumVertices << std::endl;
     file << "GRAPH NUM EDGES : " << networkNumEdges << std::endl;
+    file << "MINIMUM CROSSOVER SIZE PERCENT : " << GA_CROSSOVER_SIZE_RATE << std::endl;
     file << "------ GA RUN PARAMS ------" << std::endl;
 
     memset(filename, 0, sizeof(filename));
