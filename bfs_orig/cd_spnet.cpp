@@ -60,7 +60,7 @@ double GA::calculateFitness(int chr_index, int depth) {
 		fatal("Invalid chromosomeindex");
 	}
 	else {
-		chromosome_g2p(chr_index, depth);
+		chromosome_g2p(chr_index, depth); // convert the chromosome from genotype to phenotype
 		fitness = chromosomes[chr_index].calculateFitness();
 	}
 	return fitness;

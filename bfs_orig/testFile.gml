@@ -108,26 +108,6 @@ graph
   ]
   edge
   [
-    source 4
-    target 7
-  ]
-  edge
-  [
-    source 5
-    target 7
-  ]
-  edge
-  [
-    source 5
-    target 11
-  ]
-  edge
-  [
-    source 6
-    target 9
-  ]
-  edge
-  [
     source 7
     target 8
   ]

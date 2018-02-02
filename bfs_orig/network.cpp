@@ -238,6 +238,7 @@ Network::~Network()
   delete [] id;
   delete [] invID;
   delete [] vertices; 
+  delete [] globalClusterNum;
 }
 
 // Network::getNvertices() returns int
@@ -534,6 +535,9 @@ void Network::bfs(char *outputFile)
   int maxCompAll = 0; // max size of component overall
   int num[10000]; // hold number of components with each size
   int numNotCliques = 0; // hold number of components that aren't cliques
+
+  // globalCusterNum - accessed across Network class
+  
   
   for (int i = 0; i < 10000; i++)
 	num[i] = 0;
@@ -552,6 +556,8 @@ void Network::bfs(char *outputFile)
     fatal("memory not allocated"); // allocate memory
   if(((queue = new int[numVertices]) == NULL)||((clusterNum = new int[numVertices]) == NULL))
     fatal("memory not allocated"); // allocate memory
+  if(((globalClusterNum = new int[numVertices]) == NULL))
+    fatal("memory not allocated"); // allocate memory
  
   for (int i = 0; i < numVertices; i++) 
     visited[i] = 0; // initialize values to not visited
@@ -562,6 +568,7 @@ void Network::bfs(char *outputFile)
     if (degree == 0) {
       numSingle++;
       clusterNum[i] = -1; // designate node as singleton
+      globalClusterNum[i] = -1;
       continue;
     }
 
@@ -581,7 +588,7 @@ void Network::bfs(char *outputFile)
 		Edge *edgePtr; // pointer to move through linked list of edges
 		edgePtr = &(vertices[node].firstEdge); // point to first edge
 		
-		while (edgePtr->next != NULL) { // follow until find last edge
+		while (edgePtr->next != 0) { // follow until find last edge
 		  edgePtr = edgePtr->next; // pointer points at next edge in list
 		  int endpt = edgePtr->target; // find adjacent vertex 
 		  
@@ -605,8 +612,10 @@ void Network::bfs(char *outputFile)
 	  if (complete < 0 - TOL)
 		fatal("Negative density of component computed");
 	  
-      for (int j = 0; j < ptr; j++) // assign cluster number
-		clusterNum[component[j]] = k;
+      for (int j = 0; j < ptr; j++) { // assign cluster number
+		    clusterNum[component[j]] = k;
+        globalClusterNum[component[j]] = k;
+      }
       k++; // move to next cluster number
 	  
 	  if (compPtr == MAX_NUM_COMPS)
@@ -724,7 +733,7 @@ void Network::bfs(char *outputFile)
 	    if(BFS_WG2)
 	      fprintf(outputWG2,"%d %d, X %d [ ",j, j, vertices[node].degree);  	    
 
-	    while (edgePtr->next != NULL) { // follow until find last edge
+	    while (edgePtr->next != 0) { // follow until find last edge
 	      edgePtr = edgePtr->next; // pointer points at next edge in list
 	      if (nn[edgePtr->target] < 0) fatal("node numbering array error");
 	      
@@ -917,6 +926,7 @@ void Network::bfs(char *outputFile)
   delete [] component;
   delete [] queue;
   delete [] clusterNum;
+
 }
 
 // breadth-first search and Q_Value calculation, outputs connected components 

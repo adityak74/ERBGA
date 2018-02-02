@@ -91,6 +91,7 @@ class Network
   void assignID(int, int); // creates the ID and invID for easy lookup for (vertex, actualVertexID)
   int getID(int); // return the ID for easy lookup
   int addEdgeFromGML(int, int, double=1.0); // add edge from GML file return 1 if edge successfully added
+  int *globalClusterNum; // stores the cluster numbering after each BFS run
 
  private:
   int numVertices; // number of vertices
@@ -99,6 +100,7 @@ class Network
   Vertex *vertices; // vertices in network
   int *id; // hold the node IDs as given in input network
   int *invID; // inverted ID numbers for easy look-up
+  
 };
 
 #endif
