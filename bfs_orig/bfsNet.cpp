@@ -241,7 +241,6 @@ int main(int argc, char ** argv)
     }
   }
   
-
   if ((output = fopen(argv[2], "a")) == NULL)
     fatal("File could not be opened.\n");
   fprintf(output,"%f\n",t.timeVal());

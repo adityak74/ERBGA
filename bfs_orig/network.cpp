@@ -115,7 +115,7 @@ double Vertex::getWeight(int endpoint)
 }
 
 // Vertex::changeWeight()
-// change weight of edge
+// update weight of edge
 void Vertex::changeWeight(int endpoint, double newWeight)
 {
     Edge* edgePtr; // pointer to move through linked list of edges
@@ -361,7 +361,7 @@ int Network::addEdge(int v1, int v2, double weight)
     return 1;
 }
 
-// fix needed : segment falut 11
+
 int Vertex::removeEdge(int end)
 {
     Edge *edgePtr, *prevEdgePtr;
