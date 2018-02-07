@@ -247,8 +247,8 @@ int main(int argc, char ** argv)
   fprintf(output,"%f\n",t.timeVal());
   fclose(output);
 
-  sparseNet.bfs_orig(argv[2]);
-
+  sparseNet.bfs(argv[2]);
+  //sparseNet.printEdges("testOut.gml");
   // for(int i = 0; i < numNodes; i++) {
   //   std::cout << sparseNet.globalClusterNum[i] << "\t";
   // }

@@ -21,7 +21,7 @@
 #include <time.h>
 #include "bfsNet.h"
 
-const int RETAINSYMMETRIC = 0;// 1 to retain both (i,j) and (j,i) (use for BFS)
+const int RETAINSYMMETRIC = 1;// 1 to retain both (i,j) and (j,i) (always use 1 when using BFS)
 const int DESCRIPTIVE_OUTPUT = 0; // 0 for just cluster membership numbers
 const int PRINTCOMPSIZES = 0; // 1 to print summary of component sizes out to "saveCompSizes.txt"
 const int BFS_GML = 0; // 1 to output BFS components to .gml files
@@ -92,6 +92,7 @@ class Network
   int getID(int); // return the ID for easy lookup
   int addEdgeFromGML(int, int, double=1.0); // add edge from GML file return 1 if edge successfully added
   int *globalClusterNum; // stores the cluster numbering after each BFS run
+  //void bfs_orig(char *);
 
  private:
   int numVertices; // number of vertices
