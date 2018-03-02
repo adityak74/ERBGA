@@ -253,8 +253,8 @@ int main(int argc, char ** argv)
   // }
 
   // GA params
-  int popSize = 20; 
-  int generations = 50;
+  int popSize = 1000; 
+  int generations = 30;
   // Genetic Part Starts here
   GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);
   sparseGA.set_data_name(argv[1]);

@@ -68,20 +68,20 @@ double GA::calculateFitness(int chr_index, int depth) {
 
 void GA::chromosome_g2p(int chromosomeIndex, int depth) {
 
-	if(GA_DEBUG)
+	if(GA_DEBUG_L2)
 		std ::cout << "\n --- Removing Edges from chromosome : " << chromosomeIndex + 1 << std ::endl;
 
 	for (int i = 0; i < networkNumEdges; ++i)
 	{
 		if( get_bit ( chromosomeIndex, i, depth) ) {
 			removeEdgeByID( originalEdgeIDS[i] );
-			if (GA_DEBUG)
+			if (GA_DEBUG_L2)
 				std ::cout << "\n Removed Edge Index : " << i << " originalEdgeIDS : " << originalEdgeIDS[i] << std :: endl;
 		} else
 			addEdgeByEdgeID( originalEdgeIDS[i] );
 	}
 
-	if (GA_DEBUG)
+	if (GA_DEBUG_L2)
 		std ::cout << "\n --- Removed edges from : " << chromosomeIndex + 1 << std ::endl;
 }
 
