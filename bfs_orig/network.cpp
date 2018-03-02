@@ -361,7 +361,6 @@ int Network::addEdge(int v1, int v2, double weight)
     return 1;
 }
 
-
 int Vertex::removeEdge(int end)
 {
     Edge *edgePtr, *prevEdgePtr;
