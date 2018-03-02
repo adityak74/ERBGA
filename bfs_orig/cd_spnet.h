@@ -29,7 +29,7 @@ const int GA_DEBUG = 1; // set to one to display debugging for function
 const int GA_DEBUG_FILE = 0; // prints debug to file
 const int GA_DEBUG_L2 = 0; // level 2 debugging
 
-const double GA_RANDOM_POP_PERCENT = 0.01;
+const double GA_RANDOM_POP_PERCENT = 0.25; // set a minimum of 20 percent here
 const int GA_TOURNAMENT_SIZE = 7; // tournament size for the seleciton operator
 //const int GA_NUM_COMMUNITY = 20; // original community size to start with
 const int GA_CROSSOVER_SIZE_RATE = 0.6; // percentage of chromosome used for crossover
@@ -87,7 +87,9 @@ class GA {
 		void printChromosome(int, int); // prints the chromosome to log file
 		void move_chromosome_to_next_gen(int, int); // moves chromosome to next generation
 		void set_data_name(char*); //set dataset name
-	private:
+		void printChromosomes(int); // print the whole chromosome at depth
+
+	  private:
 		Network *gaSparseNetwork; // generated network reference
 		Chromosome *chromosomes; // array of individuals/chromosomes
 		int populationSize; // number of Individuals in the populations
@@ -107,6 +109,7 @@ class GA {
 		char *dataset_name;
 };
 
+// chromosome mapping dependency structure for std::sort
 typedef struct chromosome_map
 {
 	double fitness;

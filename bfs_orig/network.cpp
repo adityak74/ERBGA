@@ -417,7 +417,7 @@ int Network::removeEdge(int v1, int v2)
     int ret = vertices[start].removeEdge(end);
     if (RETAINSYMMETRIC) {
         if (vertices[end].haveEdge(start)) {
-            // std::cout << "in RETAINSYMMETRIC " << std::endl;
+            std::cout << "--- Removing Symmetric Edge : (" << end << "," << start << ")" << std::endl;
             vertices[end].removeEdge(start);
         }
     }

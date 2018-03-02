@@ -67,13 +67,22 @@ double GA::calculateFitness(int chr_index, int depth) {
 }
 
 void GA::chromosome_g2p(int chromosomeIndex, int depth) {
+
+	if(GA_DEBUG)
+		std ::cout << "\n --- Removing Edges from chromosome : " << chromosomeIndex + 1 << std ::endl;
+
 	for (int i = 0; i < networkNumEdges; ++i)
 	{
-		if( get_bit ( chromosomeIndex, i, depth) )
+		if( get_bit ( chromosomeIndex, i, depth) ) {
 			removeEdgeByID( originalEdgeIDS[i] );
-		else
+			if (GA_DEBUG)
+				std ::cout << "\n Removed Edge Index : " << i << " originalEdgeIDS : " << originalEdgeIDS[i] << std :: endl;
+		} else
 			addEdgeByEdgeID( originalEdgeIDS[i] );
 	}
+
+	if (GA_DEBUG)
+		std ::cout << "\n --- Removed edges from : " << chromosomeIndex + 1 << std ::endl;
 }
 
 int GA::removeEdgeByID(int edgeID) {
@@ -96,6 +105,18 @@ int GA::getEdgeIDIndex(int edgeID) {
 // toggle bit at index in array
 void GA::toggle_bit(char *array, int index) {
     array[index / 8] ^= 1 << (index % 8);
+}
+
+void GA::printChromosomes(int depth) {
+	fprintf(stderr, "-=-=-=-=- Complete Population bit array \n");
+	for (int i = 0; i < populationSize; ++i)
+	{
+		for (int j = 0; j < networkNumVertices; ++j)
+		{
+			std::cout << get_bit(i, j, 0) << "\t";
+		}
+		std::cout << std::endl;
+	}
 }
 
 GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int numEdges) {
@@ -586,11 +607,14 @@ void GA::generate_GA() {
 	int max_fitness_chr = -1;
 	chromosome_map cmap[populationSize];
 
+	// print the chromosome array
+	printChromosomes(0);
+
 	if(GA_DEBUG) {
-			double max_fitness = 0.0;
-			int max_fitness_chr = -1, i = 0;
-			double total_fitness = 0.0;
-			for (i = 0; i < populationSize; ++i) {
+			double max_fitness = calculateFitness(0, prev);
+			int max_fitness_chr = 0, i = 0;
+			double total_fitness = max_fitness;
+			for (i = 1; i < populationSize; ++i) {
 				
 				total_fitness += calculateFitness(i, prev);
 				if( max_fitness < chromosomes[i].getFitness() ) {
@@ -614,6 +638,8 @@ void GA::generate_GA() {
 		}
 
 	while(currentGeneration < numGenerations && max_fitness_generation < threshold_fitness) {
+
+		std :: cout << "\n---GENERATION #" << currentGeneration+1 << "---" << std :: endl;
 
 		int populationIndex = 0;
 
@@ -691,7 +717,7 @@ void GA::generate_GA() {
 			parent_chr_1 = start_index;
 			parent_chr_2 = next_start_index;
 			// make the first chr to be the highest
-			if(f_c1 < f_c2) {
+			if(f_c1 <= f_c2) { // if both are equal case
 				swap(parent_chr_1, parent_chr_2);
 				double f_temp = f_c1;
 				f_c1 = f_c2;
@@ -816,11 +842,11 @@ void GA::generate_GA() {
 		
 		// STATS
 		if(GA_DEBUG) {
-			double max_fitness = 0.0;
-			max_fitness_chr = -1;
+			double max_fitness = calculateFitness(0, next);
+			max_fitness_chr = 0;
 			int i = 0;
-			double total_fitness = 0.0;
-			for (i = 0; i < populationSize; ++i) {
+			double total_fitness = max_fitness;
+			for (i = 1; i < populationSize; ++i) {
 				calculateFitness(i, next);
 				total_fitness += chromosomes[i].getFitness();
 				if( max_fitness < chromosomes[i].getFitness() ) {
@@ -842,6 +868,8 @@ void GA::generate_GA() {
     		test_file << max_fitness_generation << "\t" << (double)total_fitness/populationSize << std::endl;
     		test_file.close();
 		}
+
+		std ::cout << "\n---END OF GENERATION #" << currentGeneration + 1 << "---" << std :: endl;
 
 		prev = !prev;
 		next = !next;

@@ -246,20 +246,20 @@ int main(int argc, char ** argv)
   fprintf(output,"%f\n",t.timeVal());
   fclose(output);
 
-  sparseNet.bfs(argv[2]);
+  //sparseNet.bfs(argv[2]);
   //sparseNet.printEdges("testOut.gml");
   // for(int i = 0; i < numNodes; i++) {
   //   std::cout << sparseNet.globalClusterNum[i] << "\t";
   // }
 
   // GA params
-  int popSize = 50; 
-  int generations = 100;
+  int popSize = 20; 
+  int generations = 50;
   // Genetic Part Starts here
-  // GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);
-  // sparseGA.set_data_name(argv[1]);
-  // std::cout << "\nGenetic Testing : " << std::endl << "-------------------------------" << std::endl;
-  // sparseGA.generate_GA();
+  GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);
+  sparseGA.set_data_name(argv[1]);
+  std::cout << "\nGenetic Algo Start : " << std::endl << "-------------------------------" << std::endl;
+  sparseGA.generate_GA();
 
   return 0;
 }
