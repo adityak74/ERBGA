@@ -457,9 +457,15 @@ void Network::printEdges(char* outputFile) // print all edges in network
     fclose(output);
 }
 
-// Network::getEdgeWeight() returns double
-// get weight of edge between endpoints
-double Network::getEdgeWeight(int v1, int v2)
+void Network::setGlobalNetworkGE() {
+    originalNumEdges = numEdges;
+    originalNumVertices = numVertices;
+}
+
+    // Network::getEdgeWeight() returns double
+    // get weight of edge between endpoints
+    double
+    Network::getEdgeWeight(int v1, int v2)
 {
     if ((v1 > numVertices - 1) || (v2 > numVertices - 1))
         fatal("Attempt to get weight of edge to non-existent node");
@@ -1061,12 +1067,23 @@ double Network::q_calc(char* outputFile)
 
                 // At this point we have the vertices and edges in a community.
                 // Calcluating the q_value here
-                q_value += (float)numberEdges / numEdges - (((float)ptr * (ptr - 1)) / (numVertices * (numVertices - 1)));
-                std::cout << std::endl;
+
+                if(0) {
+                    std ::cout << "--------------" << numberEdges << "," << originalNumEdges << "," << ptr << "," << originalNumVertices << std ::endl;
+                }
+
+                float ci = (float)numberEdges / originalNumEdges;
+                float ri = ((float)ptr * (ptr - 1)) / (originalNumVertices * (originalNumVertices - 1));
+
+                if(0) {
+                    std :: cout << "ci = " << ci << " , ri = " << ri << std :: endl;
+                }
+
+                q_value += ci - ri;
 
                 if (1) {
                     std::cout << numNonSingle << ": " << ptr << " vertices, " << numberEdges << " edges (";
-                    std::cout << complete << " complete), q_value : " << (float)numberEdges / numEdges - (((float)ptr * (ptr - 1)) / (numVertices * (numVertices - 1))) << std::endl;
+                    std::cout << complete << " complete), q_value : " << q_value << std::endl;
                 }
 
                 if (0)

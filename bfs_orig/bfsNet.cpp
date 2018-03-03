@@ -212,6 +212,8 @@ int main(int argc, char ** argv)
   if (sparseNet.getNumEdges() != numEdges)
     fatal("error recording edges in network");
 
+  sparseNet.setGlobalNetworkGE();
+
   std::cout << "\nFinding components and printing them to compX.gml files...\n" << std::endl;
 
   // calling q_calc instead
@@ -252,10 +254,12 @@ int main(int argc, char ** argv)
   //   std::cout << sparseNet.globalClusterNum[i] << "\t";
   // }
 
+  //sparseNet.q_calc("testOut.gml");
+
   // GA params
-  int popSize = 1000; 
-  int generations = 30;
-  // Genetic Part Starts here
+  int popSize = 50; 
+  int generations = 100;
+  // // Genetic Part Starts here
   GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);
   sparseGA.set_data_name(argv[1]);
   std::cout << "\nGenetic Algo Start : " << std::endl << "-------------------------------" << std::endl;
