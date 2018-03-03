@@ -7,6 +7,7 @@
 
 #SBATCH -N 1  # number of nodes
 #SBATCH -n 1  # number of cores (AKA tasks)
+#SBATCH --mem=31000MB # memory ~31GB
 
 ## notifications
 #SBATCH --mail-user=agtk4@mail.umsl.edu  # email address for notifications
