@@ -880,7 +880,11 @@ void GA::generate_GA() {
 	file.close();
 
 	chromosome_g2p(max_fitness_chr, next);
-	gaSparseNetwork->printEdges("ga_bst_final.gml");
+
+	char new_filename[256] = {0};
+	strcpy(new_filename, GA_BST_GML.c_str());
+	strcat(new_filename, dataset_name);
+	gaSparseNetwork->printEdges(new_filename);
 
 	// EVALUATE
 
