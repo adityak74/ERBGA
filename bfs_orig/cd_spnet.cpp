@@ -425,8 +425,7 @@ unsigned int permuteQPR(unsigned int x)
 
 // generate random number in range (min, max)
 int GA::generateRandomNumber(int min, int max) {
-	
-	return (((rand()) % max) + min); 	
+	return ((rand() % (max-min)) + min); 	
 }
 
 double GA::averageFitnessForPopulation() {
@@ -561,12 +560,22 @@ void GA::set_data_name(char *name) {
 	strcpy(dataset_name, name);
 }
 
+int nearestEvenInt(int to)
+{
+	return (to % 2 == 0) ? to : (to + 1);
+}
+
 // max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
 // num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
 
 	std :: fstream file, pop_file; // declare an object of fstream class
-    
+	int currentGeneration = 0;
+	int minCrossoverSize = (int) (GA_CROSSOVER_SIZE_RATE * networkNumEdges);
+	// int minCrossoverSize = 0;
+	int mutation_pop_size = (int)(GA_MUTATION_RATE * populationSize);
+	int numEliteChromosomes = nearestEvenInt((int)(GA_REPRODUCTION_RATE * populationSize));
+
 	char filename[256] = {0};
     strcpy(filename, GA_LOG_FILE.c_str());
     strcat(filename, dataset_name);
@@ -580,6 +589,8 @@ void GA::generate_GA() {
     file << "GRAPH NUM VERTICES : " << networkNumVertices << std::endl;
     file << "GRAPH NUM EDGES : " << networkNumEdges << std::endl;
     file << "MINIMUM CROSSOVER SIZE PERCENT : " << GA_CROSSOVER_SIZE_RATE << std::endl;
+	file << "ELITISM (INDIVIDUALS) : " << numEliteChromosomes << std::endl;
+	file << "MIN CROSSOVER SIZE (INDIVIDUALS) : " << minCrossoverSize << std::endl;
     file << "------ GA RUN PARAMS ------" << std::endl;
 
     memset(filename, 0, sizeof(filename));
@@ -596,10 +607,7 @@ void GA::generate_GA() {
     pop_file << std::endl << std::endl;
     pop_file.close();
 
-	int currentGeneration = 0;
-	int minCrossoverSize = (int) GA_CROSSOVER_SIZE_RATE * networkNumEdges;
-	int mutation_pop_size = (int)(mutation_rate * populationSize);
-	int numEliteChromosomes = (int) reproduction_rate * populationSize;
+	
 
 	// printPopData(0);
 	double threshold_fitness = 1.0 - GA_TOL;
@@ -643,7 +651,7 @@ void GA::generate_GA() {
 
 		int populationIndex = 0;
 
-		// skip inital generation
+		// skip first generation
 		if(currentGeneration != 0) {
 			// ELITISM
 			
@@ -657,7 +665,7 @@ void GA::generate_GA() {
 			// move elite chromosomes
 			for (int i = 0; i < numEliteChromosomes; ++i)
 			{
-				move_chromosome_to_next_gen(i, populationIndex++);
+				move_chromosome_to_next_gen(cmap[i].chromosome_index, populationIndex++);
 			}
 		}
 
@@ -775,7 +783,10 @@ void GA::generate_GA() {
 				}
 			}
 
-			int numCrossoverSites = generateRandomNumber(minCrossoverSize, networkNumEdges - 1);
+			int numCrossoverSites = generateRandomNumber(minCrossoverSize, networkNumEdges);
+
+			if (GA_DEBUG)
+				std::cout << "\t--CROSSOVER SITES : " << numCrossoverSites << "\n";
 
 			for (int i = 0; i < networkNumEdges; ++i)
 				randomBitVector[i] = 0;
@@ -829,8 +840,12 @@ void GA::generate_GA() {
 		    }
 
 		    // MUTATION
-		    mutate(populationIndex, next);
-		    mutate(populationIndex+1, next);
+			int r1 = generateRandomNumber(1, 101);
+			if ( r1 < (GA_MUTATION_RATE*100) ) {
+				mutate(populationIndex, next);
+				mutate(populationIndex + 1, next);
+			}
+		    
 
 		    populationIndex += 2;
 		    printf("Finished PopINdex : %d\n", populationIndex);
