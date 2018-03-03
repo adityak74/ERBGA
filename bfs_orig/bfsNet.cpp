@@ -257,8 +257,8 @@ int main(int argc, char ** argv)
   //sparseNet.q_calc("testOut.gml");
 
   // GA params
-  int popSize = 100; 
-  int generations = 300;
+  int popSize = 1000; 
+  int generations = 750;
   // // Genetic Part Starts here
   GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);
   sparseGA.set_data_name(argv[1]);
