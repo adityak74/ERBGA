@@ -613,7 +613,7 @@ void GA::generate_GA() {
 	double threshold_fitness = 1.0 - GA_TOL;
 	double max_fitness_generation = 0.0;
 	int max_fitness_chr = -1;
-	chromosome_map cmap[populationSize];
+	chromosome_map cmap[populationSize], tcmap[GA_TOURNAMENT_SIZE];
 
 	// print the chromosome array
 	printChromosomes(0);
@@ -689,7 +689,13 @@ void GA::generate_GA() {
 				if(start_index>index)
 					start_index = index;
 				nextGenChromosomeState[index] = 1;
+
+				tcmap[i].chromosome_index = index;
+				tcmap[i].fitness = calculateFitness(index, prev);
+
 			}
+
+			std::sort(tcmap, tcmap + GA_TOURNAMENT_SIZE, &chromosome_sorter);
 
 			if(GA_DEBUG_L2) {
 				for (int i = 0; i < populationSize; ++i) {
@@ -708,53 +714,17 @@ void GA::generate_GA() {
 					file << nextGenChromosomeState[i] << "\t";
 				}
 				file << std::endl;
-			}
 
-			// start_index helps to jump to the first minimum to skip few iterations
-			double max_fitness = 0.00 - GA_TOL;
-			int parent_chr_1 = -1;
-			int parent_chr_2 = -1;
-
-			int next_start_index = start_index + 1;
-			while( nextGenChromosomeState[next_start_index] != 1 )
-				next_start_index += 1;
-
-			double f_c1 = calculateFitness(start_index, prev);
-			double f_c2 = calculateFitness(next_start_index, prev);
-
-			parent_chr_1 = start_index;
-			parent_chr_2 = next_start_index;
-			// make the first chr to be the highest
-			if(f_c1 <= f_c2) { // if both are equal case
-				swap(parent_chr_1, parent_chr_2);
-				double f_temp = f_c1;
-				f_c1 = f_c2;
-				f_c2 = f_temp;
-			}
-
-			int iter = (parent_chr_1 < parent_chr_2) ? parent_chr_2 : parent_chr_1;
-
-			for (int i = iter+1; i < populationSize; i++) {
-				if(nextGenChromosomeState[i]) {
-					double chr_fitness = calculateFitness(i, prev);
-					if(chr_fitness > f_c1) {
-						parent_chr_2 = parent_chr_1;
-						f_c2 = f_c1;
-						parent_chr_1 = i;
-						f_c1 = chr_fitness;
-					} else if ( chr_fitness > f_c2 ) {
-						parent_chr_2 = i;
-						f_c2 = chr_fitness;
-					}
+				std ::cout << "\n---TOURNAMENT SORT : \n";
+				for (int i = 0; i < GA_TOURNAMENT_SIZE; i++)
+				{
+					std ::cout << tcmap[i].chromosome_index << " , " << tcmap[i].fitness << "\n";
 				}
+				std ::cout << "\n---TOURNAMENT SORT END \n";
 			}
 
-			parentsForCrossover[0] = parent_chr_1;
-			parentsForCrossover[1] = parent_chr_2;
-
-			// parentsForCrossover[0] = populationIndex;
-			// parentsForCrossover[1] = populationIndex+1;
-			
+			parentsForCrossover[0] = tcmap[0].chromosome_index;
+			parentsForCrossover[1] = tcmap[1].chromosome_index;
 
 			if( GA_DEBUG_L2 )
 				for (int i = 0; i < 2; ++i)
