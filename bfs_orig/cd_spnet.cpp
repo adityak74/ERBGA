@@ -767,77 +767,81 @@ void GA::generate_GA() {
 				}
 
 			// CROSSOVER
+
+			int r2 = generateRandomNumber(1, 101);
+			if ( r2 < (GA_CROSSOVER_RATE * 100) ) {
 			
-			int randomBitVector[networkNumEdges];
-			int populationCounter = 0;
+				int randomBitVector[networkNumEdges];
+				int populationCounter = 0;
 
-			if(GA_DEBUG_L2) {
-				for (int i = 0; i < 2; ++i)
+				if(GA_DEBUG_L2) {
+					for (int i = 0; i < 2; ++i)
+					{
+						std::cout << "PARENTS # " << parentsForCrossover[i] << std::endl;
+						for (int j = 0; j < networkNumEdges; ++j)
+						{
+							std::cout << get_bit( parentsForCrossover[i], j, 0 ) << std::endl;
+						}
+						std::cout << "---" << std::endl;
+					}
+				}
+
+				int numCrossoverSites = generateRandomNumber(minCrossoverSize, networkNumEdges);
+
+				if (GA_DEBUG)
+					std::cout << "\t--CROSSOVER SITES : " << numCrossoverSites << "\n";
+
+				for (int i = 0; i < networkNumEdges; ++i)
+					randomBitVector[i] = 0;
+
+				while(numCrossoverSites) {
+					int crossoverSite = generateRandomNumber(0, networkNumEdges);
+					while(randomBitVector[crossoverSite])
+						crossoverSite = generateRandomNumber(0, networkNumEdges);
+					randomBitVector[crossoverSite] = 1;
+					numCrossoverSites--;
+				}
+
+				for (int i = 0; i < networkNumEdges; ++i)
 				{
-					std::cout << "PARENTS # " << parentsForCrossover[i] << std::endl;
-					for (int j = 0; j < networkNumEdges; ++j)
-					{
-						std::cout << get_bit( parentsForCrossover[i], j, 0 ) << std::endl;
+					// perform crossover at sites
+					if(randomBitVector[i]) {
+						// swap values at i
+						if( get_bit( parentsForCrossover[1], i, prev ) )
+							set_bit ( populationIndex, i, next );
+						else
+							unset_bit( populationIndex, i, next );
+
+						if( get_bit( parentsForCrossover[0], i, prev ) )
+							set_bit ( populationIndex+1, i, next );
+						else
+							unset_bit( populationIndex+1, i, next );
+
+					} else {
+						if( get_bit( parentsForCrossover[0], i, prev ) )
+							set_bit ( populationIndex, i, next );
+						else
+							unset_bit( populationIndex, i, next );
+
+						if( get_bit( parentsForCrossover[1], i, prev ) )
+							set_bit ( populationIndex+1, i, next );
+						else
+							unset_bit( populationIndex+1, i, next );
 					}
-					std::cout << "---" << std::endl;
+				}
+
+				if(GA_DEBUG_L2) {
+					std::cout << "Printing bits : " << std::endl;
+					for (int i = 0; i < 2; ++i)
+					{
+						for (int j = 0; j < networkNumEdges; ++j)
+						{
+							std::cout << get_bit( i, j, next ) << "\t";
+						}
+						std::cout << std::endl;	
+					}
 				}
 			}
-
-			int numCrossoverSites = generateRandomNumber(minCrossoverSize, networkNumEdges);
-
-			if (GA_DEBUG)
-				std::cout << "\t--CROSSOVER SITES : " << numCrossoverSites << "\n";
-
-			for (int i = 0; i < networkNumEdges; ++i)
-				randomBitVector[i] = 0;
-
-			while(numCrossoverSites) {
-				int crossoverSite = generateRandomNumber(0, networkNumEdges);
-				while(randomBitVector[crossoverSite])
-					crossoverSite = generateRandomNumber(0, networkNumEdges);
-				randomBitVector[crossoverSite] = 1;
-				numCrossoverSites--;
-			}
-
-			for (int i = 0; i < networkNumEdges; ++i)
-			{
-				// perform crossover at sites
-				if(randomBitVector[i]) {
-					// swap values at i
-					if( get_bit( parentsForCrossover[1], i, prev ) )
-						set_bit ( populationIndex, i, next );
-					else
-						unset_bit( populationIndex, i, next );
-
-					if( get_bit( parentsForCrossover[0], i, prev ) )
-						set_bit ( populationIndex+1, i, next );
-					else
-						unset_bit( populationIndex+1, i, next );
-
-				} else {
-					if( get_bit( parentsForCrossover[0], i, prev ) )
-						set_bit ( populationIndex, i, next );
-					else
-						unset_bit( populationIndex, i, next );
-
-					if( get_bit( parentsForCrossover[1], i, prev ) )
-						set_bit ( populationIndex+1, i, next );
-					else
-						unset_bit( populationIndex+1, i, next );
-				}
-			}
-
-			if(GA_DEBUG_L2) {
-				std::cout << "Printing bits : " << std::endl;
-		    	for (int i = 0; i < 2; ++i)
-		    	{
-		    		for (int j = 0; j < networkNumEdges; ++j)
-					{
-						std::cout << get_bit( i, j, next ) << "\t";
-					}
-					std::cout << std::endl;	
-		    	}
-		    }
 
 		    // MUTATION
 			int r1 = generateRandomNumber(1, 101);
