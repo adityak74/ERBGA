@@ -47,8 +47,11 @@ double Chromosome::getFitness() {
 }
 
 double Chromosome::calculateFitness() {
-
-	double calc_fitness = gaSparseNetworkChr->q_calc("ga.out");
+	double calc_fitness = 0.0f;
+	if (GA_FITNESS_MODULARITY)
+		calc_fitness = gaSparseNetworkChr->modularity("ga.out");
+	else
+		calc_fitness = gaSparseNetworkChr->q_calc("ga.out");
 	fitness = calc_fitness;
 	return calc_fitness;
 }

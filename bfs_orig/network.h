@@ -54,6 +54,7 @@ class Vertex
   ~Vertex(); // destructor
   int index; // index number of node
   int degree; // out-degree of vertex (full degree for undirected)
+  int original_degree; // original degree of the node in the original network
   Edge firstEdge; // first edge eminating from vertex
   // change to edgeListPlaceholder.next
   //int ID; // GML ID number of vertex
@@ -69,6 +70,7 @@ class Vertex
   int removeEdge(int end); // remove edge from the edge list eminating from vertex
   //int getID(); // get GML ID number of vertex (-1 if none specified)
   //char *getLabel(); // get GML label of vertex (NULL if none specified)
+  int getOriginalDegree(); // returns original_degree
 };
 
 class Network
@@ -94,10 +96,10 @@ class Network
   int addEdgeFromGML(int, int, double=1.0); // add edge from GML file return 1 if edge successfully added
   int *globalClusterNum; // stores the cluster numbering after each BFS run
   void setGlobalNetworkGE(); // set the original vertives and edges values from read graph
-  //void bfs_orig(char *);
+  double modularity(char *); // calculates the modularity of the network
+  int getOriginalDegree(int); // gets the original degree of vertex
 
- private: 
-  int numVertices; // number of vertices
+      private : int numVertices; // number of vertices
   int directed; // 0 if undirected, 1 if directed
   int numEdges; // number of edges
   int originalNumVertices; // original graph nodes count
