@@ -467,12 +467,13 @@ void GA::initializeRates() {
 	crossover_rate = GA_CROSSOVER_RATE;
 	mutation_rate = GA_MUTATION_RATE;
 	reproduction_rate = GA_REPRODUCTION_RATE;
+	numGenomeMutations = mutation_rate * networkNumEdges;
 
-	double total_rates_sum = crossover_rate + mutation_rate + reproduction_rate;
-	double delta = (1 - total_rates_sum) / 3;
-	crossover_rate += delta;
-	mutation_rate += delta;
-	reproduction_rate += delta;
+	// double total_rates_sum = crossover_rate + mutation_rate + reproduction_rate;
+	// double delta = (1 - total_rates_sum) / 3;
+	// crossover_rate += delta;
+	// mutation_rate += delta;
+	// reproduction_rate += delta;
 
 	if(GA_DEBUG) {
 		std::cout << "- - - GA RATES - - - " << std::endl;
@@ -480,15 +481,18 @@ void GA::initializeRates() {
 		std::cout << "NORMALIZED MUTATION RATE : " << mutation_rate << std::endl;
 		std::cout << "NORMALIZED REPRODUCTION RATE : " << reproduction_rate << std::endl;
         std::cout << "TOURNAMENT SIZE : " << GA_TOURNAMENT_SIZE << std::endl;
+		std::cout << "NUM MUTATION SIZE : " << numGenomeMutations << std::endl;
 		std::cout << "- - - - - - - - - - -" << std::endl;
 	}
 
 }
 
 void GA::mutate(int chromosomeIndex, int popState) {
-	int mutation_site = generateRandomNumber(0, networkNumEdges);
-	toggle_bit( chromosomeIndex, mutation_site, popState);
-
+	int mutation_site = -1; 
+	for(int i = 0; i < numGenomeMutations; i++) {
+		mutation_site = generateRandomNumber(0, networkNumEdges);
+		toggle_bit( chromosomeIndex, mutation_site, popState);
+	}
 	if(GA_DEBUG_L2) {
 		std::cout << "MUTATION SITE FOR CHR# " << chromosomeIndex << " -> " << mutation_site << std::endl;
 	}
@@ -594,6 +598,7 @@ void GA::generate_GA() {
     file << "MINIMUM CROSSOVER SIZE PERCENT : " << GA_CROSSOVER_SIZE_RATE << std::endl;
 	file << "ELITISM (INDIVIDUALS) : " << numEliteChromosomes << std::endl;
 	file << "MIN CROSSOVER SIZE (INDIVIDUALS) : " << minCrossoverSize << std::endl;
+	file << "FITNESS : " << ((GA_FITNESS_MODULARITY == 1) ? "MODULARITY" : "Qs") << std :: endl; 
     file << "------ GA RUN PARAMS ------" << std::endl;
 
     memset(filename, 0, sizeof(filename));
@@ -742,7 +747,8 @@ void GA::generate_GA() {
 			// CROSSOVER
 
 			int r2 = generateRandomNumber(1, 101);
-			if ( r2 < (GA_CROSSOVER_RATE * 100) ) {
+			if ( r2 < (GA_CROSSOVER_RATE*100) ) {
+			//if ( 1 ) {
 			
 				int randomBitVector[networkNumEdges];
 				int populationCounter = 0;
@@ -759,7 +765,8 @@ void GA::generate_GA() {
 					}
 				}
 
-				int numCrossoverSites = generateRandomNumber(minCrossoverSize, networkNumEdges);
+				// int numCrossoverSites = generateRandomNumber(minCrossoverSize, networkNumEdges);
+				int numCrossoverSites = generateRandomNumber(0, minCrossoverSize);
 
 				if (GA_DEBUG)
 					std::cout << "\t--CROSSOVER SITES : " << numCrossoverSites << "\n";
@@ -817,11 +824,9 @@ void GA::generate_GA() {
 			}
 
 		    // MUTATION
-			int r1 = generateRandomNumber(1, 101);
-			if ( r1 < (GA_MUTATION_RATE*100) ) {
-				mutate(populationIndex, next);
-				mutate(populationIndex + 1, next);
-			}
+			mutate(populationIndex, next);
+			mutate(populationIndex + 1, next);
+			
 		    
 
 		    populationIndex += 2;

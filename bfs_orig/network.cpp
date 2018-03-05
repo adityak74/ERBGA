@@ -1711,7 +1711,7 @@ double Network::modularity(char *outputFile)
     std::cout << numTwo << " components with only 2 vertices" << std::endl;
     std::cout << numComp3orMore << " components with 3 or more vertices" << std::endl;
 
-    std::cout << "Total Qs value for the given network : " << modularity_value << std::endl;
+    std::cout << "Total Modularity value for the given network : " << modularity_value << std::endl;
     std::cout << "Total communities in the network : " << k << std::endl;
 
     fprintf(output, "%d singletons, %d components with only 2 vertices,\n%d components with 3 or more vertices\n", numSingle, numTwo, numComp3orMore);
