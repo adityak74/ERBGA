@@ -213,7 +213,6 @@ int main(int argc, char ** argv)
     fatal("error recording edges in network");
 
   sparseNet.setGlobalNetworkGE();
-
   std::cout << "\nFinding components and printing them to compX.gml files...\n" << std::endl;
 
   // calling q_calc instead
@@ -232,8 +231,7 @@ int main(int argc, char ** argv)
   std::cout << numEdges << " edges explored" << std::endl;
   std::cout << dupEdges << " duplicate edges not counted in edge count" << std::endl;
   
-  t.stop("Timer stopped");
-  std::cout << t << " seconds" << std::endl;
+  
 
   // check if all the nodes have invID lookups set
   if(DEBUG) {
@@ -255,15 +253,20 @@ int main(int argc, char ** argv)
   // }
 
   //sparseNet.q_calc("testOut.gml");
+  // double mod = sparseNet.modularity(argv[2]);
+  // std :: cout << "MODULARITY : " << mod << "\n";
+  // return 0;
 
   // GA params
-  int popSize = 20;
-  int generations = 10;
+  int popSize = 250;
+  int generations = 500;
   // // Genetic Part Starts here
   GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);
   sparseGA.set_data_name(argv[1]);
   std::cout << "\nGenetic Algo Start : " << std::endl << "-------------------------------" << std::endl;
   sparseGA.generate_GA();
 
+  t.stop("Timer stopped");
+  std::cout << t << " seconds" << std::endl;
   return 0;
 }
