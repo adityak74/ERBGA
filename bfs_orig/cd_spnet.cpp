@@ -576,6 +576,8 @@ int nearestEvenInt(int to)
 // num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
 
+	int crossover_discards = 0, numCrossovers = 0, numMutations = 0;
+
 	std :: fstream file, pop_file; // declare an object of fstream class
 	int currentGeneration = 0;
 	int minCrossoverSize = (int) (GA_CROSSOVER_SIZE_RATE * networkNumEdges);
@@ -810,6 +812,44 @@ void GA::generate_GA() {
 					}
 				}
 
+				if (GA_CROSSOVER_PARENT_CHILD_BEST) {
+					double p1_fitness = calculateFitness(parentsForCrossover[0], prev);
+					double p2_fitness = calculateFitness(parentsForCrossover[1], prev);
+					double c1_fitness = calculateFitness(populationIndex, next);
+					double c2_fitness = calculateFitness(populationIndex + 1, next);
+
+					if ( p1_fitness > c1_fitness ) {
+						for (int i = 0; i < networkNumEdges; ++i)
+						{
+							if (get_bit(parentsForCrossover[0], i, prev))
+								set_bit(populationIndex, i, next);
+							else
+								unset_bit(populationIndex, i, next);
+						}
+						if ( GA_DEBUG )
+							std::cout << "---P1 Retained\n";
+						crossover_discards++;
+					} else {
+						numCrossovers++;
+					}
+
+					if ( p2_fitness > c2_fitness ) {
+						for (int i = 0; i < networkNumEdges; ++i)
+						{
+							if (get_bit(parentsForCrossover[1], i, prev))
+								set_bit(populationIndex + 1, i, next);
+							else
+								unset_bit(populationIndex + 1, i, next);
+						}
+						if (GA_DEBUG)
+							std::cout << "---P2 Retained\n";
+						crossover_discards++;
+					} else {
+						numCrossovers++;
+					}
+
+				}
+
 				if(GA_DEBUG_L2) {
 					std::cout << "Printing bits : " << std::endl;
 					for (int i = 0; i < 2; ++i)
@@ -862,8 +902,8 @@ void GA::generate_GA() {
     		strcat(filename, dataset_name);
             strcat(filename, the_date);
     		test_file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
-    		test_file << max_fitness_generation << "\t" << (double)total_fitness/populationSize << std::endl;
-    		test_file.close();
+			test_file << max_fitness_generation << "\t" << (double)total_fitness / populationSize << std::endl;
+			test_file.close();
 		}
 
 		std ::cout << "\n---END OF GENERATION #" << currentGeneration + 1 << "---" << std :: endl;
@@ -882,6 +922,9 @@ void GA::generate_GA() {
 	strcpy(new_filename, GA_BST_GML.c_str());
 	strcat(new_filename, dataset_name);
 	gaSparseNetwork->printEdges(new_filename);
+
+	std :: cout << "\n CROSSOVER DISCARDS : " << crossover_discards << std::endl;
+	std ::cout << "\n CROSSOVER USEFUL : " << numCrossovers << std::endl;
 
 	// EVALUATE
 
