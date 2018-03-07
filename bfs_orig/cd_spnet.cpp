@@ -114,7 +114,7 @@ void GA::printChromosomes(int depth) {
 	fprintf(stderr, "-=-=-=-=- Complete Population bit array \n");
 	for (int i = 0; i < populationSize; ++i)
 	{
-		for (int j = 0; j < networkNumVertices; ++j)
+		for (int j = 0; j < networkNumEdges; ++j)
 		{
 			std::cout << get_bit(i, j, 0) << "\t";
 		}
@@ -586,7 +586,7 @@ void GA::generate_GA() {
 
 	std :: fstream file, pop_file; // declare an object of fstream class
 	int currentGeneration = 0;
-	int minCrossoverSize = (int) (GA_CROSSOVER_SIZE_RATE * networkNumEdges);
+	int minCrossoverSize = round(GA_CROSSOVER_SIZE * networkNumEdges);
 	// int minCrossoverSize = 0;
 	int mutation_pop_size = (int)(GA_MUTATION_RATE * populationSize);
 	int numEliteChromosomes = nearestEvenInt((int)(GA_REPRODUCTION_RATE * populationSize));
@@ -603,7 +603,7 @@ void GA::generate_GA() {
     file << "POPULATION SIZE : " << populationSize << std::endl;
     file << "GRAPH NUM VERTICES : " << networkNumVertices << std::endl;
     file << "GRAPH NUM EDGES : " << networkNumEdges << std::endl;
-    file << "MINIMUM CROSSOVER SIZE PERCENT : " << GA_CROSSOVER_SIZE_RATE << std::endl;
+    file << "MINIMUM CROSSOVER SIZE PERCENT : " << GA_CROSSOVER_SIZE << std::endl;
 	file << "ELITISM (INDIVIDUALS) : " << numEliteChromosomes << std::endl;
 	file << "MIN CROSSOVER SIZE (INDIVIDUALS) : " << minCrossoverSize << std::endl;
 	file << "FITNESS : " << ((GA_FITNESS_MODULARITY == 1) ? "MODULARITY" : "Qs") << std :: endl; 
@@ -775,7 +775,8 @@ void GA::generate_GA() {
 				}
 
 				// int numCrossoverSites = generateRandomNumber(minCrossoverSize, networkNumEdges);
-				int numCrossoverSites = generateRandomNumber(0, minCrossoverSize);
+				// int numCrossoverSites = generateRandomNumber(0, minCrossoverSize);
+				int numCrossoverSites = minCrossoverSize;
 
 				if (GA_DEBUG)
 					std::cout << "\t--CROSSOVER SITES : " << numCrossoverSites << "\n";
