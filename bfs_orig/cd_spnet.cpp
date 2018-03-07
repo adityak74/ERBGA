@@ -582,13 +582,6 @@ int nearestEvenInt(int to)
 // num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
 
-	double mod = calculateFitness(0, prev);
-	std::cout << "MOD CHR : " << mod << "\n";
-	chromosome_g2p(0, prev);
-	gaSparseNetwork->printEdges("test-chromosome.gml");
-	exit(0);
-
-
 	int crossover_discards = 0, numCrossovers = 0, numMutations = 0;
 
 	std :: fstream file, pop_file; // declare an object of fstream class
