@@ -30,7 +30,7 @@ const int GA_DEBUG_FILE = 0; // prints debug to file
 const int GA_DEBUG_L2 = 0; // level 2 debugging
 
 const double GA_RANDOM_POP_PERCENT = 0.75; // set a minimum of 20 percent here
-const int GA_TOURNAMENT_SIZE = 7; // tournament size for the seleciton operator
+const int GA_TOURNAMENT_SIZE = 25; // tournament size for the seleciton operator
 const double GA_CROSSOVER_SIZE_RATE = 0.9; // percentage of chromosome used for crossover
 const double GA_CROSSOVER_RATE = 0.8; // max chr size used for crossover
 const double GA_REPRODUCTION_RATE = 0.2; // rate of reproduction producing the offsprings
@@ -38,7 +38,7 @@ const double GA_MUTATION_RATE = 0.05; // rate of mutation producing the offsprin
 
 const int GA_FITNESS_MODULARITY = 1; // use modularity as fitness, else use Qs
 
-const int GA_CROSSOVER_PARENT_CHILD_BEST = 1; // keep the best in parent and child
+const int GA_CROSSOVER_PARENT_CHILD_BEST = 0; // keep the best in parent and child
 
 const double GA_TOL = 0.0000000001;
 

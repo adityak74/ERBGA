@@ -235,16 +235,22 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 
     // generate initial population
     for (int i = 0; i < populationSize; ++i) {
-    	for (int j = 0; j < networkNumVertices; ++j) {
+
+		int hits = 0;
+    	for (int j = 0; j < networkNumEdges; ++j) {
     		// changed to random community size
-    		int r = generateRandomNumber(0, 100);
-    		if( r < (GA_RANDOM_POP_PERCENT * 100) ) 
-    			set_bit( i, j, prev );
-    		else
+			int r = generateRandomNumber(0, networkNumEdges);
+			if (r < round(GA_RANDOM_POP_PERCENT * networkNumEdges))
+			{
+				set_bit( i, j, prev );
+				//hits++;
+				//std ::cout << "------==r for chr #" << i + 1 << " :- " << r << "\n";
+			} else
     			unset_bit( i, j, prev);
     		// originalNUmClusters - command line/ header
     	}
-    }
+		//std ::cout << "------==hits for chr #" << i + 1 << " : " << hits << " , " << (float)hits / networkNumEdges << "\n";
+	}
 
     // initial population using Basic Chromosome (Community ID based)
     if(GA_DEBUG) {
@@ -576,6 +582,13 @@ int nearestEvenInt(int to)
 // num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
 
+	double mod = calculateFitness(0, prev);
+	std::cout << "MOD CHR : " << mod << "\n";
+	chromosome_g2p(0, prev);
+	gaSparseNetwork->printEdges("test-chromosome.gml");
+	exit(0);
+
+
 	int crossover_discards = 0, numCrossovers = 0, numMutations = 0;
 
 	std :: fstream file, pop_file; // declare an object of fstream class
@@ -685,27 +698,31 @@ void GA::generate_GA() {
 
 			int parentsForCrossover[2]; // 2 parents for crossover
 			int nextGenChromosomeState[populationSize];
-				
-			for (int i = 0; i < populationSize; ++i)
-				nextGenChromosomeState[i] = 0; // no chromosome is selected 0, if selected 1
 
-			int start_index = 999999999;
-			for (int i = 0; i < GA_TOURNAMENT_SIZE; ++i) {
-				// srand (time(NULL));
-				int index = generateRandomNumber(0, populationSize);
-				while(nextGenChromosomeState[index]) {
-					index = generateRandomNumber(0, populationSize);
+			for(int ip = 0; ip < 2; ip++) {
+				for (int i = 0; i < populationSize; ++i)
+					nextGenChromosomeState[i] = 0; // no chromosome is selected 0, if selected 1
+
+				for (int i = 0; i < GA_TOURNAMENT_SIZE; ++i)
+				{
+					// srand (time(NULL));
+					int index = generateRandomNumber(0, populationSize);
+					while (nextGenChromosomeState[index])
+					{
+						index = generateRandomNumber(0, populationSize);
+					}
+
+					nextGenChromosomeState[index] = 1;
+
+					tcmap[i].chromosome_index = index;
+					tcmap[i].fitness = calculateFitness(index, prev);
 				}
-				if(start_index>index)
-					start_index = index;
-				nextGenChromosomeState[index] = 1;
 
-				tcmap[i].chromosome_index = index;
-				tcmap[i].fitness = calculateFitness(index, prev);
-
+				std::sort(tcmap, tcmap + GA_TOURNAMENT_SIZE, &chromosome_sorter);
+				parentsForCrossover[ip] = tcmap[0].chromosome_index;
 			}
-
-			std::sort(tcmap, tcmap + GA_TOURNAMENT_SIZE, &chromosome_sorter);
+				
+			
 
 			if(GA_DEBUG_L2) {
 				for (int i = 0; i < populationSize; ++i) {
@@ -716,7 +733,7 @@ void GA::generate_GA() {
 					}
 				}
 				std::cout << std::endl;
-				std::cout << "Min Index : " << start_index << std::endl;
+				
 
 				file << "TOURNAMENT SELECTION (nextGenChromosomeState) : " << std::endl;
 				for (int i = 0; i < populationSize; ++i)
@@ -732,9 +749,6 @@ void GA::generate_GA() {
 				}
 				std ::cout << "\n---TOURNAMENT SORT END \n";
 			}
-
-			parentsForCrossover[0] = tcmap[0].chromosome_index;
-			parentsForCrossover[1] = tcmap[1].chromosome_index;
 
 			if( GA_DEBUG_L2 )
 				for (int i = 0; i < 2; ++i)
