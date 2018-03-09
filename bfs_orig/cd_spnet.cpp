@@ -783,7 +783,12 @@ void GA::generate_GA() {
 				// int numCrossoverSites = generateRandomNumber(minCrossoverSize, networkNumEdges);
 				// int numCrossoverSites = generateRandomNumber(0, minCrossoverSize);
 				// int numCrossoverSites = minCrossoverSize;
-				int numCrossoverSites = generateRandomNumber(1 , networkNumEdges);
+				int numCrossoverSites = -1;
+				int rchoice = generateRandomNumber(0, 2);
+				if ( rchoice )
+					numCrossoverSites = generateRandomNumber(1 , networkNumEdges/2);
+				else
+					numCrossoverSites = generateRandomNumber(networkNumEdges/2, networkNumEdges);
 
 				if (GA_DEBUG)
 					std::cout << "\t-----CROSSOVER SITES : " << numCrossoverSites << "\n";
