@@ -1542,7 +1542,7 @@ double Network::modularity(char *outputFile)
             if (0)
             {
                 std::cout << numNonSingle << ": " << ptr << " vertices, " << numberEdges << " edges (";
-                std::cout << complete << " complete), modularity_value : " << modularity_value << std::endl;
+                std::cout << complete << " complete), modularity_value : " << first - second << std::endl;
             }
 
             if (ptr == 2) { // only 2 vertices in component

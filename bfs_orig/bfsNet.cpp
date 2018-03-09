@@ -253,13 +253,14 @@ int main(int argc, char ** argv)
   // }
 
   //sparseNet.q_calc("testOut.gml");
+  
   // double mod = sparseNet.modularity(argv[2]);
   // std :: cout << "MODULARITY : " << mod << "\n";
   // return 0;
 
   // GA params
-  int popSize = 250;
-  int generations = 500;
+  int popSize = 100;
+  int generations = 250;
   // // Genetic Part Starts here
   GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);
   sparseGA.set_data_name(argv[1]);

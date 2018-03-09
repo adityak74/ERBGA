@@ -495,7 +495,12 @@ void GA::initializeRates() {
 
 void GA::mutate(int chromosomeIndex, int popState) {
 	int mutation_site = -1;
-	int curMutations = generateRandomNumber(numGenomeMutations/2, numGenomeMutations);
+	int curMutations = -1;
+	int rchoice = generateRandomNumber(0, 2);
+	if ( rchoice )
+		curMutations = generateRandomNumber(numGenomeMutations/2, numGenomeMutations);
+	else
+		curMutations = generateRandomNumber(0 ,numGenomeMutations / 2);
 	for(int i = 0; i < curMutations; i++) {
 		mutation_site = generateRandomNumber(0, networkNumEdges);
 		toggle_bit( chromosomeIndex, mutation_site, popState);
@@ -778,7 +783,7 @@ void GA::generate_GA() {
 				// int numCrossoverSites = generateRandomNumber(minCrossoverSize, networkNumEdges);
 				// int numCrossoverSites = generateRandomNumber(0, minCrossoverSize);
 				// int numCrossoverSites = minCrossoverSize;
-				int numCrossoverSites = generateRandomNumber(1, networkNumEdges);
+				int numCrossoverSites = generateRandomNumber(1 , networkNumEdges);
 
 				if (GA_DEBUG)
 					std::cout << "\t-----CROSSOVER SITES : " << numCrossoverSites << "\n";
