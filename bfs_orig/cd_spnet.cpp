@@ -156,7 +156,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     	fatal("memory not allocated");
 
     // allocate space for bit locations
-    // show edge state (0=removed, 1=in_network)		
+    // show edge state (1=removed, 0=in_network)		
     int bit_arr_pop_size = (popSize);
     int bit_arr_num_edges = ARRAY_SIZE(numEdges);
 
@@ -173,6 +173,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     {
     	for (int j = 0; j < bit_arr_num_edges; ++j)
     	{
+			// this dimesnion should be 2 times the number of subpopulation
     		if ((chromosomesBitArr[i][j] = new char[2]) == NULL) // allocate memory to set of Basic GA Chromosomes
     			fatal("memory not allocated");	
     	}
@@ -495,15 +496,16 @@ void GA::initializeRates() {
 
 void GA::mutate(int chromosomeIndex, int popState) {
 	int mutation_site = -1;
-	int curMutations = -1;
-	int rchoice = generateRandomNumber(0, 2);
-	if ( rchoice )
-		curMutations = generateRandomNumber(numGenomeMutations/2, numGenomeMutations);
-	else
-		curMutations = generateRandomNumber(0 ,numGenomeMutations / 2);
-	for(int i = 0; i < curMutations; i++) {
-		mutation_site = generateRandomNumber(0, networkNumEdges);
-		toggle_bit( chromosomeIndex, mutation_site, popState);
+	// int curMutations = -1;
+	// int rchoice = generateRandomNumber(0, 2);
+	// if ( rchoice )
+	// 	curMutations = generateRandomNumber(numGenomeMutations/2, numGenomeMutations);
+	// else
+	// 	curMutations = generateRandomNumber(0 ,numGenomeMutations / 2);
+	for(int i = 0; i < networkNumEdges; i++) {
+		int rchoice = generateRandomNumber(1, 100);
+		if (rchoice < (int)(GA_MUTATION_RATE * 100))
+			toggle_bit(chromosomeIndex, i, popState);
 	}
 	if(GA_DEBUG_L2) {
 		std::cout << "MUTATION SITE FOR CHR# " << chromosomeIndex << " -> " << mutation_site << std::endl;
