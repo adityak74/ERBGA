@@ -974,6 +974,7 @@ void GA::generate_GA() {
 
 	char new_filename[256] = {0};
 	strcpy(new_filename, GA_BST_GML.c_str());
+	strcat(new_filename, the_date);
 	strcat(new_filename, dataset_name);
 	gaSparseNetwork->printEdges(new_filename);
 
