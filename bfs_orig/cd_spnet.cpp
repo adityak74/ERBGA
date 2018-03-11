@@ -982,12 +982,26 @@ void GA::generate_GA() {
 			}
 			std::sort(cmap_best_pop, cmap_best_pop + GA_NUM_SUBPOPS, &chromosome_sorter);
 
-			for (int popindex = 0; popindex < GA_NUM_SUBPOPS; popindex++) {
-				if ( popindex != cmap_best_pop[0].subpop_num ) {
-					// overwrite the best of all to all other populations
-					copy_chromosome(cmap_best_pop[0].subpop_num, cmap_best_pop[0].chromosome_index, 2 * popindex + 1, 0);
+			if( GA_DEBUG ) {
+				std::cout << "After whole population sort : \n";
+				for(int p = 0; p < GA_NUM_SUBPOPS; p++) {
+					std::cout << cmap_best_pop[p].subpop_num << "\t" << cmap_best_pop[p].chromosome_index << "\t" << cmap_best_pop[p].fitness << std::endl;
 				}
 			}
+
+			std::cout << "After whole population sort moving : \n";
+			for (int popindex = 0; popindex < GA_NUM_SUBPOPS; popindex++) {
+				if ( (2*popindex+1) != cmap_best_pop[0].subpop_num ) {
+					// overwrite the best of all to all other populations
+					copy_chromosome(cmap_best_pop[0].subpop_num, cmap_best_pop[0].chromosome_index, 2 * popindex + 1, 0);
+					if(GA_DEBUG) {
+						
+						std::cout << cmap_best_pop[0].subpop_num << "\t" << cmap_best_pop[0].chromosome_index << "\t" << 2 * popindex + 1 << "\t" << 0 << "\n\n";
+					}
+				}
+			}
+
+			exit(0);
 		}
 
 		currentGeneration++;
