@@ -40,6 +40,8 @@ const int GA_FITNESS_MODULARITY = 1; // use modularity as fitness, else use Qs
 
 const int GA_NUM_SUBPOPS = 5; // number of sub populations
 
+const int GA_SUBPOPS_EXCHANGE = 10; // move the best of all to the other generation
+
 const int GA_CROSSOVER_PARENT_CHILD_BEST = 0; // keep the best in parent and child
 
 const int GA_ONE_WAY_CROSSOVER = 0; // use one way crossover
@@ -97,6 +99,7 @@ class GA {
 		void set_data_name(char*); //set dataset name
 		void printChromosomes(int); // print the whole chromosome at depth
 		void printPopEdgeIDData(); // write Edge ID to file
+		void copy_chromosome(int, int, int, int); // src to dest
 
 	  private:
 		Network *gaSparseNetwork; // generated network reference

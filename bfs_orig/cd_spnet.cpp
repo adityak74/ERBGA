@@ -610,6 +610,16 @@ int nearestEvenInt(int to)
 	return (to % 2 == 0) ? to : (to + 1);
 }
 
+void GA::copy_chromosome(int srcSubPopIndex, int srcChromosome, int destSubPopIndex, int destChromosome) {
+	for (int i = 0; i < networkNumEdges; ++i)
+	{
+		if (get_bit(srcChromosome, i, srcSubPopIndex))
+			set_bit(destChromosome, i, destSubPopIndex);
+		else
+			unset_bit(destChromosome, i, destSubPopIndex);
+	}
+}
+
 // max EdgeID can be (networkNumVertices)^2 for generating random edgeIDs
 // num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA() {
@@ -673,12 +683,10 @@ void GA::generate_GA() {
 				max_fitness_chr = 0;
 				int i = 0;
 				double total_fitness = max_fitness;
-				for (i = 1; i < populationSize; ++i)
-				{
+				for (i = 1; i < populationSize; ++i) {
 					calculateFitness(i, subpopIndex);
 					total_fitness += chromosomes[i].getFitness();
-					if (max_fitness < chromosomes[i].getFitness())
-					{
+					if (max_fitness < chromosomes[i].getFitness()) {
 						max_fitness_chr = i;
 						max_fitness = chromosomes[i].getFitness();
 					}
@@ -717,7 +725,6 @@ void GA::generate_GA() {
 			while( populationIndex < populationSize ) {
 
 				// tournament selection
-
 				int parentsForCrossover[2]; // 2 parents for crossover
 				int nextGenChromosomeState[populationSize];
 
@@ -743,8 +750,6 @@ void GA::generate_GA() {
 					std::sort(tcmap, tcmap + GA_TOURNAMENT_SIZE, &chromosome_sorter);
 					parentsForCrossover[ip] = tcmap[0].chromosome_index;
 				}
-					
-				
 
 				if(GA_DEBUG_L2) {
 					for (int i = 0; i < populationSize; ++i) {
@@ -756,7 +761,6 @@ void GA::generate_GA() {
 					}
 					std::cout << std::endl;
 					
-
 					file << "TOURNAMENT SELECTION (nextGenChromosomeState) : " << std::endl;
 					for (int i = 0; i < populationSize; ++i)
 					{
@@ -955,17 +959,60 @@ void GA::generate_GA() {
 			// prev = !prev;
 			// next = !next;
 		}
+
+		if (currentGeneration % GA_SUBPOPS_EXCHANGE == 0 && currentGeneration > 0) {
+
+			std::cout << "\nMove best of all subpops to remaining islands\n\n";
+			chromosome_map cmap_best_pop[GA_NUM_SUBPOPS];
+			chromosome_map cmap_subpops[populationSize];
+			// best of all chromosome to be printed
+			for (int popi = 0; popi < GA_NUM_SUBPOPS; popi++)
+			{
+
+				for (int i = 0; i < populationSize; ++i)
+				{
+					cmap_subpops[i].chromosome_index = i;
+					cmap_subpops[i].fitness = calculateFitness(i, 2 * popi + 1);
+					cmap_subpops[i].subpop_num = 2 * popi + 1;
+				}
+
+				// sort the chromosomes
+				std::sort(cmap_subpops, cmap_subpops + populationSize, &chromosome_sorter);
+				cmap_best_pop[popi] = cmap_subpops[0];
+			}
+			std::sort(cmap_best_pop, cmap_best_pop + GA_NUM_SUBPOPS, &chromosome_sorter);
+
+			for (int popindex = 0; popindex < GA_NUM_SUBPOPS; popindex++) {
+				if ( popindex != cmap_best_pop[0].subpop_num ) {
+					// overwrite the best of all to all other populations
+					copy_chromosome(cmap_best_pop[0].subpop_num, cmap_best_pop[0].chromosome_index, 2 * popindex + 1, 0);
+				}
+			}
+		}
+
 		currentGeneration++;
-		
-	}
+		}
 
 	file.close();
 
-	// best of all chromoeome to be printed
+	chromosome_map cmap_best_pop[GA_NUM_SUBPOPS];
+	chromosome_map cmap_subpops[populationSize];
+	// best of all chromosome to be printed
 	for(int popi = 0; popi < GA_NUM_SUBPOPS; popi++) {
 
+		for (int i = 0; i < populationSize; ++i) {
+			cmap_subpops[i].chromosome_index = i;
+			cmap_subpops[i].fitness = calculateFitness(i, 2 * popi + 1);
+			cmap_subpops[i].subpop_num = 2 * popi + 1;
+		}
+
+		// sort the chromosomes
+		std::sort(cmap_subpops, cmap_subpops + populationSize, &chromosome_sorter);
+		cmap_best_pop[popi] = cmap_subpops[0];
 	}
-	chromosome_g2p(max_fitness_chr, next);
+	std::sort(cmap_best_pop, cmap_best_pop + GA_NUM_SUBPOPS, &chromosome_sorter);
+
+	chromosome_g2p(cmap_best_pop[0].subpop_num, cmap_best_pop[0].chromosome_index);
 
 	char new_filename[256] = {0};
 	strcpy(new_filename, GA_BST_GML.c_str());
