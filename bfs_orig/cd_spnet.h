@@ -34,13 +34,15 @@ const int GA_TOURNAMENT_SIZE = 7; // tournament size for the seleciton operator
 const double GA_CROSSOVER_SIZE = 0.5; // percentage of chromosome used for crossover
 const double GA_CROSSOVER_RATE = 0.5; // max chr size used for crossover
 const double GA_REPRODUCTION_RATE = 0.2; // rate of reproduction producing the offsprings
-const double GA_MUTATION_RATE = 0.1; // rate of mutation producing the offspring (1 / PopSize) 
+const double GA_MUTATION_RATE = 0.05; // rate of mutation producing the offspring (1 / PopSize) 
 
 const int GA_FITNESS_MODULARITY = 1; // use modularity as fitness, else use Qs
 
-const int GA_CROSSOVER_PARENT_CHILD_BEST = 1; // keep the best in parent and child
+const int GA_NUM_SUBPOPS = 5; // number of sub populations
 
-const int GA_ONE_WAY_CROSSOVER = 1; // use one way crossover
+const int GA_CROSSOVER_PARENT_CHILD_BEST = 0; // keep the best in parent and child
+
+const int GA_ONE_WAY_CROSSOVER = 0; // use one way crossover
 
 const double GA_TOL = 0.0000000001;
 
@@ -91,9 +93,10 @@ class GA {
 		void chromosome_g2p(int, int); // maps the bitArr to chromosomes
 		void printPopData(int = 0); // prints the current population
 		void printChromosome(int, int); // prints the chromosome to log file
-		void move_chromosome_to_next_gen(int, int); // moves chromosome to next generation
+		void move_chromosome_to_next_gen(int, int, int); // moves chromosome to next generation
 		void set_data_name(char*); //set dataset name
 		void printChromosomes(int); // print the whole chromosome at depth
+		void printPopEdgeIDData(); // write Edge ID to file
 
 	  private:
 		Network *gaSparseNetwork; // generated network reference
@@ -121,6 +124,7 @@ typedef struct chromosome_map
 {
 	double fitness;
 	int chromosome_index;
+	int subpop_num;
 };
 
 #endif
