@@ -29,7 +29,7 @@ const int BFS_WG2 = 0; // 1 to output BFS components to .wg2 files
 const double MIN_COMPLETE = 1.1; // print comp. only if less than this value (0.5)
 const int MAX_NUM_COMPS = 500000; // max number of non-singleton components
 const double TOL = 0.000001; // tolerance
-const int NETWORK_API_DEBUG = 1; // debug messages for API functions
+const int NETWORK_API_DEBUG = 0; // debug messages for API functions
 
 class Edge
 {
