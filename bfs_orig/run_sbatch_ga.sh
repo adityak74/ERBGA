@@ -3,11 +3,11 @@
 #SBATCH -p Lewis  # use the Lewis partition
 #SBATCH -J run_ga  # give the job a custom name
 #SBATCH -o results-%j.out  # give the job output a custom name
-#SBATCH -t 0-20:00  # twenty hour time limit
+#SBATCH -t 2-00:00  # 2days -- twenty hour time limit
 
 #SBATCH -N 1  # number of nodes
 #SBATCH -n 1  # number of cores (AKA tasks)
-#SBATCH --mem=31000MB # memory ~31GB
+#SBATCH --mem=100GB # memory ~100GB
 
 ## notifications
 #SBATCH --mail-user=agtk4@mail.umsl.edu  # email address for notifications
