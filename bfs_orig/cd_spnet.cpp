@@ -640,7 +640,7 @@ void GA::generate_GA() {
 	chromosome_map cmap[populationSize], tcmap[GA_TOURNAMENT_SIZE];
 
 	// print the chromosome array
-	printChromosomes(0);
+	// printChromosomes(0);
 
 	if(GA_DEBUG) {
 			double max_fitness = calculateFitness(0, prev);
@@ -676,7 +676,7 @@ void GA::generate_GA() {
 		int populationIndex = 0;
 
 		// skip first generation
-		if(currentGeneration != 0) {
+		if(currentGeneration > 0) {
 			// ELITISM
 			
 			for (int i = 0; i < populationSize; ++i)
