@@ -42,8 +42,8 @@ int main(int argc, char ** argv)
   if(DESCRIPTIVE_OUTPUT)
     fprintf(output, "%s\n", argv[1]);
 
-  int min = 1000000000;   // hold min node number
-  int max = -1000000000;  // hold max node number
+  long long int min = 10000000000;   // hold min node number
+  long long int max = -10000000000;  // hold max node number
   char string[50];
   int startOne; // 1 if start node number is 1, 0 if start number is 0
 
@@ -57,8 +57,8 @@ int main(int argc, char ** argv)
   }
 
   // find number of nodes in graph
-  int numNodes = 0; // number of nodes
-  int numEdges = 0; // number of edges
+  long long int numNodes = 0; // number of nodes
+  long long int numEdges = 0; // number of edges
 
   while (1) { // throw away everything until get to "edge" declaration
     if(feof(input)) fatal("no edges to read in input file");
@@ -67,7 +67,7 @@ int main(int argc, char ** argv)
 
     if(strncmp(string, "id", 2) == 0) { 
       fscanf(input, "%s", string); // read in id value
-      int num = atoi(string);
+      long int num = atoi(string);
 
       if(min > num) min = num; // update minimum node number
       if(max < num) max = num; // update maximum node number

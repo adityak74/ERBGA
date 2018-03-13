@@ -22,7 +22,7 @@
 #include "bfsNet.h"
 
 const int RETAINSYMMETRIC = 1;// 1 to retain both (i,j) and (j,i) (always use 1 when using BFS)
-const int DESCRIPTIVE_OUTPUT = 0; // 0 for just cluster membership numbers
+const int DESCRIPTIVE_OUTPUT = 1; // 0 for just cluster membership numbers
 const int PRINTCOMPSIZES = 0; // 1 to print summary of component sizes out to "saveCompSizes.txt"
 const int BFS_GML = 0; // 1 to output BFS components to .gml files
 const int BFS_WG2 = 0; // 1 to output BFS components to .wg2 files

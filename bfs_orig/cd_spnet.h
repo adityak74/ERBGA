@@ -74,10 +74,10 @@ class GA {
 		GA(Network&, int = 0, int = 0, int = 0, int = 0); // create GA with populationSize for each Individual
 		~GA(); // destructor to manage garbage collection
 		void generate_GA(); // test func
-		int removeEdgeByID(int); // remove edge by EdgeID 
+		int removeEdgeByID(long long int); // remove edge by EdgeID 
 		void getOriginalEdgeIDS(); // returns the EdgeIDS for the network
 		int removeEdgeByPosition(int, int); // removes edge by (v1,v2) position
-		int getEdgeIDIndex(int); // get index of EdgeID from originalEdgeIDS
+		int getEdgeIDIndex(long long int); // get index of EdgeID from originalEdgeIDS
 		void getFitness(); // Calculate the fitness of the chromosome "i"
 		double calculateFitness(int = -1, int = 0); // calculates the fitness of the chromosome
 		double averageFitnessForPopulation(); // calculates the average fitness of population
@@ -102,9 +102,9 @@ class GA {
 		int numGenerations; // number of generations of GA
 		int networkNumVertices; // store the number of vertices in the graph
 		int networkNumEdges; // store the number of edges in the graph
-		int *originalEdgeIDS; // network EdgeIDs for lookup in Genetic Algo
+		long long int *originalEdgeIDS; // network EdgeIDs for lookup in Genetic Algo
 		int **simpleGAChromosome; // basic chromosome to generate initial populations
-		int addEdgeByEdgeID(int); // add edge by EdgeID to the network
+		int addEdgeByEdgeID(long long int); // add edge by EdgeID to the network
 		int generateRandomNumber(int, int); // generate random number between min and max range
 		char ***chromosomesBitArr; // bit array for edge state in the chromosome
 		double crossover_rate; // crossover produced offsprings

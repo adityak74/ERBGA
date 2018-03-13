@@ -20,7 +20,7 @@ char the_date[256];
 // binary search part
 // A recursive binary search function. It returns location of x in
 // given array arr[l..r] is present, otherwise -1
-int binarySearch(int arr[], int l, int r, int x)
+int binarySearch(long long int arr[], int l, int r, int x)
 {
    if (r >= l)
    {
@@ -88,7 +88,7 @@ void GA::chromosome_g2p(int chromosomeIndex, int depth) {
 		std ::cout << "\n --- Removed edges from : " << chromosomeIndex + 1 << std ::endl;
 }
 
-int GA::removeEdgeByID(int edgeID) {
+int GA::removeEdgeByID(long long int edgeID) {
 	return gaSparseNetwork->removeEdge(edgeID / networkNumVertices, edgeID % networkNumVertices);
 }
 
@@ -96,12 +96,12 @@ int GA::removeEdgeByPosition(int v1, int v2) {
 	return gaSparseNetwork->removeEdge(v1, v2);
 }
 
-int GA::addEdgeByEdgeID(int edgeID) {
+int GA::addEdgeByEdgeID(long long int edgeID) {
 	return gaSparseNetwork->addEdge(edgeID / networkNumVertices, edgeID % networkNumVertices, 1.0);
 }
 
 // get index by using binary search
-int GA::getEdgeIDIndex(int edgeID) {
+int GA::getEdgeIDIndex(long long int edgeID) {
 	return binarySearch(originalEdgeIDS, 0, networkNumEdges, edgeID);
 }
 
@@ -152,7 +152,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     	chromosomes[i].networkNumEdgesChr = networkNumEdges;
     }
 
-    if ((originalEdgeIDS = new int[numEdges]) == NULL)
+    if ((originalEdgeIDS = new long long int[numEdges]) == NULL)
     	fatal("memory not allocated");
 
     // allocate space for bit locations
@@ -193,7 +193,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
     int edgePos = 0;
 
     // generate originalEdgeIDS for future use
-    for (int i = 0; i < networkNumVertices; ++i)
+    for (long long int i = 0; i < networkNumVertices; ++i)
     {
     	Edge *edgePtr;
     	edgePtr = &gaSparseNetwork->vertices[i].firstEdge;
@@ -207,8 +207,8 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 
     		// Avoid RETAINSYMMETRIC
     		if(i < edgePtr->target){
-    			if(GA_DEBUG)
-    				std::cout << "#"<< edgePos << " :-: " << networkNumVertices * (i) << " + " << (edgePtr->target) << std::endl;
+    			if(!GA_DEBUG)
+    				std::cout << "#"<< edgePos << " :-: " << networkNumVertices * (i) << " + " << (edgePtr->target) << " = " << networkNumVertices*(i)+(edgePtr->target) << std::endl;
     			originalEdgeIDS[edgePos++] = networkNumVertices*(i)+(edgePtr->target);
     		}
     	}
