@@ -207,7 +207,7 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 
     		// Avoid RETAINSYMMETRIC
     		if(i < edgePtr->target){
-    			if(!GA_DEBUG)
+    			if(GA_DEBUG)
     				std::cout << "#"<< edgePos << " :-: " << networkNumVertices * (i) << " + " << (edgePtr->target) << " = " << networkNumVertices*(i)+(edgePtr->target) << std::endl;
     			originalEdgeIDS[edgePos++] = networkNumVertices*(i)+(edgePtr->target);
     		}
@@ -792,7 +792,7 @@ void GA::generate_GA() {
 				else
 					numCrossoverSites = generateRandomNumber(networkNumEdges/2, networkNumEdges);
 
-				if (GA_DEBUG)
+				if (GA_DEBUG_L2)
 					std::cout << "\t-----CROSSOVER SITES : " << numCrossoverSites << "\n";
 
 				for (int i = 0; i < networkNumEdges; ++i)
