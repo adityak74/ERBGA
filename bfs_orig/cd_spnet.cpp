@@ -676,7 +676,7 @@ void GA::generate_GA() {
 		int populationIndex = 0;
 
 		// skip first generation
-		if(currentGeneration > 0) {
+		if(currentGeneration >= 0) {
 			// ELITISM
 			
 			for (int i = 0; i < populationSize; ++i)
@@ -795,73 +795,116 @@ void GA::generate_GA() {
 				if (GA_DEBUG_L2)
 					std::cout << "\t-----CROSSOVER SITES : " << numCrossoverSites << "\n";
 
-				for (int i = 0; i < networkNumEdges; ++i)
-					randomBitVector[i] = 0;
+				if(GA_ONE_POINT_CROSSOVER) {
+					int firstPoint = generateRandomNumber(1, networkNumEdges / 2);
+					int secondPoint = generateRandomNumber(networkNumEdges / 2, networkNumEdges);
+					if (GA_DEBUG) {
+						std::cout << "\n\t-----ONE WAY PT : " << firstPoint << "\n";
+						std::cout << "\n\t-----TWO WAY PT : " << secondPoint << "\n";
+					}
+					for (int i = 0; i < networkNumEdges; i++)
+					{
+							// perform crossover at sites
+							//if (i <= firstPoint && i >= secondPoint)
+							if (i >= numCrossoverSites)
+							{
+								// swap values at i
+								if (get_bit(parentsForCrossover[1], i, prev))
+									set_bit(populationIndex, i, next);
+								else
+									unset_bit(populationIndex, i, next);
 
-				while(numCrossoverSites) {
-					int crossoverSite = generateRandomNumber(0, networkNumEdges);
-					while(randomBitVector[crossoverSite])
-						crossoverSite = generateRandomNumber(0, networkNumEdges);
-					randomBitVector[crossoverSite] = 1;
-					numCrossoverSites--;
-				}
+								if (get_bit(parentsForCrossover[0], i, prev))
+									set_bit(populationIndex + 1, i, next);
+								else
+									unset_bit(populationIndex + 1, i, next);
+							}
+							else
+							{
+								if (get_bit(parentsForCrossover[0], i, prev))
+									set_bit(populationIndex, i, next);
+								else
+									unset_bit(populationIndex, i, next);
 
-				for (int i = 0; i < networkNumEdges; ++i)
-				{
+								if (get_bit(parentsForCrossover[1], i, prev))
+									set_bit(populationIndex + 1, i, next);
+								else
+									unset_bit(populationIndex + 1, i, next);
+							}
+					}
+				} else {
 
-					if (GA_ONE_WAY_CROSSOVER) {
-						// perform crossover at sites
-						if (randomBitVector[i])
+					for (int i = 0; i < networkNumEdges; ++i)
+						randomBitVector[i] = 0;
+
+					while (numCrossoverSites)
+					{
+						int crossoverSite = generateRandomNumber(0, networkNumEdges);
+						while (randomBitVector[crossoverSite])
+							crossoverSite = generateRandomNumber(0, networkNumEdges);
+						randomBitVector[crossoverSite] = 1;
+						numCrossoverSites--;
+					}
+
+					for (int i = 0; i < networkNumEdges; ++i)
+					{
+						if (GA_ONE_WAY_CROSSOVER)
 						{
-							// swap values at i
-							if (get_bit(parentsForCrossover[0], i, prev))
-								set_bit(populationIndex, i, next);
-							else
-								unset_bit(populationIndex, i, next);
+							// perform crossover at sites
+							if (randomBitVector[i])
+							{
+								// swap values at i
+								if (get_bit(parentsForCrossover[0], i, prev))
+									set_bit(populationIndex, i, next);
+								else
+									unset_bit(populationIndex, i, next);
 
-							if (get_bit(parentsForCrossover[0], i, prev))
-								set_bit(populationIndex + 1, i, next);
+								if (get_bit(parentsForCrossover[0], i, prev))
+									set_bit(populationIndex + 1, i, next);
+								else
+									unset_bit(populationIndex + 1, i, next);
+							}
 							else
-								unset_bit(populationIndex + 1, i, next);
+							{
+								if (get_bit(parentsForCrossover[0], i, prev))
+									set_bit(populationIndex, i, next);
+								else
+									unset_bit(populationIndex, i, next);
+
+								if (get_bit(parentsForCrossover[1], i, prev))
+									set_bit(populationIndex + 1, i, next);
+								else
+									unset_bit(populationIndex + 1, i, next);
+							}
 						}
 						else
 						{
-							if (get_bit(parentsForCrossover[0], i, prev))
-								set_bit(populationIndex, i, next);
-							else
-								unset_bit(populationIndex, i, next);
+							// perform crossover at sites
+							if (randomBitVector[i])
+							{
+								// swap values at i
+								if (get_bit(parentsForCrossover[1], i, prev))
+									set_bit(populationIndex, i, next);
+								else
+									unset_bit(populationIndex, i, next);
 
-							if (get_bit(parentsForCrossover[1], i, prev))
-								set_bit(populationIndex + 1, i, next);
+								if (get_bit(parentsForCrossover[0], i, prev))
+									set_bit(populationIndex + 1, i, next);
+								else
+									unset_bit(populationIndex + 1, i, next);
+							}
 							else
-								unset_bit(populationIndex + 1, i, next);
-						}
-					} else {
-						// perform crossover at sites
-						if (randomBitVector[i])
-						{
-							// swap values at i
-							if (get_bit(parentsForCrossover[1], i, prev))
-								set_bit(populationIndex, i, next);
-							else
-								unset_bit(populationIndex, i, next);
+							{
+								if (get_bit(parentsForCrossover[0], i, prev))
+									set_bit(populationIndex, i, next);
+								else
+									unset_bit(populationIndex, i, next);
 
-							if (get_bit(parentsForCrossover[0], i, prev))
-								set_bit(populationIndex + 1, i, next);
-							else
-								unset_bit(populationIndex + 1, i, next);
-						}
-						else
-						{
-							if (get_bit(parentsForCrossover[0], i, prev))
-								set_bit(populationIndex, i, next);
-							else
-								unset_bit(populationIndex, i, next);
-
-							if (get_bit(parentsForCrossover[1], i, prev))
-								set_bit(populationIndex + 1, i, next);
-							else
-								unset_bit(populationIndex + 1, i, next);
+								if (get_bit(parentsForCrossover[1], i, prev))
+									set_bit(populationIndex + 1, i, next);
+								else
+									unset_bit(populationIndex + 1, i, next);
+							}
 						}
 					}
 				}

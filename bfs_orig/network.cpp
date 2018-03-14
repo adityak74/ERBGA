@@ -1539,7 +1539,7 @@ double Network::modularity(char *outputFile)
 
             modularity_value += first - second;
 
-            if (0)
+            if (1)
             {
                 std::cout << numNonSingle << ": " << ptr << " vertices, " << numberEdges << " edges (";
                 std::cout << complete << " complete), modularity_value : " << first - second << std::endl;

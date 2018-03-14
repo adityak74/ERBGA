@@ -34,13 +34,15 @@ const int GA_TOURNAMENT_SIZE = 7; // tournament size for the seleciton operator
 const double GA_CROSSOVER_SIZE = 0.5; // percentage of chromosome used for crossover
 const double GA_CROSSOVER_RATE = 0.5; // max chr size used for crossover
 const double GA_REPRODUCTION_RATE = 0.2; // rate of reproduction producing the offsprings
-const double GA_MUTATION_RATE = 0.2; // rate of mutation producing the offspring (1 / PopSize) 
+const double GA_MUTATION_RATE = 0.1; // rate of mutation producing the offspring (1 / PopSize) 
 
 const int GA_FITNESS_MODULARITY = 1; // use modularity as fitness, else use Qs
 
 const int GA_CROSSOVER_PARENT_CHILD_BEST = 0; // keep the best in parent and child
 
 const int GA_ONE_WAY_CROSSOVER = 0; // use one way crossover
+
+const int GA_ONE_POINT_CROSSOVER = 0; // one point crossover
 
 const double GA_TOL = 0.0000000001;
 
