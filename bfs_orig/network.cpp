@@ -223,6 +223,8 @@ Network::Network(int numNodes, int dir, int min, int max)
         fatal("memory not allocated");
     for (int i = 0; i < max + 1; i++)
         invID[i] = -1; // initialize values for invID some values can be -1
+    if ((kcluster = new int) == NULL) // allocate memory to node IDs
+        fatal("memory not allocated");
     // allocate memory for edgeIDs change to numEdges
 }
 
@@ -513,6 +515,34 @@ void Network::setGlobalNetworkGE() {
         fatal("Negative edge weight");
 
     return wt;
+}
+
+void Vertex::getEndPoints(int& endPointsList) {
+    Edge *edgePtr;        // pointer to move through linked list of edges
+    edgePtr = &firstEdge; // point to first edge
+
+    if (edgePtr->next == NULL)
+        return; // no edges from this node
+    int index = 0;
+    int* p = &endPointsList;
+    while (edgePtr->next != NULL)
+    {                            // follow until find last edge
+        edgePtr = edgePtr->next; // pointer points at next edge in list
+        *(p+(index++)) = edgePtr->target;
+    }
+    if (NETWORK_API_DEBUG) {
+        std :: cout << "EPTS index : " << index << std :: endl;
+    }
+}
+
+// returns the endPointsList reference
+void Network::getNodeEndPoints(int node, int& endPointList) {
+    if ((node > numVertices - 1))
+        fatal("Attempt to check edge to non-existent node");
+    if ((node < 0))
+        fatal("Attempt to check edge to negative numbered node");
+
+    vertices[node].getEndPoints(endPointList);
 }
 
 // Network::haveEdge() returns int
@@ -983,6 +1013,7 @@ double Network::q_calc(char* outputFile)
     int numSingle = 0; // count nodes with degree zero
     int numTwo = 0; // count number of components with 2 vertices
     int k = 0; // current cluster number
+    kcluster = &k;
     // long int totalEdges = 0; // total edges in graph
     int numComp3orMore = 0; // number of components with 3 or more vertices
     FILE* outputGML; // output components to .gml files
@@ -1065,8 +1096,9 @@ double Network::q_calc(char* outputFile)
             if (complete < 0 - TOL)
                 fatal("Negative density of component computed");
 
-            for (int j = 0; j < ptr; j++) // assign cluster number
+            for (int j = 0; j < ptr; j++) { // assign cluster number
                 clusterNum[component[j]] = k;
+            }
             k++; // move to next cluster number
 
             if (compPtr == MAX_NUM_COMPS)
@@ -1422,6 +1454,7 @@ double Network::modularity(char *outputFile)
     int numSingle = 0; // count nodes with degree zero
     int numTwo = 0;    // count number of components with 2 vertices
     int k = 0;         // current cluster number
+    kcluster = &k; // point kcluster to k
     // long int totalEdges = 0; // total edges in graph
     int numComp3orMore = 0; // number of components with 3 or more vertices
     FILE *outputGML;        // output components to .gml files
@@ -1452,6 +1485,8 @@ double Network::modularity(char *outputFile)
         fatal("memory not allocated"); // allocate memory
     if (((queue = new int[numVertices]) == NULL) || ((clusterNum = new int[numVertices]) == NULL))
         fatal("memory not allocated"); // allocate memory
+    if (((globalClusterNum = new int[numVertices]) == NULL))
+        fatal("memory not allocated"); // allocate memory
 
     for (int i = 0; i < numVertices; i++)
         visited[i] = 0; // initialize values to not visited
@@ -1464,6 +1499,7 @@ double Network::modularity(char *outputFile)
         {
             numSingle++;
             clusterNum[i] = -1; // designate node as singleton
+            globalClusterNum[i] = -1;
             continue;
         }
 
@@ -1510,8 +1546,10 @@ double Network::modularity(char *outputFile)
             if (complete < 0 - TOL)
                 fatal("Negative density of component computed");
 
-            for (int j = 0; j < ptr; j++) // assign cluster number
+            for (int j = 0; j < ptr; j++) {// assign cluster number
                 clusterNum[component[j]] = k;
+                globalClusterNum[component[j]] = k;
+            }
             k++; // move to next cluster number
 
             if (compPtr == MAX_NUM_COMPS)

@@ -59,7 +59,7 @@ class Vertex
   // change to edgeListPlaceholder.next
   //int ID; // GML ID number of vertex
   //char *label; // GML label of vertex (NULL if none specified)
-
+  public:
   int addEdge(int, double=1.0); // add an edge to vertex, return 1 if successful
   int haveEdge(int); // check to see if edge already exists, return 0 if not
   double getWeight(int); // return weight of edge
@@ -71,6 +71,7 @@ class Vertex
   //int getID(); // get GML ID number of vertex (-1 if none specified)
   //char *getLabel(); // get GML label of vertex (NULL if none specified)
   int getOriginalDegree(); // returns original_degree
+  void getEndPoints(int&); // get the list of end points
 };
 
 class Network
@@ -98,6 +99,7 @@ class Network
   void setGlobalNetworkGE(); // set the original vertives and edges values from read graph
   double modularity(char *); // calculates the modularity of the network
   int getOriginalDegree(int); // gets the original degree of vertex
+  void getNodeEndPoints(int, int &); 
 
       private : int numVertices; // number of vertices
   int directed; // 0 if undirected, 1 if directed
@@ -107,6 +109,7 @@ class Network
   Vertex *vertices; // vertices in network
   int *id; // hold the node IDs as given in input network
   int *invID; // inverted ID numbers for easy look-up
+  int *kcluster; // number of clusters in the network
   
 };
 

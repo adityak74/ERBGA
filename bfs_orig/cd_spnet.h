@@ -35,6 +35,8 @@ const double GA_CROSSOVER_SIZE = 0.5; // percentage of chromosome used for cross
 const double GA_CROSSOVER_RATE = 0.5; // max chr size used for crossover
 const double GA_REPRODUCTION_RATE = 0.2; // rate of reproduction producing the offsprings
 const double GA_MUTATION_RATE = 0.1; // rate of mutation producing the offspring (1 / PopSize) 
+const double GA_GENE_REPAIR_PERCENT = 0.1; // nodes of higher degree are repaired
+const double GA_GENE_REPAIR_CHANCE = 0.05; // percent of edges to add back
 
 const int GA_FITNESS_MODULARITY = 1; // use modularity as fitness, else use Qs
 
@@ -55,7 +57,22 @@ const std::string GA_BST_GML = "ga_bst_final-"; // name for final GML
 // macro for calculating the size from actual array to bit array size
 #define ARRAY_SIZE(x) (x/8+(!!(x%8)))
 
-	class Chromosome {
+// chromosome mapping dependency structure for std::sort
+typedef struct chromosome_map
+{
+	double fitness;
+	int chromosome_index;
+};
+
+// map degree and node index
+typedef struct node_degree_map
+{
+	int node_index;
+	int degree;
+};
+
+class Chromosome
+{
 	friend class Population; // Population class allowed access to private functions
 	friend class GA; // GA class allowed access to private functions
 	public:
@@ -96,6 +113,7 @@ class GA {
 		void move_chromosome_to_next_gen(int, int); // moves chromosome to next generation
 		void set_data_name(char*); //set dataset name
 		void printChromosomes(int); // print the whole chromosome at depth
+		void repairGene(int, int); // repair the gene for high degree nodes 
 
 	  private:
 		Network *gaSparseNetwork; // generated network reference
@@ -113,16 +131,11 @@ class GA {
 		double mutation_rate; // mutation produced offsprings
 		double reproduction_rate; // reproduction produced offsprings
 		int numGenomeMutations; // number of genomes mutated in the chromosome
+		int numGenesRepairSize; // number of nodes to be repaired after the breeding phase
 		int next = 1;
 		int prev = 0;
 		char *dataset_name;
-};
-
-// chromosome mapping dependency structure for std::sort
-typedef struct chromosome_map
-{
-	double fitness;
-	int chromosome_index;
+		node_degree_map *ndmap;
 };
 
 #endif
