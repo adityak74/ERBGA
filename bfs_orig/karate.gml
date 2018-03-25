@@ -4,138 +4,172 @@ graph
   node
   [
     id 1
+    color "#c6372f"
   ]
   node
   [
     id 2
+    color "#79e958"
   ]
   node
   [
     id 3
+    color "#79e958"
   ]
   node
   [
     id 4
+    color "#79e958"
   ]
   node
   [
     id 5
+    color "#c6372f"
   ]
   node
   [
     id 6
+    color "#c6372f"
   ]
   node
   [
     id 7
+    color "#c6372f"
   ]
   node
   [
     id 8
+    color "#79e958"
   ]
   node
   [
     id 9
+    color "#0fa3ce"
   ]
   node
   [
     id 10
+    color "#79e958"
   ]
   node
   [
     id 11
+    color "#c6372f"
   ]
   node
   [
     id 12
+    color "#c6372f"
   ]
   node
   [
     id 13
+    color "#79e958"
   ]
   node
   [
     id 14
+    color "#79e958"
   ]
   node
   [
     id 15
+    color "#0fa3ce"
   ]
   node
   [
     id 16
+    color "#0fa3ce"
   ]
   node
   [
     id 17
+    color "#c6372f"
   ]
   node
   [
     id 18
+    color "#79e958"
   ]
   node
   [
     id 19
+    color "#0fa3ce"
   ]
   node
   [
     id 20
+    color "#c6372f"
   ]
   node
   [
     id 21
+    color "#0fa3ce"
   ]
   node
   [
     id 22
+    color "#79e958"
   ]
   node
   [
     id 23
+    color "#0fa3ce"
   ]
   node
   [
     id 24
+    color "#a849cc"
   ]
   node
   [
     id 25
+    color "#a849cc"
   ]
   node
   [
     id 26
+    color "#a849cc"
   ]
   node
   [
     id 27
+    color "#0fa3ce"
   ]
   node
   [
     id 28
+    color "#a849cc"
   ]
   node
   [
     id 29
+    color "#a849cc"
   ]
   node
   [
     id 30
+    color "#0fa3ce"
   ]
   node
   [
     id 31
+    color "#0fa3ce"
   ]
   node
   [
     id 32
+    color "#a849cc"
   ]
   node
   [
     id 33
+    color "#0fa3ce"
   ]
   node
   [
     id 34
+    color "#0fa3ce"
   ]
   edge
   [
