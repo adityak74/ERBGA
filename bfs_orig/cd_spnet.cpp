@@ -1135,6 +1135,14 @@ void GA::generate_GA() {
     		test_file.open(filename, std :: ios :: out | std :: ios :: app); // open file in append mode
 			test_file << max_fitness_generation << "\t" << (double)total_fitness / populationSize << std::endl;
 			test_file.close();
+
+			chromosome_g2p(max_fitness_chr, next);
+
+			char new_filename[256] = {0};
+			strcpy(new_filename, GA_BST_GML.c_str());
+			strcat(new_filename, the_date);
+			strcat(new_filename, dataset_name);
+			gaSparseNetwork->printEdges(new_filename);
 		}
 
 		std ::cout << "\n---END OF GENERATION #" << currentGeneration + 1 << "---" << std :: endl;
