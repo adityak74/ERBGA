@@ -1,20 +1,25 @@
-/***********************************************************
-/
-/   Implementation of network data structure
-/
-/   Sharlee Climer 
-/   June 2007
-/
-/   Breadth-first search added October/November 2007
-/   Print out component size summary (PRINTCOMPSIZES)
-/    added January 2011
-/
-/   Add New Edge to the front of the list
-/   Moved in ID and invID from BFS
-/   assignID and getID functions added
-/   July 2017
-/
-/**********************************************************/
+// *********************************************************
+//
+//    Implementation of network data structure
+//
+//    Sharlee Climer 
+//    June 2007
+//
+//    Breadth-first search added October/November 2007
+//    Print out component size summary (PRINTCOMPSIZES)
+//     added January 2011
+//
+//    Add New Edge to the front of the list
+//    Moved ID and invID from BFS
+//    assignID and getID functions added
+//    Added remove edge
+//    Fixed garbage collection
+//    Added Qs    
+//    Added Modularity
+// 
+//    July 2017 - March 2018
+//
+// *********************************************************
 
 #include "network.h"
 

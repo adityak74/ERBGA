@@ -3,7 +3,8 @@
 //
 // written by Sharlee Climer, October 2007
 //
-// update : added DEBUG for Debugging mode in the BFSNET Driver file.
+//  Modified : added DEBUG for Debugging mode in the BFSNET Driver file.
+//  Modified by Aditya Karnam, July,2017 - March, 2018
 //
 // ------------------------------------------------------------------------
 
@@ -13,6 +14,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <ctype.h>
 #include <iostream>
 #include <iomanip>
 #include "timer.h"

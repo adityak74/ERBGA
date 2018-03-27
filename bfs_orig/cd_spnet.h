@@ -135,7 +135,7 @@ class GA {
 		int next = 1;
 		int prev = 0;
 		char *dataset_name;
-		node_degree_map *ndmap;
+		node_degree_map *ndmap; // map node and degree to sort with context
 };
 
 #endif
