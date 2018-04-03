@@ -8,7 +8,7 @@
 # Added cleaning *.log files
 
 CC	= g++
-CFLAGS 	= -g
+CFLAGS 	= -g -std=c++11
 TARGET	= bfs
 OBJS	= bfsNet.o network.o cd_spnet.o
 
