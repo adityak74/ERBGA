@@ -155,7 +155,9 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 
 	the_date[0] = '\0';
 	now = time(NULL);
-	strftime(the_date, 256, "-%F-%T.log", gmtime(&now));
+	strftime(the_date, 256, "-%F-%T-", gmtime(&now));
+	strcat(the_date, std::to_string(now).c_str());
+	strcat(the_date, ".log");
 
 	// set class data memebers
 	populationSize = popSize;
@@ -260,8 +262,10 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 			// Avoid RETAINSYMMETRIC
 			if (i < edgePtr->target)
 			{
-				if (GA_DEBUG_L2)
+				if (GA_DEBUG_L2) {
 					std::cout << "#" << edgePos << " :-: " << networkNumVertices * (i) << " + " << (edgePtr->target) << " = " << networkNumVertices * (i) + (edgePtr->target) << std::endl;
+					std::cout << "\t---(" << (i + 1) << " , " << (edgePtr->target+1) << " )\n\n";
+				}
 				originalEdgeIDS[edgePos++] = networkNumVertices * (i) + (edgePtr->target);
 			}
 		}
@@ -769,7 +773,6 @@ void GA::repairGene(int chromosomeIndex, int depth)
 // num of edges removed can be a max upto (2, networkNumEdges/2)
 void GA::generate_GA()
 {
-
 	int crossover_discards = 0, numCrossovers = 0, numMutations = 0;
 
 	std::fstream file, pop_file; // declare an object of fstream class
@@ -903,7 +906,13 @@ void GA::generate_GA()
 				for (int i = 0; i < populationSize; ++i)
 					nextGenChromosomeState[i] = 0; // no chromosome is selected 0, if selected 1
 
-				for (int i = 0; i < GA_TOURNAMENT_SIZE; ++i)
+				// bias the selection to have atleast one of the elite chromosomes
+				int bias_chr_index = generateRandomNumber(0, numEliteChromosomes);
+				nextGenChromosomeState[bias_chr_index] = 1;
+				tcmap[0].chromosome_index = bias_chr_index;
+				tcmap[0].fitness = calculateFitness(bias_chr_index, prev);
+
+				for (int i = 1; i < GA_TOURNAMENT_SIZE; ++i)
 				{
 					// srand (time(NULL));
 					int index = generateRandomNumber(0, populationSize);
@@ -1208,6 +1217,7 @@ void GA::generate_GA()
 			file << "averageFitnessForGen #" << currentGeneration << " : " << (double)total_fitness / populationSize << std::endl;
 			file << "Best Chr# " << max_fitness_chr << " -> Fitness : " << max_fitness << std::endl;
 			printChromosome(max_fitness_chr, next);
+			
 			max_fitness_generation = max_fitness;
 
 			std::fstream test_file; // declare an object of fstream class
@@ -1238,7 +1248,7 @@ void GA::generate_GA()
 	file.close();
 
 	chromosome_g2p(max_fitness_chr, next);
-
+	printChromosomes(next);
 	char new_filename[256] = {0};
 	strcpy(new_filename, GA_BST_GML.c_str());
 	strcat(new_filename, the_date);
