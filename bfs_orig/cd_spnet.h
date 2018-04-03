@@ -38,7 +38,7 @@ const double GA_MUTATION_RATE = 0.1; // rate of mutation producing the offspring
 const double GA_GENE_REPAIR_PERCENT = 0.1; // nodes of higher degree are repaired
 const double GA_GENE_REPAIR_CHANCE = 0.05; // percent of edges to add back
 
-const int GA_FITNESS_MODULARITY = 1; // use modularity as fitness, else use Qs
+const int GA_FITNESS_MODULARITY = 0; // use modularity as fitness, else use Qs
 
 const int GA_CROSSOVER_PARENT_CHILD_BEST = 0; // keep the best in parent and child
 

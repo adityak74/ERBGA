@@ -834,16 +834,17 @@ void GA::generate_GA()
 		{
 			int numSingletons = 0;
 			total_fitness += calculateFitness(i, prev);
+			
 			// print the clustering scheme
-			std::cout << "\n\n------Clustering Scheme for Chromosome : " << i + 1 << std::endl;
-			for (int j = 0; j < networkNumVertices; j++)
-			{
-				std::cout << gaSparseNetwork->globalClusterNum[j] << "\t";
-				if (gaSparseNetwork->globalClusterNum[j] == -1)
-					numSingletons += 1;
-			}
-			std::cout << "\n\n Number of clusters : " << *(gaSparseNetwork->kcluster) << std::endl;
-			std::cout << "\n\n Singletons : " << numSingletons << std::endl;
+			// std::cout << "\n\n------Clustering Scheme for Chromosome : " << i + 1 << std::endl;
+			// for (int j = 0; j < networkNumVertices; j++)
+			// {
+			// 	std::cout << gaSparseNetwork->globalClusterNum[j] << "\t";
+			// 	if (gaSparseNetwork->globalClusterNum[j] == -1)
+			// 		numSingletons += 1;
+			// }
+			// std::cout << "\n\n Number of clusters : " << *(gaSparseNetwork->kcluster) << std::endl;
+			// std::cout << "\n\n Singletons : " << numSingletons << std::endl;
 
 			std::cout << std::endl;
 
