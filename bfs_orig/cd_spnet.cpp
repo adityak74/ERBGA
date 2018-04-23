@@ -178,6 +178,8 @@ GA::GA(Network &sparseNetwork, int popSize, int generations, int numNodes, int n
 
 	std::sort(ndmap, ndmap + networkNumVertices, &node_sorter);
 
+	int max_degree = ndmap[0].degree; // store the max degree
+
 	if (GA_DEBUG)
 	{
 		std::cout << "--- Nodes sorted by degree ascending : " << std::endl;
