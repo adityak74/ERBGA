@@ -486,12 +486,37 @@ void Network::setGlobalNetworkGE() {
 
     // assign the degree of the original_degree of every node
     // this will be used for calculating modularity
+
+    int max_degree = 0, total_degree = 0;
+    double average_degree = 0.0f;
+
     for (int i = 0; i < numVertices; i++)
     {
         vertices[i].original_degree = vertices[i].degree;
+        total_degree += vertices[i].degree;
+        if ( max_degree < vertices[i].degree )
+            max_degree = vertices[i].degree;
+
         if ( NETWORK_API_DEBUG )
             std :: cout << "====Vertex #" << i+1 << ", degree : " << vertices[i].degree << "\n";
     }
+
+    // set the average degree
+    average_degree = (double) total_degree / numVertices;
+
+    if ( NETWORK_API_DEBUG ) {
+        std :: cout << "====max degree : " << max_degree << "\n";
+        std :: cout << "====average degree : " << average_degree << "\n";
+    }
+
+    for (int i = 0; i < numVertices; i++)
+    {
+        vertices[i].degree_rate = (double)(max_degree - vertices[i].degree) / max_degree + (double)(abs(average_degree - vertices[i].degree)) / max_degree;
+        
+        if ( !NETWORK_API_DEBUG )
+            std :: cout << "====Vertex #" << i+1 << ", degree_rate : " << vertices[i].degree_rate << " max degree : " << max_degree<< "\n";
+    }
+    
 }
 
     // Network::getEdgeWeight() returns double

@@ -25,7 +25,7 @@
 #include <iomanip>
 #include <string.h>
 #include <time.h>
-#include "bfsNet.h"
+#include "erbga_driver.h"
 
 const int RETAINSYMMETRIC = 1;    // 1 to retain both (i,j) and (j,i) (always use 1 when using BFS)
 const int DESCRIPTIVE_OUTPUT = 0; // 0 for just cluster membership numbers
@@ -63,6 +63,7 @@ private:
   int index;           // index number of node
   int degree;          // out-degree of vertex (full degree for undirected)
   int original_degree; // original degree of the node in the original network
+  double degree_rate;  // degree rate defines the deviation of the degree of node from the max degree node
   Edge firstEdge;      // first edge eminating from vertex
                        // change to edgeListPlaceholder.next
                        //int ID; // GML ID number of vertex
@@ -109,6 +110,7 @@ public:
   double modularity(char *);                  // calculates the modularity of the network
   int getOriginalDegree(int);                 // gets the original degree of vertex
   void getNodeEndPoints(int, int &);
+  double average_degree;
 
 private:
   int numVertices;         // number of vertices

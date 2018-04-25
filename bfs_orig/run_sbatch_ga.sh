@@ -7,7 +7,8 @@
 
 #SBATCH -N 1  # number of nodes
 #SBATCH -n 1  # number of cores (AKA tasks)
-#SBATCH --mem=100GB # memory ~100GB
+#SBATCH --mem=8GB # memory ~8GB
+#SBATCH --exclusive # exlcusive node access to each job
 
 ## notifications
 #SBATCH --mail-user=agtk4@mail.umsl.edu  # email address for notifications
@@ -18,4 +19,4 @@
 echo "$(hostname), reporting for duty."
 
 # Commands with srun will run on all cores in the allocation
-./bfs $1 bfs-$1.out
+./erbga $1 erbgaq-$1.out

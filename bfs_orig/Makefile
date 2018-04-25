@@ -9,20 +9,20 @@
 
 CC	= g++
 CFLAGS 	= -g -std=c++11
-TARGET	= bfs
-OBJS	= bfsNet.o network.o cd_spnet.o
+TARGET	= erbga
+OBJS	= erbga_driver.o network.o erbga.o
 
 $(TARGET):	$(OBJS)
 		$(CC) -o $(TARGET) $(OBJS)
 
-bfsNet.o:	bfsNet.cpp bfsNet.h timer.h
-		$(CC) $(CFLAGS) -c bfsNet.cpp
+bfsNet.o:	erbga_driver.cpp erbga_driver.h timer.h
+		$(CC) $(CFLAGS) -c erbga_driver.cpp
 
 network.o:	network.cpp network.h
 		$(CC) $(CFLAGS) -c network.cpp
 
-cd_spnet.o:	cd_spnet.cpp cd_spnet.h network.h
-		$(CC) $(CFLAGS) -c cd_spnet.cpp
+cd_spnet.o:	erbga.cpp erbga.h network.h
+		$(CC) $(CFLAGS) -c erbga.cpp
 
 clean:
 		/bin/rm -f *.o $(TARGET) *.out
