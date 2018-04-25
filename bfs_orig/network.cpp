@@ -511,7 +511,7 @@ void Network::setGlobalNetworkGE() {
 
     for (int i = 0; i < numVertices; i++)
     {
-        vertices[i].degree_rate = (double)(max_degree - vertices[i].degree) / max_degree + (double)(abs(average_degree - vertices[i].degree)) / max_degree;
+        vertices[i].degree_rate = (double)(max_degree - vertices[i].degree) / max_degree + (double)(std::abs(average_degree - vertices[i].degree)) / max_degree;
         
         if ( !NETWORK_API_DEBUG )
             std :: cout << "====Vertex #" << i+1 << ", degree_rate : " << vertices[i].degree_rate << " max degree : " << max_degree<< "\n";
