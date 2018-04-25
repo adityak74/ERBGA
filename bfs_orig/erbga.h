@@ -38,8 +38,8 @@ const double GA_RANDOM_POP_PERCENT = 0.75; // set a minimum of 75 percent here
 const int GA_TOURNAMENT_SIZE = 7; // tournament size for the seleciton operator
 const double GA_CROSSOVER_SIZE = 0.5; // percentage of chromosome used for crossover
 const double GA_CROSSOVER_RATE = 0.5; // max chr size used for crossover
-const double GA_REPRODUCTION_RATE = 0.05; // rate of reproduction producing the offsprings
-const double GA_MUTATION_RATE = 0.2; // rate of mutation producing the offspring (1 / PopSize) 
+const double GA_REPRODUCTION_RATE = 0.1; // rate of reproduction producing the offsprings
+const double GA_MUTATION_RATE = 0.01; // rate of mutation producing the offspring (1 / PopSize) 
 const double GA_GENE_REPAIR_PERCENT = 0.1; // nodes of higher degree are repaired
 const double GA_GENE_REPAIR_CHANCE = 0.05; // percent chance of edge added back
 
