@@ -15,13 +15,13 @@ OBJS	= erbga_driver.o network.o erbga.o
 $(TARGET):	$(OBJS)
 		$(CC) -o $(TARGET) $(OBJS)
 
-bfsNet.o:	erbga_driver.cpp erbga_driver.h timer.h
+erbga_driver.o:	erbga_driver.cpp erbga_driver.h timer.h
 		$(CC) $(CFLAGS) -c erbga_driver.cpp
 
 network.o:	network.cpp network.h
 		$(CC) $(CFLAGS) -c network.cpp
 
-cd_spnet.o:	erbga.cpp erbga.h network.h
+erbga.o:	erbga.cpp erbga.h network.h
 		$(CC) $(CFLAGS) -c erbga.cpp
 
 clean:
