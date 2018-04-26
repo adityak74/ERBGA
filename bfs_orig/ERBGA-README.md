@@ -4,50 +4,61 @@
 Project Structure:
 
 ```
-/
+|->
 	|README
 	|README.md
 	|calc.cpp - Implementation of the calculations
-	|
-	|forkos_4.c - Prob#4
-	|forkos_5.c - Prob#5
-	|forkos_6.c - Prob#6
-	|forkos_7.c - Prob#7
+	|datasets.txt - Datasets to be run on Lewis
+	|erbga_driver.cpp - Read and Populates Network and Runs the GA
+	|erbga_driver.h - Control flags for Debugging, Output
+	|erbga.cpp - Genetic Algorithm Core
+	|erbga.h - Data Objects Definition, Parameters, Flags for GA
+	|network.cpp - Network core class
+	|network.h - Vertex, Edge, Network class Definitions
+	|run_ga.sh - Script to run each dataset read from dataset.txt a pecified number of epochs
+	|run_multiple_islands - dependency file for run_ga.sh
+	|run_sbatch_ga.sh - Core sbatch file used to run the program
+	|timer.h - Timer Core file
+	|testFile.gml - a Test GML file with 15 nodes and 15 edges
 	|Makefile
+		-|clean - cleans and object and erbga binary
+		-|cleanlog - cleans *.log, log files
 ```
 
 Compiling:
 
 ```
-$ make all
+$ make
 ```
 
-Running the project (Prob #5)
+Running the project
 
 ```
-$ ./forkos -n3 -k4 -m10
+$ ./erbga input.gml out.bfs | tee input-screen
 ```
 
 Help:
 
 ```
-$ ./forkos -h
-Usage : ./forkos -n processes -k loops -m timetosleep
+$ ./erbga
+Usage : ./erbga -n processes -k loops -m timetosleep
 n = number of process to fork
 k = number of times to loop on fprintf
 m = time to sleep in millis
 ```
 
-Clean the project:
+Clean the project *.obj and erbga binary:
 
 ```
 $ make clean
 ```
 
-Clean the project only *.o:
+Clean the project only *.log:
 
 ```
-$ make cleanobj
+$ make cleanlog
 ```
 
-***Process Chains*** : Project #1 as a part of CS4760. 
+## 
+
+***ERBGA*** : Developed with :heart: by Aditya Karnam. 
