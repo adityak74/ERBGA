@@ -9,8 +9,11 @@
 //    Print out component size summary (PRINTCOMPSIZES)
 //     added January 2011
 //
+//
+//    Modified by Aditya Karnam
+//
 //    Add New Edge to the front of the list
-//    Moved ID and invID from BFS
+//    Moved ID and invID from BFS to Network
 //    assignID and getID functions added
 //    Added remove edge
 //    Fixed garbage collection

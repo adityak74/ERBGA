@@ -23,14 +23,89 @@
 #include "network.h"
 #include "erbga.h"
 
+char* input_fname;
+char* output_fname;
+int popSize = GA_POPULATION_SIZE;
+int generations = GA_NUM_GENERATIONS;
+double random_pop_rate, elitism_rate, mutation_rate, gene_repair_rate;
+int tournament_size, gene_repair_size, crossover_type;
+std::string population_checkpoint_file;
+// validates the output from the command line args
+// defaults to values in the header files
+void readCommandLineInputs(int argc, char **argv) {
+
+  int nonoptarg = 0;
+  int c;
+  opterr = 0;
+  int option_index = 0;
+  
+  while((c = getopt_long (argc, argv, "a:b:c:d:efghijklm", long_options, &option_index)) != -1){
+    switch (c)
+    {
+      case 0:
+          /* If this option set a flag, do nothing else now. */
+          if (long_options[option_index].flag != 0)
+            break;
+          printf ("option %s", long_options[option_index].name);
+          if (optarg)
+            printf (" with arg %s", optarg);
+          printf ("\n");
+          break;
+      case 'a': 
+        popSize = atoi(optarg);
+        break;
+      case 'b': 
+        generations = atoi(optarg);
+        break;
+      case 'c': 
+        input_fname = optarg;
+        break;
+      case 'd': 
+        output_fname = optarg;
+        break;
+      case 'e': 
+        random_pop_rate = atof(optarg);
+        break;
+      case 'f':
+        tournament_size = atoi(optarg);
+        break;
+      case 'g':
+        elitism_rate = atof(optarg);
+        break;
+      case 'h':
+        mutation_rate = atof(optarg);
+        break;  
+      case 'i':
+        gene_repair_size = atoi(optarg);
+        break;
+      case 'j':
+        gene_repair_rate = atof(optarg);
+        break;
+      case 'k':
+        crossover_type = atoi(optarg);
+        break;
+      case 'l':
+        population_checkpoint_file = optarg;
+        break;
+      case '?':
+          /* getopt_long already printed an error message. */
+          break;
+      default:
+        abort ();
+    }
+  }
+}
+
 int main(int argc, char **argv)
 {
   // Randomizer for GA
   srand(time(NULL));
-  if (argc != 3)
-    fatal("Usage:\n   erbga input.gml output.bfs");
+  // if (argc != 3)
+  //   fatal("Usage:\n   erbga input.gml output.bfs");
 
-  opterr = 0;
+  readCommandLineInputs(argc, argv);
+
+  
 
   FILE *input;
   FILE *output;
@@ -42,11 +117,13 @@ int main(int argc, char **argv)
   if (testFile != 0)
     fatal("Component files already exist in this directory");
 
-  if (((input = fopen(argv[1], "r")) == NULL) || ((output = fopen(argv[2], "w")) == NULL))
+  if (((input = fopen(input_fname, "r")) == NULL) || ((output = fopen(output_fname, "w")) == NULL))
     fatal("File could not be opened.\n");
 
   if (DESCRIPTIVE_OUTPUT)
-    fprintf(output, "%s\n", argv[1]);
+    fprintf(output, "%s\n", input_fname);
+
+  
 
   long long int min = 10000000000;  // hold min node number
   long long int max = -10000000000; // hold max node number
@@ -93,7 +170,7 @@ int main(int argc, char **argv)
 
   std::cout << "\n Number of nodes read from the GML file : " << numNodes << std::endl;
   std::cout << "\nNode numbers range from " << min << " to " << max << std::endl;
-  std::cout << "Reading in graph from " << argv[1] << "...\n"
+  std::cout << "Reading in graph from " << input_fname << "...\n"
             << std::endl;
 
   // Create the SparseNetwork
@@ -238,20 +315,18 @@ int main(int argc, char **argv)
     }
   }
 
-  if ((output = fopen(argv[2], "a")) == NULL)
+  if ((output = fopen(output_fname, "a")) == NULL)
     fatal("File could not be opened.\n");
   fprintf(output, "%f\n", t.timeVal());
   fclose(output);
 
-  // GA params
-  int popSize = 100;
-  int generations = 500;
+  exit(0);
 
   // GA crossover, mutation and other operators could be modified in the erbga.h header file before the run. defaults will picked from the header until unless passed into the command line.
 
   // Genetic Algorithm Starts here
   GA sparseGA(sparseNet, popSize, generations, numNodes, numEdges);
-  sparseGA.set_data_name(argv[1]);
+  sparseGA.set_data_name(input_fname);
   std::cout << "\nGenetic Algo Start : " << std::endl
             << "-----------------------" << std::endl;
   sparseGA.generate_GA();
