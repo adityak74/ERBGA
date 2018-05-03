@@ -23,13 +23,69 @@
 #include "network.h"
 #include "erbga.h"
 
-char* input_fname;
-char* output_fname;
-int popSize = GA_POPULATION_SIZE;
-int generations = GA_NUM_GENERATIONS;
-double random_pop_rate, elitism_rate, mutation_rate, gene_repair_rate;
-int tournament_size, gene_repair_size, crossover_type;
-std::string population_checkpoint_file;
+char* input_fname = "";
+char* output_fname = "";
+
+int helpFlag = 0;
+
+int popSize = 0;
+int generations = 0;
+float random_pop_rate = GA_RANDOM_POP_PERCENT, 
+        elitism_rate = GA_ELITISM_RATE,
+        mutation_rate = GA_MUTATION_RATE,
+        gene_repair_rate = GA_GENE_REPAIR_CHANCE;
+int tournament_size = GA_TOURNAMENT_SIZE, 
+        gene_repair_size = GA_GENE_REPAIR_PERCENT, 
+        crossover_type = 0;
+std::string population_checkpoint_file = "";
+
+void showProgramVersion() {
+    printf("ERBGA -- v0.4.\n");
+    
+    printf("Developed by \n\tAditya Karnam Gururaj Rao\n\tJuly 2017 - May 2018\n");
+    printf("Changelog--\n");
+    printf("\tv0.1 - Sept 2017 - Added Genetic Operators\n");
+    printf("\tv0.2 - Oct 2017 - Added Elitism Operator\n");
+    printf("\tv0.3 - One Point/One Way/Uniform Crossover Operators\n");
+    printf("\tv0.4 - Added Gene Repair Operator\n");
+    printf("\tv0.5 - Refactoring and Command Line args support.\n");
+
+    printf("\tDeveloped on the base code \033[1mNetwork\033[0m Library\n");
+    printf("\tShoutout to Sharlee Climer for her guidance.\n\n\n");
+    
+}
+void showHelpMessage() {
+    showProgramVersion();
+	  printf("--help: Prints this help message.\n");
+    printf("--popsize: Allows you to set the population size of the GA.\n");
+    printf("\tThis is a required argument.\n");
+    printf("--gen: Set the number of epochs for the GA.\n");
+    printf("\tThis is a required argument.\n");
+    printf("--in: Input GML filename.\n");
+    printf("\tThis is a required argument.\n");
+    printf("--out: BFS Output filename.\n");
+    printf("\tThis is a required argument.\n");
+    printf("--rpop: Set the random population rate.\n");
+    printf("\tOptional. Ranges 0 through 1.\n");
+    printf("--tsize: Set the tournament size for breeding population of GA.\n");
+    printf("\tOptional. Ranges 0 through Population Size.\n");
+    printf("--elirate: Set the Elitism for breeding population of GA.\n");
+    printf("\tOptional. Ranges 0 through 1.\n");
+    printf("--mutrate: Set the Mutation rate for breeding population of GA.\n");
+    printf("\tOptional. Ranges 0 through 1.\n");
+    printf("--grepsize: Set the Gene Repair size for breeding population of GA.\n");
+    printf("\tOptional. Ranges 0 through Population Size.\n");
+    printf("--greprate: Set the Gene Repair rate for breeding population of GA.\n");
+    printf("\tOptional. Ranges 0 through 1.\n");
+    printf("--crosstype: Set the Crossover Type for breeding population of GA.\n");
+    printf("\tOptional. Ranges 0,1 or 2.\n");
+    printf("\t\t0. One Point Crossover.\n");
+    printf("\t\t1. One Way Crossover.\n");
+    printf("\t\t2. Uniform Crossover.\n");
+    printf("--popcheckpt: Population Checkpoint file to resume GA.\n");
+    printf("\tOptional. Checkpoint filename.\n");
+}
+
 // validates the output from the command line args
 // defaults to values in the header files
 void readCommandLineInputs(int argc, char **argv) {
@@ -87,13 +143,44 @@ void readCommandLineInputs(int argc, char **argv) {
       case 'l':
         population_checkpoint_file = optarg;
         break;
+      case 'm':
+        // Help section
+        helpFlag = 1;
+        break;
       case '?':
-          /* getopt_long already printed an error message. */
-          break;
+        if (optopt == 'a' || optopt == 'b' || optopt == 'c' || optopt == 'd')
+          fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+        else if (isprint (optopt))
+          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+        else
+          fprintf (stderr, "Unknown option character `\\x%x'.\n",optopt);
+        abort ();
+        break;
       default:
         abort ();
     }
   }
+
+  if(!helpFlag) {
+    if ( input_fname == "" ) {
+      fatal("Option --in requires a string argement. Example filename.gml");
+    }
+    
+    if ( output_fname == "" ) {
+      fatal("Option --out requires a string argement. Example out.bfs");
+    }
+
+    if ( popSize == 0 ) {
+      fatal("Option --popsize requires an integer argement. Example 50");
+    }
+
+    if ( generations == 0 ) {
+      fatal("Option --gen requires an integer argement. Example 100");
+    }
+  } else {
+    showHelpMessage();
+  }
+
 }
 
 int main(int argc, char **argv)
@@ -104,8 +191,6 @@ int main(int argc, char **argv)
   //   fatal("Usage:\n   erbga input.gml output.bfs");
 
   readCommandLineInputs(argc, argv);
-
-  
 
   FILE *input;
   FILE *output;

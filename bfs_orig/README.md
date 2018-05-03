@@ -16,7 +16,7 @@ Project Structure:
 	|network.cpp - Network core class
 	|network.h - Vertex, Edge, Network class Definitions
 	|run_ga.sh - Script to run each dataset read from dataset.txt a pecified number of epochs
-	|run_multiple_islands - dependency file for run_ga.sh
+	|run_multiple_islands.sh - dependency file for run_ga.sh
 	|run_sbatch_ga.sh - Core sbatch file used to run the program
 	|timer.h - Timer Core file
 	|testFile.gml - a Test GML file with 15 nodes and 15 edges
@@ -62,8 +62,6 @@ $ make cleanlog
 ## Network Library - Sharlee Climer
 
 October/November 2009.
-
-
 
 Breadth-First Search (BFS) is a simple exploration of a network, where each
 connected component is identified.  The nodes in each component are output.

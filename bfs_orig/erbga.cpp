@@ -660,7 +660,7 @@ void GA::initializeRates()
 
 	crossover_rate = GA_CROSSOVER_RATE;
 	mutation_rate = GA_MUTATION_RATE;
-	reproduction_rate = GA_REPRODUCTION_RATE;
+	reproduction_rate = GA_ELITISM_RATE;
 	numGenomeMutations = round(mutation_rate * networkNumEdges);
 	numGenesRepairSize = round(GA_GENE_REPAIR_PERCENT * networkNumVertices);
 
@@ -850,7 +850,7 @@ void GA::generate_GA()
 	int minCrossoverSize = round(GA_CROSSOVER_SIZE * networkNumEdges);
 	// int minCrossoverSize = 0;
 	int mutation_pop_size = (int)(GA_MUTATION_RATE * populationSize);
-	int numEliteChromosomes = nearestEvenInt((int)(GA_REPRODUCTION_RATE * populationSize));
+	int numEliteChromosomes = nearestEvenInt((int)(GA_ELITISM_RATE * populationSize));
 
 	char filename[256] = {0};
 	strcpy(filename, GA_LOG_FILE.c_str());
