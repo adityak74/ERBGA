@@ -52,7 +52,7 @@ void showProgramVersion() {
 
     printf("\tDeveloped on the base code \033[1mNetwork\033[0m Library\n");
     printf("\tShoutout to Sharlee Climer for her guidance.\n\n\n");
-    
+    exit(0);
 }
 void showHelpMessage() {
     showProgramVersion();
@@ -84,6 +84,7 @@ void showHelpMessage() {
     printf("\t\t2. Uniform Crossover.\n");
     printf("--popcheckpt: Population Checkpoint file to resume GA.\n");
     printf("\tOptional. Checkpoint filename.\n");
+    exit(0);
 }
 
 // validates the output from the command line args
@@ -94,6 +95,18 @@ void readCommandLineInputs(int argc, char **argv) {
   int c;
   opterr = 0;
   int option_index = 0;
+
+  int versionFlag = 0;
+
+  while ((c = getopt (argc, argv, "v")) != -1) {
+    switch (c)
+      {
+      case 'v':
+        versionFlag = 1;
+        showProgramVersion();
+        break;
+      }
+  }
   
   while((c = getopt_long (argc, argv, "a:b:c:d:efghijklm", long_options, &option_index)) != -1){
     switch (c)
@@ -161,7 +174,7 @@ void readCommandLineInputs(int argc, char **argv) {
     }
   }
 
-  if(!helpFlag) {
+  if(!helpFlag && !versionFlag) {
     if ( input_fname == "" ) {
       fatal("Option --in requires a string argement. Example filename.gml");
     }
@@ -177,7 +190,7 @@ void readCommandLineInputs(int argc, char **argv) {
     if ( generations == 0 ) {
       fatal("Option --gen requires an integer argement. Example 100");
     }
-  } else {
+  } else if (helpFlag) {
     showHelpMessage();
   }
 
