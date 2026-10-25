@@ -3,7 +3,7 @@ import json
 import numpy as np
 import pytest
 
-from erbga import ERBGA, GAConfig, detect_communities, modularity
+from erbga import ERBGA, GAConfig, Graph, detect_communities, modularity
 from erbga.cli import main
 from erbga.partition import is_connected_partition
 
@@ -44,6 +44,22 @@ def test_best_never_gets_worse(karate, objective, local_search):
 def test_config_options_run(karate, init, crossover):
     result = detect_communities(karate, seed=0, generations=5, init=init, crossover=crossover)
     assert result.fitness > 0
+
+
+@pytest.mark.parametrize("bad", [
+    {"pop_size": 0}, {"tournament_size": 0}, {"generations": -1}, {"elite_frac": 1.5},
+    {"crossover": "two_point"}, {"init": "smart"}, {"patience": 0},
+])
+def test_invalid_config_rejected(bad):
+    with pytest.raises(ValueError):
+        GAConfig(**bad)
+
+
+@pytest.mark.parametrize("crossover", ["uniform", "one_point"])
+def test_single_edge_graph(crossover):
+    g = Graph.from_edges([(0, 1)])
+    result = detect_communities(g, seed=0, generations=3, pop_size=4, crossover=crossover)
+    assert result.num_communities == 1
 
 
 def test_custom_objective(karate):

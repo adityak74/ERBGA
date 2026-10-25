@@ -51,7 +51,7 @@ class Graph:
         return len(self.src)
 
     @classmethod
-    def from_edges(cls, edges, nodes=None, name: str = "") -> "Graph":
+    def from_edges(cls, edges, nodes=None, name: str = "") -> Graph:
         """Build a graph from (u, v) pairs of arbitrary hashable node ids.
 
         Self-loops and duplicate edges are dropped.

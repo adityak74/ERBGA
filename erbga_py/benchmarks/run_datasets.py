@@ -23,7 +23,7 @@ def main():
     p.add_argument("--objective", default="modularity")
     args = p.parse_args()
 
-    print(f"| graph | n | m | variant | best | mean ± sd | hit optimum | mean time (s) |")
+    print("| graph | n | m | variant | best | mean ± sd | hit optimum | mean time (s) |")
     print("|---|---|---|---|---|---|---|---|")
     for name, best_known in BEST_KNOWN.items():
         g = read_gml(ROOT / "data" / f"{name}.gml")

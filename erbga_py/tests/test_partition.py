@@ -44,3 +44,9 @@ def test_detects_disconnected_partition():
     g = path_and_triangle()
     labels = np.array([0, 1, 0, 2, 2, 2, 3])  # nodes 0 and 2 only meet through 1
     assert not is_connected_partition(g, labels)
+
+
+def test_connectivity_check_ignores_label_numbering():
+    g = Graph.from_edges([(0, 1), (2, 3)])
+    assert is_connected_partition(g, np.array([1, 1, 0, 0]))
+    assert is_connected_partition(g, np.array([7, 7, 3, 3]))

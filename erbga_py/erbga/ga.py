@@ -35,6 +35,23 @@ class GAConfig:
     patience: int | None = 50  # stop after this many generations without improvement
     seed: int | None = None
 
+    def __post_init__(self) -> None:
+        checks = [
+            (self.pop_size >= 1, "pop_size must be >= 1"),
+            (self.generations >= 0, "generations must be >= 0"),
+            (0 <= self.elite_frac <= 1, "elite_frac must be in [0, 1]"),
+            (1 <= self.tournament_size, "tournament_size must be >= 1"),
+            (0 <= self.crossover_rate <= 1, "crossover_rate must be in [0, 1]"),
+            (0 <= self.mutation_rate <= 1, "mutation_rate must be in [0, 1]"),
+            (self.crossover in ("uniform", "one_point"),
+             "crossover must be 'uniform' or 'one_point'"),
+            (self.init in ("random", "degree"), "init must be 'random' or 'degree'"),
+            (self.patience is None or self.patience >= 1, "patience must be >= 1 or None"),
+        ]
+        for ok, message in checks:
+            if not ok:
+                raise ValueError(message)
+
 
 @dataclass
 class GAResult:
@@ -61,7 +78,7 @@ class ERBGA:
         self.objective = get_objective(objective)
         self.config = config or GAConfig()
         self.rng = np.random.default_rng(self.config.seed)
-        self._cache: dict[bytes, tuple[float, np.ndarray]] = {}
+        self._cache: dict[bytes, float] = {}  # canonical cut -> fitness
         self.evaluations = 0
 
     # ---- evaluation --------------------------------------------------
@@ -71,12 +88,12 @@ class ERBGA:
         labels = decode(self.graph, cut)
         cut = canonical_cut(self.graph, labels)
         key = np.packbits(cut).tobytes()
-        hit = self._cache.get(key)
-        if hit is None:
+        fitness = self._cache.get(key)
+        if fitness is None:
             self.evaluations += 1
-            hit = (self.objective(self.graph, labels), labels)
-            self._cache[key] = hit
-        return cut, hit[0], hit[1]
+            fitness = float(self.objective(self.graph, labels))
+            self._cache[key] = fitness
+        return cut, fitness, labels
 
     # ---- initialisation ----------------------------------------------
 
@@ -107,6 +124,8 @@ class ERBGA:
         if self.config.crossover == "uniform":
             return np.where(self.rng.random(len(a)) < 0.5, a, b)
         if self.config.crossover == "one_point":
+            if len(a) < 2:
+                return a.copy()
             point = self.rng.integers(1, len(a))
             return np.concatenate([a[:point], b[point:]])
         raise ValueError(f"unknown crossover {self.config.crossover!r}")

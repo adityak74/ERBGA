@@ -7,7 +7,7 @@ name = "erbga"
 version = "1.0.0.dev0"
 description = "Connected, objective-agnostic community detection with a genetic algorithm"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{ name = "Aditya Karnam" }]
 dependencies = ["numpy>=1.22"]
 

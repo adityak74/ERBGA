@@ -61,4 +61,5 @@ def get_objective(objective: str | Objective) -> Objective:
     try:
         return OBJECTIVES[objective]
     except KeyError:
-        raise ValueError(f"unknown objective {objective!r}; choose from {sorted(OBJECTIVES)}")
+        raise ValueError(
+            f"unknown objective {objective!r}; choose from {sorted(OBJECTIVES)}") from None

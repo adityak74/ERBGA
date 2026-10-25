@@ -47,5 +47,7 @@ def canonical_cut(graph: Graph, labels: np.ndarray) -> np.ndarray:
 
 def is_connected_partition(graph: Graph, labels: np.ndarray) -> bool:
     """True if every community induces a connected subgraph."""
-    return np.array_equal(decode(graph, canonical_cut(graph, labels)),
-                          np.unique(labels, return_inverse=True)[1])
+    # Components of the canonical cut refine the labelling, so the two agree
+    # exactly when they have the same number of groups.
+    components = decode(graph, canonical_cut(graph, labels))
+    return int(components.max()) + 1 == len(np.unique(labels))
