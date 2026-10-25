@@ -22,5 +22,5 @@ def test_from_edges_drops_loops_and_duplicates():
 
 def test_adjacency_matches_edges(karate):
     for v in range(karate.n):
-        for e, w in zip(karate.incident_edges(v), karate.neighbours(v)):
+        for e, w in zip(karate.incident_edges(v), karate.neighbours(v), strict=True):
             assert {karate.src[e], karate.dst[e]} == {v, w}

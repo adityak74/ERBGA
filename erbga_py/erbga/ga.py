@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import time
 from collections import deque
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -19,6 +20,9 @@ import numpy as np
 from .graph import Graph
 from .objectives import Objective, get_objective
 from .partition import canonical_cut, decode
+
+# fn(graph, labels, rng) -> new labels
+Operator = Callable[[Graph, np.ndarray, np.random.Generator], np.ndarray]
 
 
 @dataclass
@@ -71,12 +75,22 @@ class GAResult:
 
 class ERBGA:
     def __init__(self, graph: Graph, objective: str | Objective = "modularity",
-                 config: GAConfig | None = None):
+                 config: GAConfig | None = None, operators: Sequence[tuple[float, Operator]] = ()):
+        """``operators`` are extra mutation operators as (probability, fn) pairs.
+
+        ``fn(graph, labels, rng)`` gets a copy of a parent's community labels and
+        returns new labels; communities that end up disconnected are split.
+        Each mutation picks an extra operator with its probability, otherwise a
+        built-in one.
+        """
         if graph.m == 0:
             raise ValueError("graph has no edges")
+        if sum(w for w, _ in operators) > 1 or any(w < 0 for w, _ in operators):
+            raise ValueError("operator probabilities must be >= 0 and sum to at most 1")
         self.graph = graph
         self.objective = get_objective(objective)
         self.config = config or GAConfig()
+        self.operators = list(operators)
         self.rng = np.random.default_rng(self.config.seed)
         self._cache: dict[bytes, float] = {}  # canonical cut -> fitness
         self.evaluations = 0
@@ -189,6 +203,17 @@ class ERBGA:
         cut, _, labels = self.evaluate(cut)
         cut = cut.copy()
         op = self.rng.random()
+        for weight, fn in self.operators:
+            if op < weight:
+                new_labels = np.asarray(fn(self.graph, labels.copy(), self.rng))
+                if (new_labels.shape != labels.shape
+                        or not np.issubdtype(new_labels.dtype, np.integer)):
+                    raise ValueError(f"operator {getattr(fn, '__name__', fn)!r} must return "
+                                     f"an integer array of shape {labels.shape}")
+                return canonical_cut(self.graph, new_labels)
+            op -= weight
+        # rescale so the built-in thresholds below see a uniform draw again
+        op /= 1 - sum(w for w, _ in self.operators) or 1
         if op < 0.55:
             for _ in range(self.rng.geometric(0.5)):
                 self._move_node(cut, labels)
@@ -273,7 +298,8 @@ class ERBGA:
             fitness=float(f),
             labels=labels,
             cut=cut,
-            communities={_plain(nid): int(c) for nid, c in zip(self.graph.node_ids, labels)},
+            communities={_plain(nid): int(c)
+                         for nid, c in zip(self.graph.node_ids, labels, strict=True)},
             history=history,
             generations=gen,
             evaluations=self.evaluations,

@@ -33,15 +33,17 @@ follow:
 cd erbga_py
 pip install -e ".[test]"
 
-erbga data/karate.gml --seed 0
-erbga data/football.gml --objective qs --pop 200 --gen 300 --json result.json -v
-python -m erbga --help          # same thing without installing the script
+erbga detect karate --seed 0                 # bundled datasets work by name
+erbga detect football --objective qs --pop 200 --gen 300 --json result.json -v
+erbga detect my_graph.txt --format json      # edge list, .gml or .json
+erbga summary polbooks
+python -m erbga --help                       # same thing without installing the script
 ```
 
 ```python
 from erbga import read_gml, detect_communities
 
-g = read_gml("data/karate.gml")
+g = read_gml("erbga/data/karate.gml")
 r = detect_communities(g, "modularity", seed=0)
 r.fitness, r.num_communities, r.communities   # {node_id: community}
 
@@ -50,6 +52,42 @@ def my_score(graph, labels):
     ...
 detect_communities(g, my_score, seed=0, pop_size=200)
 ```
+
+## Use with LLMs
+
+Full reference for models: [`llms.txt`](llms.txt). Guidance for coding agents
+working on this repo: [`AGENTS.md`](AGENTS.md).
+
+**MCP server.** `pip install -e ".[mcp]"`, then add it to your client:
+
+```json
+{"mcpServers": {"erbga": {"command": "erbga", "args": ["mcp"]}}}
+```
+
+Tools: `list_datasets`, `list_objectives`, `graph_summary`, `detect_communities`,
+`score_partition`. A graph can be a dataset name, a file path, or inline
+`{"edges": [[u, v], ...]}`. Errors come back as
+`{"ok": false, "error": {"code", "message", "hint"}}` so the model can fix the
+input and retry.
+
+**Agent-readable CLI.** Every subcommand takes `--format json`. stdout is then
+one JSON object (the result or the error), progress goes to stderr, and the exit
+code is 0 or 1. `--max-nodes N` keeps output small on big graphs.
+
+**LLM-evolved operators.** `erbga evolve` runs a FunSearch-style loop. Claude
+writes `mutate(graph, labels, rng)` operators; each is checked against an
+import allowlist, then scored in a subprocess with time and memory limits
+against a fixed-seed baseline. The best is saved to `best_operator.py`:
+
+```bash
+pip install -e ".[evolve]"     # needs ANTHROPIC_API_KEY or `ant auth login`
+erbga evolve --iterations 20 --datasets karate dolphins polbooks
+erbga detect football --operator evolve_runs/<run>/best_operator.py
+```
+
+It uses `claude-opus-5-5` at effort `high` with server-side refusal fallback on
+(`--model` to change). This executes LLM-written code. The allowlist and limits
+are not a security sandbox, so run it in a container if that matters to you.
 
 ## Benchmark
 
@@ -79,10 +117,14 @@ erbga/graph.py       Graph (CSR adjacency) and GML reader
 erbga/partition.py   union-find decoding, canonical cut, connectivity check
 erbga/objectives.py  modularity, qs, objective registry
 erbga/ga.py          GAConfig, ERBGA (operators + main loop), detect_communities
-erbga/cli.py         command line
+erbga/api.py         JSON-in/JSON-out functions, structured errors, graph formats
+erbga/cli.py         command line (detect, score, summary, objectives, mcp, evolve)
+erbga/mcp_server.py  MCP tools for agents
+erbga/evolve.py      LLM-evolved mutation operators
+erbga/data/          karate, dolphins, polbooks, football
 tests/               pytest suite (modularity checked against networkx)
 benchmarks/          dataset benchmark
-data/                karate, dolphins, polbooks, football
+llms.txt, AGENTS.md  docs for models using / agents editing the package
 ```
 
 ## Next steps
