@@ -21,6 +21,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--seeds", type=int, default=10)
     p.add_argument("--objective", default="modularity")
+    p.add_argument("--islands", type=int, default=1)
     args = p.parse_args()
 
     print("| graph | n | m | variant | best | mean ± sd | hit optimum | mean time (s) |")
@@ -28,7 +29,8 @@ def main():
     for name, best_known in BEST_KNOWN.items():
         g = read_gml(ROOT / "erbga" / "data" / f"{name}.gml")
         for variant, local_search in (("GA + local search", True), ("plain GA", False)):
-            runs = [detect_communities(g, args.objective, seed=s, local_search=local_search)
+            runs = [detect_communities(g, args.objective, seed=s, local_search=local_search,
+                                       islands=args.islands)
                     for s in range(args.seeds)]
             fit = [r.fitness for r in runs]
             hits = sum(f >= best_known - 5e-5 for f in fit)

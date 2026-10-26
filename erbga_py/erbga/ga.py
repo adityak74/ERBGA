@@ -38,10 +38,21 @@ class GAConfig:
     local_search: bool = True  # greedily refine each new best individual (memetic step)
     patience: int | None = 50  # stop after this many generations without improvement
     seed: int | None = None
+    # island model: pop_size is split across islands that evolve separately; every
+    # migration_interval generations each island's best `migrants` replace the
+    # next island's worst (ring topology)
+    islands: int = 1
+    migration_interval: int = 25
+    migrants: int = 1
 
     def __post_init__(self) -> None:
         checks = [
             (self.pop_size >= 1, "pop_size must be >= 1"),
+            (self.islands >= 1, "islands must be >= 1"),
+            (self.migration_interval >= 1, "migration_interval must be >= 1"),
+            (self.migrants >= 1, "migrants must be >= 1"),
+            (self.islands <= 1 or self.pop_size // self.islands > self.migrants,
+             "each island needs more than `migrants` members: raise pop_size or lower islands"),
             (self.generations >= 0, "generations must be >= 0"),
             (0 <= self.elite_frac <= 1, "elite_frac must be in [0, 1]"),
             (1 <= self.tournament_size, "tournament_size must be >= 1"),
@@ -278,51 +289,80 @@ class ERBGA:
 
     # ---- main loop ---------------------------------------------------
 
+    def _generation(self, pop: np.ndarray, fit: np.ndarray, refined: set[bytes]):
+        """One generation of one island: refine its best, keep elites, breed the rest."""
+        cfg = self.config
+        size = len(pop)
+        n_elite = max(1, int(round(cfg.elite_frac * size)))
+        if cfg.local_search:
+            top = int(np.argmax(fit))
+            key = np.packbits(pop[top]).tobytes()
+            if key not in refined:
+                pop[top], fit[top] = self.refine(pop[top])
+                refined.add(key)
+                refined.add(np.packbits(pop[top]).tobytes())
+        order = np.argsort(-fit, kind="stable")
+        new_pop, new_fit = list(pop[order[:n_elite]]), list(fit[order[:n_elite]])
+        while len(new_pop) < size:
+            a = pop[self._tournament(fit)]
+            if self.rng.random() < cfg.crossover_rate:
+                child = self._crossover(a, pop[self._tournament(fit)])
+            else:
+                child = a.copy()
+            cut, f, _ = self.evaluate(self._mutate(child))
+            new_pop.append(cut)
+            new_fit.append(f)
+        return np.array(new_pop), np.array(new_fit)
+
+    def _migrate(self, islands: list) -> None:
+        """Ring migration: island i's best ``migrants`` replace island i+1's worst."""
+        k = self.config.migrants
+        emigrants = []
+        for pop, fit in islands:
+            best = np.argsort(-fit, kind="stable")[:k]
+            emigrants.append((pop[best].copy(), fit[best].copy()))
+        for i, (pop, fit) in enumerate(islands):
+            src_pop, src_fit = emigrants[i - 1]  # i - 1 wraps to the last island
+            worst = np.argsort(fit, kind="stable")[:k]
+            pop[worst], fit[worst] = src_pop, src_fit
+
     def run(self, callback=None) -> GAResult:
         cfg, start = self.config, time.perf_counter()
-        n_elite = max(1, int(round(cfg.elite_frac * cfg.pop_size)))
+        base, extra = divmod(cfg.pop_size, cfg.islands)
+        sizes = [base + (i < extra) for i in range(cfg.islands)]
 
-        pop, fit = [], []
-        for _ in range(cfg.pop_size):
-            cut, f, _ = self.evaluate(self._initial_cut())
-            pop.append(cut)
-            fit.append(f)
-        pop, fit = np.array(pop), np.array(fit)
+        islands = []
+        for size in sizes:
+            pop, fit = [], []
+            for _ in range(size):
+                cut, f, _ = self.evaluate(self._initial_cut())
+                pop.append(cut)
+                fit.append(f)
+            islands.append((np.array(pop), np.array(fit)))
+
+        def stats():
+            all_fit = np.concatenate([fit for _, fit in islands])
+            return float(all_fit.max()), float(all_fit.mean())
 
         refined: set[bytes] = set()
-        history = [(float(fit.max()), float(fit.mean()))]
-        best, stale, gen = fit.max(), 0, 0
+        history = [stats()]
+        best, stale, gen = history[0][0], 0, 0
         for gen in range(1, cfg.generations + 1):
-            if cfg.local_search:
-                top = int(np.argmax(fit))
-                key = np.packbits(pop[top]).tobytes()
-                if key not in refined:
-                    pop[top], fit[top] = self.refine(pop[top])
-                    refined.add(key)
-                    refined.add(np.packbits(pop[top]).tobytes())
-            order = np.argsort(-fit, kind="stable")
-            new_pop, new_fit = list(pop[order[:n_elite]]), list(fit[order[:n_elite]])
-            while len(new_pop) < cfg.pop_size:
-                a = pop[self._tournament(fit)]
-                if self.rng.random() < cfg.crossover_rate:
-                    child = self._crossover(a, pop[self._tournament(fit)])
-                else:
-                    child = a.copy()
-                cut, f, _ = self.evaluate(self._mutate(child))
-                new_pop.append(cut)
-                new_fit.append(f)
-            pop, fit = np.array(new_pop), np.array(new_fit)
-            history.append((float(fit.max()), float(fit.mean())))
+            islands = [self._generation(pop, fit, refined) for pop, fit in islands]
+            if cfg.islands > 1 and gen % cfg.migration_interval == 0:
+                self._migrate(islands)
+            history.append(stats())
             if callback:
                 callback(gen, history[-1])
 
-            if fit.max() > best + 1e-12:
-                best, stale = fit.max(), 0
+            if history[-1][0] > best + 1e-12:
+                best, stale = history[-1][0], 0
             else:
                 stale += 1
                 if cfg.patience is not None and stale >= cfg.patience:
                     break
 
+        pop, fit = max(islands, key=lambda island: island[1].max())
         top = int(np.argmax(fit))
         cut, f, labels = self.evaluate(pop[top])
         return GAResult(

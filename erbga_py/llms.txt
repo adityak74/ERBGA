@@ -53,6 +53,9 @@
 - Large graph output: lower `max_nodes_per_community`; sizes stay exact.
 - Size: a few seconds up to a few hundred nodes; about 15 s at 1,000 nodes and
   35 s at 2,000 (average degree ~7) with default settings.
+- Runs stall at slightly different scores across seeds: try `islands=4` (island
+  model; same total population). It helps on some graphs (dolphins) and costs a
+  little on others (football), so compare with a few seeds.
 - Harder graphs: raise `pop_size` and `generations`. `local_search=false` is slower
   but sometimes finds better optima.
 - Compare methods: run another algorithm, then `score_partition` its result to get

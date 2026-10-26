@@ -127,6 +127,32 @@ totals (`MOVE_GAINS` in `objectives.py`) instead of re-decoding the graph.
 At 30 generations on the 2000-node graph that took local search from 360 s
 to 9 s; it was 95% of the runtime before.
 
+### Island model
+
+`GAConfig(islands=4)` (or `erbga detect GRAPH --islands 4`) splits the
+population into islands that evolve separately. Every `migration_interval`
+generations (default 25), each island's best `migrants` (default 1) replace
+the next island's worst, in a ring. `pop_size` is the total across islands,
+so turning islands on doesn't change the budget. `islands=1`, the default,
+reproduces the single-population runs exactly.
+
+Islands help when one population converges too early, and can cost a little
+where it doesn't. Optimum hits out of 10 seeds, population 100, no early
+stopping:
+
+| | dolphins | football | mean time |
+|---|---|---|---|
+| 1 island | 2/10 | 8/10 | 3.2 s / 3.8 s |
+| 4 islands | **4/10** | 5/10 | 3.4 s / 4.2 s |
+| 4 islands, 2 migrants every 10 generations | **4/10** | 7/10 | 3.4 s / 4.1 s |
+
+With default early stopping, summed over all four datasets (karate,
+dolphins, polbooks, football), the score is 25 hits for 1 island and 24–25
+for 2–5 islands: islands move hits from football to dolphins rather than
+adding them. Try islands when repeated seeds stall at slightly different
+scores. This ports the island model from the 2018 `multiple-subpops`
+branch, without its bugs.
+
 ## Layout
 
 ```
@@ -145,6 +171,10 @@ llms.txt, AGENTS.md  docs for models using / agents editing the package
 ```
 
 ## Next steps
+
+- **Adaptive islands.** Islands help on dolphins and hurt on football. Varying
+  the operator mix or the migration rate per island might keep the gain
+  without the cost.
 
 - **Speed past ~10k nodes.** Local search is now incremental, but each GA
   evaluation still decodes the whole chromosome (O(m) numpy work), and that is

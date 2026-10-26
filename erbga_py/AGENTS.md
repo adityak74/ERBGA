@@ -46,6 +46,8 @@ Dependencies go one way: `graph` ← `partition` ← `objectives` ← `ga` ← `
 - `ERBGA.evaluate` always returns the **canonical cut** (only edges between
   communities are cut). The fitness cache is keyed on it.
 - Elitism: the best fitness never decreases from one generation to the next.
+- `islands=1` reproduces the single-population run exactly (same random draws);
+  island code must not consume randomness when there is only one island.
 - Same `seed` ⇒ identical run. Draw all randomness from `self.rng`. Adding
   operators must not change the random stream when they are not used: see the
   rescaling in `ERBGA._mutate`.

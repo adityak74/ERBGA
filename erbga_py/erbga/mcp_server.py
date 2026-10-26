@@ -81,6 +81,7 @@ def detect_communities(
     generations: int = 200,
     local_search: bool = True,
     patience: int | None = 50,
+    islands: int = 1,
     max_nodes_per_community: int | None = 200,
 ) -> dict:
     """Find communities in a graph with the ERBGA genetic algorithm.
@@ -88,12 +89,14 @@ def detect_communities(
     Returns a summary sentence, the objective value ("fitness"), communities
     sorted by size (each with id, size and node ids), and run metadata.
     Raise pop_size/generations for harder graphs; set local_search=false to
-    trade speed for a more exploratory search.
+    trade speed for a more exploratory search. islands=4 splits the population
+    into 4 islands with periodic migration, which helps when repeated runs
+    stall at slightly different scores (premature convergence).
     """
     return _safe(api.detect_communities, graph, objective,
                  max_nodes_per_community=max_nodes_per_community, seed=seed,
                  pop_size=pop_size, generations=generations,
-                 local_search=local_search, patience=patience)
+                 local_search=local_search, patience=patience, islands=islands)
 
 
 @server.tool(annotations=READ_ONLY)
