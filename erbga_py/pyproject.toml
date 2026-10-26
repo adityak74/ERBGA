@@ -12,7 +12,9 @@ authors = [{ name = "Aditya Karnam" }]
 dependencies = ["numpy>=1.22"]
 
 [project.optional-dependencies]
-test = ["pytest", "networkx"]
+mcp = ["mcp>=1.2"]
+evolve = ["anthropic>=2.3"]
+test = ["pytest", "networkx", "mcp>=1.2"]
 
 [project.scripts]
 erbga = "erbga.cli:main"
@@ -20,5 +22,15 @@ erbga = "erbga.cli:main"
 [tool.setuptools]
 packages = ["erbga"]
 
+[tool.setuptools.package-data]
+erbga = ["data/*.gml"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "UP"]

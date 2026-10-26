@@ -9,7 +9,7 @@ nx = pytest.importorskip("networkx")
 def to_nx(g):
     G = nx.Graph()
     G.add_nodes_from(range(g.n))
-    G.add_edges_from(zip(g.src.tolist(), g.dst.tolist()))
+    G.add_edges_from(zip(g.src.tolist(), g.dst.tolist(), strict=True))
     return G
 
 

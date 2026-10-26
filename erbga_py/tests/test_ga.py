@@ -36,7 +36,7 @@ def test_best_never_gets_worse(karate, objective, local_search):
     cfg = GAConfig(seed=3, generations=40, local_search=local_search, patience=None)
     result = ERBGA(karate, objective, cfg).run()
     best = [b for b, _ in result.history]
-    assert all(later >= earlier - 1e-12 for earlier, later in zip(best, best[1:]))
+    assert all(later >= earlier - 1e-12 for earlier, later in zip(best, best[1:], strict=False))
 
 
 @pytest.mark.parametrize("init", ["random", "degree"])

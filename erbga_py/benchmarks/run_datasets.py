@@ -26,7 +26,7 @@ def main():
     print("| graph | n | m | variant | best | mean ± sd | hit optimum | mean time (s) |")
     print("|---|---|---|---|---|---|---|---|")
     for name, best_known in BEST_KNOWN.items():
-        g = read_gml(ROOT / "data" / f"{name}.gml")
+        g = read_gml(ROOT / "erbga" / "data" / f"{name}.gml")
         for variant, local_search in (("GA + local search", True), ("plain GA", False)):
             runs = [detect_communities(g, args.objective, seed=s, local_search=local_search)
                     for s in range(args.seeds)]

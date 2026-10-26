@@ -1,0 +1,81 @@
+# ERBGA
+
+> ERBGA finds communities in graphs with a genetic algorithm. Every community it
+> returns is connected (it searches over which edges to cut), and the objective is
+> pluggable: modularity, Qs, or any Python function. Python 3.10+, numpy only.
+> Reaches the proven optimal modularity on the standard small benchmarks (karate
+> 0.4198, dolphins 0.5285, polbooks 0.5272, football 0.6046) in 1–4 s.
+
+## Use it from an agent
+
+- MCP server: `pip install "erbga[mcp]"`, then `erbga mcp` (stdio). Client config:
+  `{"mcpServers": {"erbga": {"command": "erbga", "args": ["mcp"]}}}`
+- Tools: `list_datasets`, `list_objectives`, `graph_summary(graph)`,
+  `detect_communities(graph, objective="modularity", seed=None, pop_size=100,
+  generations=200, local_search=True, patience=50, max_nodes_per_community=200)`,
+  `score_partition(graph, partition, objectives=None)`
+- CLI with JSON output: `erbga detect GRAPH --format json`; `erbga score GRAPH
+  PARTITION --format json`; `erbga summary GRAPH --format json`; `erbga objectives
+  --format json`. With `--format json`, stdout is exactly one JSON object; progress
+  goes to stderr; exit code 0 = ok, 1 = error.
+
+## Inputs
+
+- `graph`: a bundled dataset name (`karate`, `dolphins`, `polbooks`, `football`), a
+  path (`.gml`; `.json`; edge list `.txt/.csv/.tsv/.edgelist`, one `u v` per line,
+  `#` comments), or inline JSON `{"edges": [[u, v], ...], "nodes": [...]}`
+  (`nodes` optional), or networkx node-link `{"nodes": [{"id": ...}], "links":
+  [{"source": ..., "target": ...}]}`. Undirected and unweighted; self-loops and
+  duplicate edges are dropped.
+- `partition`: `{"node_id": community, ...}` or `[[node_id, ...], ...]`. Every node
+  exactly once; ids are compared as strings.
+
+## Outputs
+
+- Success: `{"ok": true, ...}`. `detect_communities` returns `summary` (one
+  sentence), `fitness`, `num_communities`, `communities` (sorted by size, each
+  `{"id", "size", "nodes", "truncated"?}`), `run` (`generations`, `stopped_early`,
+  `evaluations`, `seconds`, `initial_best`, `generation_of_best`), `config`.
+- Error: `{"ok": false, "error": {"code", "message", "hint"}}`. Codes:
+  `GRAPH_NOT_FOUND`, `INVALID_GRAPH`, `EMPTY_GRAPH`, `UNKNOWN_OBJECTIVE`,
+  `INVALID_CONFIG`, `INVALID_PARTITION` (and `LLM_UNAVAILABLE`, `LLM_ERROR` from
+  `erbga evolve`). Read `hint`, fix the input, and retry.
+
+## Objectives (higher is better)
+
+- `modularity`: sum_c [L_c/m − (d_c/2m)²], Newman–Girvan modularity.
+- `qs`: sum_c [L_c/m − n_c(n_c−1)/(N(N−1))], a density-based null model from the
+  original thesis, meant to reduce modularity's resolution-limit bias.
+
+## Tips
+
+- Pass `seed` for reproducible results.
+- Large graph output: lower `max_nodes_per_community`; sizes stay exact.
+- Harder graphs: raise `pop_size` and `generations`. `local_search=false` is slower
+  but sometimes finds better optima.
+- Compare methods: run another algorithm, then `score_partition` its result to get
+  the same metrics and a connectivity check.
+
+## Python API
+
+- `erbga.api`: the JSON-safe functions above (`load_graph`, `graph_summary`,
+  `detect_communities`, `score_partition`, `list_objectives`, `ERBGAError`)
+- `erbga.detect_communities(graph, objective, **GAConfig)` → `GAResult` (numpy
+  labels); `objective` can be any `f(graph, labels) -> float`
+- `erbga.ERBGA(graph, objective, GAConfig(...), operators=[(p, fn)])`; extra
+  mutation operators `fn(graph, labels, rng) -> labels`
+
+## LLM-evolved operators
+
+- `pip install "erbga[evolve]"`, then `erbga evolve --iterations 10` (uses Claude;
+  needs `ANTHROPIC_API_KEY` or `ant auth login`). It asks Claude for
+  `mutate(graph, labels, rng)` operators, scores each in a resource-limited
+  subprocess against a fixed-seed baseline, and writes `best_operator.py`.
+- Use the result: `erbga detect GRAPH --operator best_operator.py`
+- This runs LLM-written code behind an allowlist and resource limits. That is not a
+  security sandbox, so prefer a container.
+
+## Docs
+
+- [README](README.md): design, benchmark, comparison with the 2018 C++ version
+- [AGENTS.md](AGENTS.md): how to work on the code

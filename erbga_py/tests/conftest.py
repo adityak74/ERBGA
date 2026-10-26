@@ -4,7 +4,7 @@ import pytest
 
 from erbga import read_gml
 
-DATA = Path(__file__).resolve().parent.parent / "data"
+DATA = Path(__file__).resolve().parent.parent / "erbga" / "data"
 
 
 @pytest.fixture(scope="session")
