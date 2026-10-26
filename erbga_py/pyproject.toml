@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,6 +8,8 @@ version = "1.0.0.dev0"
 description = "Connected, objective-agnostic community detection with a genetic algorithm"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Aditya Karnam" }]
 dependencies = ["numpy>=1.22"]
 

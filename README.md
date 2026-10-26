@@ -8,6 +8,7 @@
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Runtime deps: numpy](https://img.shields.io/badge/runtime%20deps-numpy-013243?logo=numpy&logoColor=white)
 ![MCP server](https://img.shields.io/badge/MCP-server-6250d6)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2a78d6)](LICENSE)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="erbga_py/docs/karate-dark.svg">
@@ -178,8 +179,12 @@ CI runs both on Python 3.10–3.13. [`AGENTS.md`](erbga_py/AGENTS.md) lists the 
 
 If ERBGA helps your research, please cite it. GitHub's **"Cite this repository"** button uses [`CITATION.cff`](CITATION.cff).
 
+## License
+
+[MIT](LICENSE) © 2017–2026 Aditya Karnam. That covers the ERBGA code in this repository: the Python package and the genetic algorithm in `bfs_orig/`. Third-party code keeps its authors' terms. That includes the network library in `bfs_orig/` and `bfs_sc/` (Sharlee Climer; marked in the file headers) and `GML_XGMML/` (John Punin, based on Marcus Raitner's GML parser).
+
 ## Background
 
-ERBGA started as Aditya Karnam's graduate research (2017–2018) in Sharlee Climer's lab at the University of Missouri–St. Louis. That work was a C++ genetic algorithm built on the lab's network library and run on the Lewis HPC cluster. The aim was community detection that isn't tied to one objective's biases, such as modularity's resolution limit. The Python package is a 2026 rewrite of that idea, with a new encoding repair, community-level operators and incremental local search.
+ERBGA started as Aditya Karnam's graduate research in Sharlee Climer's lab at the University of Missouri–St. Louis (UMSL), completed in 2018. That work was a C++ genetic algorithm built on the lab's network library and run on the Lewis HPC cluster. The aim was community detection that isn't tied to one objective's biases, such as modularity's resolution limit. The Python package is a 2026 rewrite of that idea, with a new encoding repair, community-level operators and incremental local search.
 
 The benchmark graphs come from [Mark Newman's network data collection](http://www-personal.umich.edu/~mejn/netdata/): karate club (Zachary, 1977), dolphins (Lusseau et al., 2003), political books (V. Krebs) and college football (Girvan & Newman, 2002).
