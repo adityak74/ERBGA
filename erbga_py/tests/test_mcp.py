@@ -40,3 +40,8 @@ def test_errors_are_returned_not_raised():
 def test_list_datasets():
     names = [d["name"] for d in call("list_datasets")["datasets"]]
     assert names == ["karate", "dolphins", "polbooks", "football"]
+
+
+def test_detect_with_islands_via_mcp():
+    out = call("detect_communities", {"graph": "karate", "seed": 0, "islands": 4})
+    assert out["ok"] and out["config"]["islands"] == 4

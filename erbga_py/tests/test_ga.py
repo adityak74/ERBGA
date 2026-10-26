@@ -104,3 +104,46 @@ def test_custom_objective_uses_exact_refine(karate):
     ga = ERBGA(karate, wrapped, GAConfig(seed=0))
     cut, fit = ga.refine(np.ones(karate.m, dtype=bool))  # start from singletons
     assert fit > 0.3
+
+
+@pytest.mark.parametrize("bad", [
+    {"islands": 0}, {"migration_interval": 0}, {"migrants": 0},
+    {"pop_size": 10, "islands": 5, "migrants": 2},  # islands of 2 can't send 2 migrants
+])
+def test_invalid_island_config_rejected(bad):
+    with pytest.raises(ValueError):
+        GAConfig(**bad)
+
+
+def test_islands_split_population_and_stay_monotone(karate):
+    cfg = GAConfig(seed=1, pop_size=23, islands=4, migration_interval=3,
+                   generations=12, patience=None)
+    result = ERBGA(karate, config=cfg).run()
+    best = [b for b, _ in result.history]
+    assert all(later >= earlier - 1e-12 for earlier, later in zip(best, best[1:], strict=False))
+    assert is_connected_partition(karate, result.labels)
+
+
+def test_islands_reproducible(karate):
+    a = detect_communities(karate, seed=4, islands=3, generations=15)
+    b = detect_communities(karate, seed=4, islands=3, generations=15)
+    assert a.history == b.history and np.array_equal(a.labels, b.labels)
+
+
+def test_migration_replaces_worst_with_neighbours_best(karate):
+    ga = ERBGA(karate, config=GAConfig(seed=0, islands=3, migrants=2))
+    rng = np.random.default_rng(0)
+    islands = []
+    for i in range(3):
+        pop = rng.random((5, karate.m)) < 0.5
+        islands.append((pop, np.array([0.1, 0.5, 0.3, 0.9, 0.2]) + i))
+    before = [(p.copy(), f.copy()) for p, f in islands]
+    ga._migrate(islands)
+    for i in range(3):
+        src_pop, src_fit = before[i - 1]
+        top2 = np.argsort(-src_fit)[:2]
+        worst2 = np.argsort(before[i][1])[:2]  # indices 0 and 4
+        assert np.array_equal(islands[i][1][worst2], src_fit[top2])
+        assert np.array_equal(islands[i][0][worst2], src_pop[top2])
+        untouched = [j for j in range(5) if j not in worst2]
+        assert np.array_equal(islands[i][1][untouched], before[i][1][untouched])

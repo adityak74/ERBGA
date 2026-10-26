@@ -52,6 +52,12 @@ def build_parser() -> argparse.ArgumentParser:
     det.add_argument("--patience", type=int, default=d.patience,
                      help="stop after N generations without improvement (0 = never)")
     det.add_argument("--seed", type=int, default=None)
+    det.add_argument("--islands", type=int, default=d.islands,
+                     help="split the population into N islands (island model)")
+    det.add_argument("--migration-interval", type=int, default=d.migration_interval,
+                     help="generations between island migrations")
+    det.add_argument("--migrants", type=int, default=d.migrants,
+                     help="individuals each island sends per migration")
     det.add_argument("--max-nodes", type=int, default=None, metavar="N",
                      help="list at most N nodes per community in the output")
     det.add_argument("--history", action="store_true", help="include per-generation history")
@@ -122,7 +128,8 @@ def cmd_detect(args, as_json: bool) -> int:
         tournament_size=args.tournament, crossover=args.crossover,
         crossover_rate=args.crossover_rate, mutation_rate=args.mutation_rate,
         init=args.init, local_search=not args.no_local_search,
-        patience=args.patience or None, seed=args.seed,
+        patience=args.patience or None, seed=args.seed, islands=args.islands,
+        migration_interval=args.migration_interval, migrants=args.migrants,
     )
     stream = sys.stderr if as_json else sys.stdout
 
