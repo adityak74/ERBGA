@@ -184,7 +184,8 @@ def detect_communities(graph: Any, objective: str = "modularity", *,
 
     ``config`` keys are the ``GAConfig`` fields: pop_size, generations,
     elite_frac, tournament_size, crossover_rate, crossover, mutation_rate,
-    init, local_search, aggregate, refinement, patience, seed, islands,
+    init, local_search, aggregate, refinement, refinement_theta, patience, seed,
+    islands,
     migration_interval,
     migrants. ``max_nodes_per_community`` truncates
     the node lists (the size is always exact) to keep output small.

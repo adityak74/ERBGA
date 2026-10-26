@@ -215,3 +215,10 @@ def test_randomized_refinement_reproducible_and_validated(karate):
     assert a.history == b.history and np.array_equal(a.labels, b.labels)
     with pytest.raises(ValueError):
         GAConfig(refinement_theta=-0.1)
+
+
+def test_cli_refinement_theta_flag(capsys):
+    from conftest import DATA
+    assert main([str(DATA / "karate.gml"), "--seed", "0", "--refinement",
+                 "--refinement-theta", "0", "--format", "json"]) == 0
+    assert json.loads(capsys.readouterr().out)["config"]["refinement_theta"] == 0
