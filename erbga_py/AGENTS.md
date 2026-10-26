@@ -12,6 +12,7 @@ pip install -e ".[test]"          # numpy + pytest, networkx, mcp
 pytest -q                          # full suite, ~15 s
 ruff check .                       # lint (config in pyproject.toml)
 python benchmarks/run_datasets.py --seeds 10   # quality benchmark, ~1 min
+python benchmarks/scaling.py                   # 500-2000 node graphs, ~1 min
 erbga detect karate --seed 0       # smoke test; must print modularity 0.419790
 ```
 
@@ -40,6 +41,8 @@ Dependencies go one way: `graph` ← `partition` ← `objectives` ← `ga` ← `
 
 - A chromosome is one bool per edge, `True` = cut. Communities are the connected
   components after removing cut edges, so **every community is connected**.
+- `ERBGA.refine` never returns a worse fitness than its input, and the fitness
+  it returns equals `evaluate` on the returned cut.
 - `ERBGA.evaluate` always returns the **canonical cut** (only edges between
   communities are cut). The fitness cache is keyed on it.
 - Elitism: the best fitness never decreases from one generation to the next.
@@ -58,6 +61,11 @@ Dependencies go one way: `graph` ← `partition` ← `objectives` ← `ga` ← `
   where it is on the hot path (`decode`, objectives), plain Python elsewhere.
 - New objective: add a function to `objectives.py`, register it in `OBJECTIVES`,
   write a hand-computed test in `tests/test_objectives.py`, and document it in `llms.txt`.
+  For fast local search, also add a move gain to `MOVE_GAINS` (it must equal the
+  exact objective change for a single-node move on the undecoded labels, and the
+  objective must not decrease when a disconnected community is split, so the gain
+  is a lower bound after decoding). `test_move_gain_matches_full_recompute` checks
+  the first property. Without a gain, `refine` falls back to full evaluation per move.
 - New GA option: add it to `GAConfig` with validation in `__post_init__`, a CLI flag
   in `cli.py`, and (if agents should set it) a parameter of the MCP `detect_communities`.
 - Keep MCP tool docstrings accurate. The model reads them to decide what to call.
@@ -67,8 +75,8 @@ Dependencies go one way: `graph` ← `partition` ← `objectives` ← `ga` ← `
 
 ## Known gaps
 
-- Objectives are recomputed from scratch on each evaluation; incremental updates
-  are needed before graphs with more than ~10k nodes are practical.
+- Each GA evaluation decodes the whole chromosome (O(m)); that dominates past a
+  few thousand nodes. Local search is already incremental (see below).
 - Edge weights in GML input are ignored.
 - The C++ `q_calc` skipped two-node communities in Qs; `qs` here counts them. Which
   definition is intended is still open.

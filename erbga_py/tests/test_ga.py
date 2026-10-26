@@ -80,3 +80,27 @@ def test_cli(tmp_path, capsys):
     assert main([str(DATA / "karate.gml"), "--seed", "0", "--json", str(out)]) == 0
     assert "best modularity = 0.41979" in capsys.readouterr().out
     assert json.loads(out.read_text())["num_communities"] == 4
+
+
+@pytest.mark.parametrize("objective", ["modularity", "qs"])
+def test_fast_refine_never_worse_and_connected(football, objective):
+    ga = ERBGA(football, objective, GAConfig(seed=0))
+    rng = np.random.default_rng(1)
+    for _ in range(5):
+        start, start_fit, _ = ga.evaluate(rng.random(football.m) < 0.5)
+        cut, fit = ga.refine(start)
+        assert fit >= start_fit - 1e-12
+        _, exact, labels = ga.evaluate(cut)
+        assert fit == pytest.approx(exact)
+        assert is_connected_partition(football, labels)
+
+
+def test_custom_objective_uses_exact_refine(karate):
+    from erbga.objectives import modularity as mod
+
+    def wrapped(graph, labels):  # not in MOVE_GAINS, so the slow path runs
+        return mod(graph, labels)
+
+    ga = ERBGA(karate, wrapped, GAConfig(seed=0))
+    cut, fit = ga.refine(np.ones(karate.m, dtype=bool))  # start from singletons
+    assert fit > 0.3
