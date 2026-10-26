@@ -27,7 +27,7 @@ A change is done when both pass.
 | `erbga/partition.py` | decode a cut into communities (vectorised union-find), `canonical_cut` |
 | `erbga/objectives.py` | `modularity`, `qs`, the `OBJECTIVES` registry |
 | `erbga/ga.py` | `GAConfig`, `ERBGA` (operators, main loop), `detect_communities` |
-| `erbga/multilevel.py` | Louvain-style local search: weighted `Level`, `local_moving`, aggregation |
+| `erbga/multilevel.py` | Louvain-style local search: weighted `Level`, `local_moving`, aggregation, optional Leiden `refine_partition` |
 | `erbga/api.py` | JSON-in/JSON-out layer, `ERBGAError` codes, graph input formats |
 | `erbga/cli.py` | `erbga` command (subcommands, `--format json`) |
 | `erbga/mcp_server.py` | MCP tools; thin wrappers over `api` |

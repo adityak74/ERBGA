@@ -38,6 +38,7 @@ class GAConfig:
     init: str = "random"  # "random" or "degree" (the 2018 degree-biased start)
     local_search: bool = True  # greedily refine each new best individual (memetic step)
     aggregate: bool = True  # local search also moves whole communities (Louvain-style)
+    refinement: bool = False  # refine communities before aggregating (Leiden-style)
     patience: int | None = 100  # stop after this many generations without improvement
     seed: int | None = None
     # island model: pop_size is split across islands that evolve separately; every
@@ -257,7 +258,8 @@ class ERBGA:
         cut, best, labels = self.evaluate(cut)
         while True:
             new_labels = multilevel(self._base_level, labels, gain, g.m, g.n, self.rng,
-                                    aggregate=self.config.aggregate)
+                                    aggregate=self.config.aggregate,
+                                    refine=self.config.refinement)
             # decoding splits any community a move disconnected; that only adds gain
             t_cut, t_fit, t_labels = self.evaluate(canonical_cut(g, new_labels))
             if t_fit <= best + 1e-12:
