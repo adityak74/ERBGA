@@ -163,6 +163,13 @@ random, with probability proportional to exp(gain / θ), where gains are in
 edge units and θ = `refinement_theta` (default 0.01, Leiden's default, set
 with `--refinement-theta`). θ = 0 always takes the best merge.
 
+Leiden's well-connectedness condition is on too (`--no-well-connected` turns
+it off). A unit only moves if it is well connected to the rest of its
+community, and only into a sub-community that is. A set C counts as well
+connected to its community S when merging C with S − C does not lower the
+score. For modularity that is Leiden's E(C, S − C) ≥ deg(C)·(deg(S) −
+deg(C)) / 2m, and the same move gain gives the matching rule for Qs.
+
 Measured with default settings otherwise:
 
 | | Louvain (default) | greedy refinement (θ = 0) | **randomized refinement (θ = 0.01)** |
@@ -180,6 +187,12 @@ lands at 0.5201, which the Louvain default never does, so refinement stays
 opt-in. Use it for graphs of 1,000+ nodes, or run a few seeds and keep the
 best. (Choosing Louvain or Leiden at random on each local search call did
 worse than either: 25 hits.)
+
+Adding the well-connectedness condition (`well_connected=True`, the
+default once refinement is on) changed little. It also scored 28 hits, with
+dolphins 3 → 4 and football 7 → 6, the same large-graph scores, and was
+slightly faster at 1,000 and 2,000 nodes (11.0 s and 17.6 s against 12.2 s and
+18.5 s). It did not fix the dolphins seed at 0.5201.
 
 ### Island model
 
@@ -234,11 +247,12 @@ llms.txt, AGENTS.md  docs for models using / agents editing the package
   evaluation still decodes the whole chromosome (O(m) numpy work), and that is
   what dominates at scale. Options: update components incrementally for
   single-node moves, or move the hot loops to compiled code.
-- **Leiden refinement on small graphs.** With the randomized merge, `--refinement`
-  gives the most optimum hits overall, but 1 dolphins seed in 10 settles at
-  0.5201. Leiden's well-connectedness condition (merge only into
-  sub-communities well connected to the rest of their community) is the
-  untried part of Leiden that might close this gap.
+- **Leiden refinement on small graphs.** `--refinement` gives the most optimum
+  hits overall, but 1 dolphins seed in 10 settles at 0.5201 with every
+  refinement variant tried (greedy, randomized, randomized with
+  well-connectedness). So the cause is likely structural: each refined unit
+  starts the next level inside its parent community, which may lock in a poor
+  community early. Starting some levels from singletons is one thing to try.
 - **Multilevel search for custom objectives.** Aggregated moves currently need a
   move gain; custom objectives use single-node moves with full evaluation.
 - **LFR benchmarks** with NMI/ARI against Louvain, Leiden and Infomap.
