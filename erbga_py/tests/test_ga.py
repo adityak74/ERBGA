@@ -147,3 +147,29 @@ def test_migration_replaces_worst_with_neighbours_best(karate):
         assert np.array_equal(islands[i][0][worst2], src_pop[top2])
         untouched = [j for j in range(5) if j not in worst2]
         assert np.array_equal(islands[i][1][untouched], before[i][1][untouched])
+
+
+def test_aggregation_escapes_singleton_trap():
+    """From all-singletons, node moves alone stall on a fine partition; moving
+    whole communities on the aggregated graph reaches the planted structure."""
+    rng = np.random.default_rng(0)
+    n, blocks = 600, 10
+    block = np.repeat(np.arange(blocks), n // blocks)
+    iu, ju = np.triu_indices(n, 1)
+    keep = rng.random(len(iu)) < np.where(block[iu] == block[ju], 50 / n, 2 / n)
+    g = Graph.from_edges(zip(iu[keep].tolist(), ju[keep].tolist(), strict=True), nodes=range(n))
+    planted = modularity(g, block)
+
+    start = np.ones(g.m, dtype=bool)
+    _, node_only = ERBGA(g, config=GAConfig(seed=0, aggregate=False)).refine(start)
+    cut, multilevel = ERBGA(g, config=GAConfig(seed=0)).refine(start)
+    assert node_only < planted - 0.2  # the trap
+    assert multilevel > planted - 0.01  # escaped it
+    assert is_connected_partition(g, ERBGA(g).evaluate(cut)[2])
+
+
+def test_cli_no_aggregate_flag(capsys):
+    from conftest import DATA
+    assert main([str(DATA / "karate.gml"), "--seed", "0", "--no-aggregate",
+                 "--format", "json"]) == 0
+    assert json.loads(capsys.readouterr().out)["config"]["aggregate"] is False

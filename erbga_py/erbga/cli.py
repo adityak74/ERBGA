@@ -49,6 +49,8 @@ def build_parser() -> argparse.ArgumentParser:
     det.add_argument("--mutation-rate", type=float, default=d.mutation_rate)
     det.add_argument("--init", default=d.init, choices=["random", "degree"])
     det.add_argument("--no-local-search", action="store_true", help="plain GA, no refinement")
+    det.add_argument("--no-aggregate", action="store_true",
+                     help="local search moves single nodes only (no Louvain-style aggregation)")
     det.add_argument("--patience", type=int, default=d.patience,
                      help="stop after N generations without improvement (0 = never)")
     det.add_argument("--seed", type=int, default=None)
@@ -128,6 +130,7 @@ def cmd_detect(args, as_json: bool) -> int:
         tournament_size=args.tournament, crossover=args.crossover,
         crossover_rate=args.crossover_rate, mutation_rate=args.mutation_rate,
         init=args.init, local_search=not args.no_local_search,
+        aggregate=not args.no_aggregate,
         patience=args.patience or None, seed=args.seed, islands=args.islands,
         migration_interval=args.migration_interval, migrants=args.migrants,
     )

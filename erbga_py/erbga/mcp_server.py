@@ -80,7 +80,7 @@ def detect_communities(
     pop_size: int = 100,
     generations: int = 200,
     local_search: bool = True,
-    patience: int | None = 50,
+    patience: int | None = 100,
     islands: int = 1,
     max_nodes_per_community: int | None = 200,
 ) -> dict:

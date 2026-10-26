@@ -92,23 +92,25 @@ are not a security sandbox, so run it in a container if that matters to you.
 ## Benchmark
 
 `python benchmarks/run_datasets.py --seeds 10`. Modularity, 10 seeds per row,
-default settings (population 100, at most 200 generations, stop after 50
+default settings (population 100, at most 200 generations, stop after 100
 without improvement). "Hit optimum" counts runs within 5e-5 of the proven
 maximum (Aloise et al., 2010).
 
 | graph | n | m | variant | best | mean ± sd | hit optimum | mean time (s) |
 |---|---|---|---|---|---|---|---|
-| karate | 34 | 78 | GA + local search | 0.4198 | 0.4198 ± 0.0000 | 10/10 | 0.83 |
-| karate | 34 | 78 | plain GA | 0.4198 | 0.4198 ± 0.0000 | 10/10 | 1.01 |
-| dolphins | 62 | 159 | GA + local search | 0.5285 | 0.5272 ± 0.0007 | 1/10 | 1.26 |
-| dolphins | 62 | 159 | plain GA | 0.5285 | 0.5276 ± 0.0010 | 5/10 | 2.06 |
-| polbooks | 105 | 441 | GA + local search | 0.5272 | 0.5270 ± 0.0006 | 7/10 | 1.29 |
-| polbooks | 105 | 441 | plain GA | 0.5272 | 0.5272 ± 0.0001 | 8/10 | 2.69 |
-| football | 115 | 613 | GA + local search | 0.6046 | 0.6045 ± 0.0001 | 7/10 | 3.11 |
-| football | 115 | 613 | plain GA | 0.6046 | 0.6004 ± 0.0033 | 1/10 | 4.36 |
+| karate | 34 | 78 | GA + local search | 0.4198 | 0.4198 ± 0.0000 | 10/10 | 1.44 |
+| karate | 34 | 78 | plain GA | 0.4198 | 0.4198 ± 0.0000 | 10/10 | 1.80 |
+| dolphins | 62 | 159 | GA + local search | 0.5285 | 0.5274 ± 0.0007 | 2/10 | 2.37 |
+| dolphins | 62 | 159 | plain GA | 0.5285 | 0.5276 ± 0.0010 | 5/10 | 2.93 |
+| polbooks | 105 | 441 | GA + local search | 0.5272 | 0.5272 ± 0.0002 | 8/10 | 2.20 |
+| polbooks | 105 | 441 | plain GA | 0.5272 | 0.5272 ± 0.0000 | 10/10 | 3.61 |
+| football | 115 | 613 | GA + local search | 0.6046 | 0.6045 ± 0.0001 | 6/10 | 3.99 |
+| football | 115 | 613 | plain GA | 0.6046 | 0.6004 ± 0.0033 | 1/10 | 4.45 |
 
-Local search is faster, and better on football, but it converges early and
-can stop short of the optimum (dolphins). Balancing the two is open.
+On these small graphs the plain GA, which runs without local search, hits the
+optimum more often but takes longer. Local search reaches a good partition
+quickly and then converges, which can stop it just short of the optimum
+(dolphins). On large graphs local search is what makes ERBGA practical; see Scaling below.
 
 ### Scaling
 
@@ -118,14 +120,33 @@ modularity of the blocks the graph was generated from.
 
 | n | m | planted Q | best Q | communities | generations | seconds |
 |---|---|---|---|---|---|---|
-| 500 | 1668 | 0.6363 | 0.6400 | 10 | 112 | 5.2 |
-| 1000 | 3407 | 0.6290 | 0.6313 | 10 | 200 | 15.6 |
-| 2000 | 6857 | 0.6374 | 0.6404 | 16 | 200 | 36.2 |
+| 500 | 1668 | 0.6363 | 0.6400 | 10 | 107 | 4.6 |
+| 1000 | 3407 | 0.6290 | 0.6323 | 10 | 111 | 8.7 |
+| 2000 | 6857 | 0.6374 | 0.6411 | 14 | 116 | 17.2 |
+| 5000 | 16961 | 0.6344 | 0.6370 | 17 | 101 | 32.8 |
 
-Local search scores each single-node move in O(degree) from per-community
-totals (`MOVE_GAINS` in `objectives.py`) instead of re-decoding the graph.
-At 30 generations on the 2000-node graph that took local search from 360 s
-to 9 s; it was 95% of the runtime before.
+Two things make this fast:
+
+- **Incremental move gains.** Each candidate move is scored in O(degree) from
+  per-community totals (`MOVE_GAINS` in `objectives.py`) instead of
+  re-decoding the graph. On the 2000-node graph at 30 generations, that cut
+  local search from 360 s to 9 s; it had been 95% of the runtime.
+- **Multilevel (Louvain-style) local search** (`multilevel.py`). After
+  single-node moves stall, each community is collapsed into one weighted node
+  and moves continue on the smaller graph, so a single move merges two whole
+  communities. Starting from all singletons, node moves alone stall far below
+  the planted partition, and aggregation gets past it:
+
+  | n | planted Q | node moves only | with aggregation |
+  |---|---|---|---|
+  | 1000 | 0.6290 | 0.2760 (324 communities) | 0.6323 (10), 0.5 s |
+  | 2000 | 0.6374 | 0.2485 (690) | 0.6408 (14), 1.7 s |
+  | 5000 | 0.6344 | 0.1788 (2078) | 0.6382 (17), 6.5 s |
+
+  The result is mapped back to the original nodes and decoded, so a move that
+  disconnects a community makes the decoder split it, and the connectivity
+  guarantee holds. `--no-aggregate` (or `GAConfig(aggregate=False)`) turns
+  aggregation off.
 
 ### Island model
 
@@ -138,7 +159,7 @@ reproduces the single-population runs exactly.
 
 Islands help when one population converges too early, and can cost a little
 where it doesn't. Optimum hits out of 10 seeds, population 100, no early
-stopping:
+stopping. These were measured before multilevel local search was added:
 
 | | dolphins | football | mean time |
 |---|---|---|---|
@@ -180,9 +201,12 @@ llms.txt, AGENTS.md  docs for models using / agents editing the package
   evaluation still decodes the whole chromosome (O(m) numpy work), and that is
   what dominates at scale. Options: update components incrementally for
   single-node moves, or move the hot loops to compiled code.
-- **Coarsening.** Single-node moves cannot merge whole communities, so local
-  search alone stalls on fine partitions; the GA's merge operator does that
-  work today. A Louvain-style aggregation step would do it directly.
+- **Leiden-style refinement.** Aggregation can build communities that are only
+  held together by a few nodes; ERBGA's decoder splits any that fall apart,
+  but refining inside communities before aggregating (as Leiden does) could
+  find better partitions sooner.
+- **Multilevel search for custom objectives.** Aggregated moves currently need a
+  move gain; custom objectives use single-node moves with full evaluation.
 - **LFR benchmarks** with NMI/ARI against Louvain, Leiden and Infomap.
 - **Multi-objective** search (NSGA-II over modularity and Qs).
 - **Weighted graphs.** The GML reader ignores edge weights for now.

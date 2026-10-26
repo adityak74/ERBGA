@@ -47,32 +47,50 @@ def test_qs_by_hand():
 
 
 @pytest.mark.parametrize("name", ["modularity", "qs"])
-def test_move_gain_matches_full_recompute(football, name):
-    from erbga.objectives import MOVE_GAINS, OBJECTIVES, CommunityStats
+@pytest.mark.parametrize("coarse", [False, True])
+def test_move_gain_matches_full_recompute(football, name, coarse):
+    """Every gain equals the full objective change, for single nodes (level 0)
+    and for whole groups of nodes on an aggregated level."""
+    from erbga.multilevel import Level
+    from erbga.objectives import MOVE_GAINS, OBJECTIVES
 
     objective = OBJECTIVES[name]
     gain = MOVE_GAINS[objective]
     rng = np.random.default_rng(5)
-    labels = rng.integers(0, 12, football.n)  # arbitrary, not necessarily connected
-    stats = CommunityStats(football, labels)
-    for _ in range(200):
-        v = int(rng.integers(football.n))
-        targets, links = stats.links(football, v)
-        own = targets == stats.labels[v]
+    level, membership = Level.from_graph(football), np.arange(football.n)
+    if coarse:  # units are 40 random groups of nodes
+        level, membership = level.aggregate(rng.integers(0, 40, football.n))
+    part = rng.integers(0, 8, level.n)  # communities of units, not necessarily connected
+    for _ in range(150):
+        v = int(rng.integers(level.n))
+        lo, hi = level.ptr[v], level.ptr[v + 1]
+        targets, inverse = np.unique(part[level.nbr[lo:hi]], return_inverse=True)
+        links = np.bincount(inverse, weights=level.weight[lo:hi])
+        own = targets == part[v]
         if own.all():
             continue
-        own_links = int(links[own].sum())
-        targets, links = targets[~own], links[~own]
-        predicted = gain(football, stats, v, targets, links, own_links)
-        before = objective(football, stats.labels)
-        for t, p in zip(targets, predicted, strict=True):
-            trial = stats.labels.copy()
+        k = max(part.max(), targets.max()) + 1
+        degree = np.bincount(part, weights=level.degree, minlength=k)
+        size = np.bincount(part, weights=level.size, minlength=k)
+        predicted = gain(football.m, football.n, level.degree[v], level.size[v], links[~own],
+                         links[own].sum(), degree[targets[~own]], size[targets[~own]],
+                         degree[part[v]] - level.degree[v], size[part[v]] - level.size[v])
+        before = objective(football, part[membership])
+        for t, p in zip(targets[~own], predicted, strict=True):
+            trial = part.copy()
             trial[v] = t
-            assert p == pytest.approx(objective(football, trial) - before, abs=1e-12)
-        stats.move(football, v, int(targets[rng.integers(len(targets))]))
-    # totals stay consistent after many moves
-    fresh = CommunityStats(football, stats.labels)
-    k = len(fresh.size)
-    assert np.allclose(stats.degree[:k], fresh.degree)
-    assert np.array_equal(stats.size[:k], fresh.size)
-    assert not stats.size[k:].any()  # emptied communities past the last used id
+            assert p == pytest.approx(objective(football, trial[membership]) - before, abs=1e-12)
+        part[v] = targets[~own][rng.integers((~own).sum())]
+
+
+def test_aggregate_preserves_totals(football):
+    from erbga.multilevel import Level
+
+    base = Level.from_graph(football)
+    part = np.random.default_rng(0).integers(0, 12, football.n)
+    level, groups = base.aggregate(part)
+    assert level.n == len(np.unique(part))
+    assert level.degree.sum() == pytest.approx(2 * football.m)
+    assert level.size.sum() == football.n
+    inside = (part[football.src] == part[football.dst]).sum()
+    assert level.weight.sum() == pytest.approx(2 * (football.m - inside))  # both directions

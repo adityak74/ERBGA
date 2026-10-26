@@ -18,7 +18,8 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from .graph import Graph
-from .objectives import MOVE_GAINS, CommunityStats, Objective, get_objective
+from .multilevel import Level, multilevel
+from .objectives import MOVE_GAINS, Objective, get_objective
 from .partition import canonical_cut, decode
 
 # fn(graph, labels, rng) -> new labels
@@ -36,7 +37,8 @@ class GAConfig:
     mutation_rate: float = 0.9  # chance a child gets mutated at all
     init: str = "random"  # "random" or "degree" (the 2018 degree-biased start)
     local_search: bool = True  # greedily refine each new best individual (memetic step)
-    patience: int | None = 50  # stop after this many generations without improvement
+    aggregate: bool = True  # local search also moves whole communities (Louvain-style)
+    patience: int | None = 100  # stop after this many generations without improvement
     seed: int | None = None
     # island model: pop_size is split across islands that evolve separately; every
     # migration_interval generations each island's best `migrants` replace the
@@ -104,6 +106,7 @@ class ERBGA:
         self.operators = list(operators)
         self.rng = np.random.default_rng(self.config.seed)
         self._cache: dict[bytes, float] = {}  # canonical cut -> fitness
+        self._base_level: Level | None = None  # graph as a multilevel Level, built lazily
         self.evaluations = 0
 
     # ---- evaluation --------------------------------------------------
@@ -237,37 +240,29 @@ class ERBGA:
         return cut
 
     def refine(self, cut: np.ndarray) -> tuple[np.ndarray, float]:
-        """Greedy local search: move single nodes to neighbouring communities
-        while the objective improves.
+        """Greedy local search from ``cut``; never returns anything worse.
 
-        Objectives in ``MOVE_GAINS`` score each candidate move in O(degree) and
-        re-decode once per pass; others fall back to a full evaluation per move.
+        Objectives in ``MOVE_GAINS`` get Louvain-style multilevel search:
+        single-node moves scored in O(degree), then (with ``aggregate``) moves
+        of whole communities on the collapsed graph. The result is decoded once
+        per round, splitting any community a move disconnected. Other
+        objectives fall back to a full evaluation per single-node move.
         """
         gain = MOVE_GAINS.get(self.objective)
         if gain is None:
             return self._refine_exact(cut)
         g = self.graph
+        if self._base_level is None:
+            self._base_level = Level.from_graph(g)
         cut, best, labels = self.evaluate(cut)
         while True:
-            stats = CommunityStats(g, labels)
-            moved = False
-            for v in self.rng.permutation(g.n):
-                targets, links = stats.links(g, v)
-                own = targets == stats.labels[v]
-                if own.all():
-                    continue
-                gains = gain(g, stats, v, targets[~own], links[~own], int(links[own].sum()))
-                i = int(np.argmax(gains))
-                if gains[i] > 1e-12:
-                    stats.move(g, v, targets[~own][i])
-                    moved = True
-            if not moved:
-                return cut, best
+            new_labels = multilevel(self._base_level, labels, gain, g.m, g.n, self.rng,
+                                    aggregate=self.config.aggregate)
             # decoding splits any community a move disconnected; that only adds gain
-            t_cut, t_fit, labels = self.evaluate(canonical_cut(g, stats.labels))
+            t_cut, t_fit, t_labels = self.evaluate(canonical_cut(g, new_labels))
             if t_fit <= best + 1e-12:
                 return cut, best
-            cut, best = t_cut, t_fit
+            cut, best, labels = t_cut, t_fit, t_labels
 
     def _refine_exact(self, cut: np.ndarray) -> tuple[np.ndarray, float]:
         """``refine`` for objectives without a move gain: evaluate every move."""
