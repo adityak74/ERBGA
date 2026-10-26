@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use ERBGA, please cite it as below."
+title: "ERBGA: Efficient Reduced-Bias Genetic Algorithm for Generic Community Detection Objectives"
+type: software
+authors:
+  - given-names: Aditya
+    family-names: Karnam
+repository-code: "https://github.com/adityak74/ERBGA"
+abstract: >-
+  A genetic algorithm for community detection that encodes a partition as a
+  set of cut edges, so every community it returns is connected, and that
+  optimises any objective function (modularity, Qs, or user-defined).
+keywords:
+  - community detection
+  - genetic algorithm
+  - modularity
+  - graph clustering
+  - network science
+version: 1.0.0.dev0
+date-released: "2026-10-26"
