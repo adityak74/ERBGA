@@ -39,6 +39,7 @@ class GAConfig:
     local_search: bool = True  # greedily refine each new best individual (memetic step)
     aggregate: bool = True  # local search also moves whole communities (Louvain-style)
     refinement: bool = False  # refine communities before aggregating (Leiden-style)
+    refinement_theta: float = 0.01  # randomness of refinement merges (0 = greedy)
     patience: int | None = 100  # stop after this many generations without improvement
     seed: int | None = None
     # island model: pop_size is split across islands that evolve separately; every
@@ -54,6 +55,7 @@ class GAConfig:
             (self.islands >= 1, "islands must be >= 1"),
             (self.migration_interval >= 1, "migration_interval must be >= 1"),
             (self.migrants >= 1, "migrants must be >= 1"),
+            (self.refinement_theta >= 0, "refinement_theta must be >= 0"),
             (self.islands <= 1 or self.pop_size // self.islands > self.migrants,
              "each island needs more than `migrants` members: raise pop_size or lower islands"),
             (self.generations >= 0, "generations must be >= 0"),
@@ -259,7 +261,8 @@ class ERBGA:
         while True:
             new_labels = multilevel(self._base_level, labels, gain, g.m, g.n, self.rng,
                                     aggregate=self.config.aggregate,
-                                    refine=self.config.refinement)
+                                    refine=self.config.refinement,
+                                    theta=self.config.refinement_theta)
             # decoding splits any community a move disconnected; that only adds gain
             t_cut, t_fit, t_labels = self.evaluate(canonical_cut(g, new_labels))
             if t_fit <= best + 1e-12:
