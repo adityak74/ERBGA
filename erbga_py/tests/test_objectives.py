@@ -44,3 +44,35 @@ def test_qs_by_hand():
     labels = np.array([0, 0, 0, 1, 1, 1])
     expected = 2 * (3 / 7 - 3 * 2 / (6 * 5))
     assert qs(g, labels) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("name", ["modularity", "qs"])
+def test_move_gain_matches_full_recompute(football, name):
+    from erbga.objectives import MOVE_GAINS, OBJECTIVES, CommunityStats
+
+    objective = OBJECTIVES[name]
+    gain = MOVE_GAINS[objective]
+    rng = np.random.default_rng(5)
+    labels = rng.integers(0, 12, football.n)  # arbitrary, not necessarily connected
+    stats = CommunityStats(football, labels)
+    for _ in range(200):
+        v = int(rng.integers(football.n))
+        targets, links = stats.links(football, v)
+        own = targets == stats.labels[v]
+        if own.all():
+            continue
+        own_links = int(links[own].sum())
+        targets, links = targets[~own], links[~own]
+        predicted = gain(football, stats, v, targets, links, own_links)
+        before = objective(football, stats.labels)
+        for t, p in zip(targets, predicted, strict=True):
+            trial = stats.labels.copy()
+            trial[v] = t
+            assert p == pytest.approx(objective(football, trial) - before, abs=1e-12)
+        stats.move(football, v, int(targets[rng.integers(len(targets))]))
+    # totals stay consistent after many moves
+    fresh = CommunityStats(football, stats.labels)
+    k = len(fresh.size)
+    assert np.allclose(stats.degree[:k], fresh.degree)
+    assert np.array_equal(stats.size[:k], fresh.size)
+    assert not stats.size[k:].any()  # emptied communities past the last used id

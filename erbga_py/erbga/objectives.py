@@ -55,6 +55,57 @@ OBJECTIVES: dict[str, Objective] = {
 }
 
 
+# ---- incremental scoring of single-node moves ---------------------------
+
+class CommunityStats:
+    """Labels plus per-community degree sums and sizes, kept current under
+    single-node moves, so a move can be scored in O(degree) instead of O(m)."""
+
+    def __init__(self, graph: Graph, labels: np.ndarray):
+        self.labels = labels.copy()
+        k = int(labels.max()) + 1
+        self.degree = np.bincount(labels, weights=graph.degree, minlength=k)
+        self.size = np.bincount(labels, minlength=k)
+
+    def links(self, graph: Graph, v: int) -> tuple[np.ndarray, np.ndarray]:
+        """Communities adjacent to v and how many of v's edges go to each."""
+        return np.unique(self.labels[graph.neighbours(v)], return_counts=True)
+
+    def move(self, graph: Graph, v: int, target: int) -> None:
+        source, kv = self.labels[v], graph.degree[v]
+        self.degree[source] -= kv
+        self.degree[target] += kv
+        self.size[source] -= 1
+        self.size[target] += 1
+        self.labels[v] = target
+
+
+# A move gain gives, for node v and each community in ``targets``, the
+# objective change from moving v there: ``links[i]`` is the number of v's edges
+# into ``targets[i]`` and ``own`` the number into v's current community.
+# Signature: gain(graph, stats, v, targets, links, own) -> array.
+# Both gains below treat the partition as given. If the move disconnects v's
+# old community, decoding splits it, and for these objectives splitting a
+# community with no edges between the pieces only raises the score, so the
+# gain is a lower bound on the decoded result.
+
+def modularity_gain(graph: Graph, stats: CommunityStats, v: int, targets: np.ndarray,
+                    links: np.ndarray, own: int) -> np.ndarray:
+    m, kv = graph.m, graph.degree[v]
+    d_own = stats.degree[stats.labels[v]] - kv
+    return (links - own) / m - kv * (stats.degree[targets] - d_own) / (2.0 * m * m)
+
+
+def qs_gain(graph: Graph, stats: CommunityStats, v: int, targets: np.ndarray,
+            links: np.ndarray, own: int) -> np.ndarray:
+    m, n = graph.m, graph.n
+    n_own = stats.size[stats.labels[v]] - 1
+    return (links - own) / m - 2.0 * (stats.size[targets] - n_own) / (n * (n - 1.0))
+
+
+MOVE_GAINS = {modularity: modularity_gain, qs: qs_gain}
+
+
 def get_objective(objective: str | Objective) -> Objective:
     if callable(objective):
         return objective

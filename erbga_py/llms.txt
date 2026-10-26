@@ -51,6 +51,8 @@
 
 - Pass `seed` for reproducible results.
 - Large graph output: lower `max_nodes_per_community`; sizes stay exact.
+- Size: a few seconds up to a few hundred nodes; about 15 s at 1,000 nodes and
+  35 s at 2,000 (average degree ~7) with default settings.
 - Harder graphs: raise `pop_size` and `generations`. `local_search=false` is slower
   but sometimes finds better optima.
 - Compare methods: run another algorithm, then `score_partition` its result to get
