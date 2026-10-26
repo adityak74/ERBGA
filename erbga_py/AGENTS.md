@@ -76,7 +76,7 @@ Dependencies go one way: `graph` ← `partition` ← `objectives` ← `ga` ← `
 ## Known gaps
 
 - Each GA evaluation decodes the whole chromosome (O(m)); that dominates past a
-  few thousand nodes. Local search is already incremental (see below).
+  few thousand nodes. Local search is already incremental (see `MOVE_GAINS` under Conventions).
 - Edge weights in GML input are ignored.
 - The C++ `q_calc` skipped two-node communities in Qs; `qs` here counts them. Which
   definition is intended is still open.
