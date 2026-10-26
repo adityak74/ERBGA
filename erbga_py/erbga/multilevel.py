@@ -104,7 +104,8 @@ def local_moving(level: Level, part: np.ndarray, gain, m: int, n: int,
 
 
 def refine_partition(level: Level, part: np.ndarray, gain, m: int, n: int,
-                     rng: np.random.Generator, theta: float = 0.0) -> np.ndarray:
+                     rng: np.random.Generator, theta: float = 0.0,
+                     well_connected: bool = False) -> np.ndarray:
     """Leiden-style refinement: rebuild each community of ``part`` from singletons.
 
     A unit that is still on its own may join an adjacent sub-community of the
@@ -116,14 +117,36 @@ def refine_partition(level: Level, part: np.ndarray, gain, m: int, n: int,
     merges with probability proportional to exp(gain / theta), as in Leiden,
     instead of always taking the best one. Gains are scaled by m first, so
     theta is in edge units like Leiden's (0.01 there). ``theta = 0`` is greedy.
+
+    With ``well_connected`` (Leiden's condition) only units that are well
+    connected to the rest of their community may move, and only into
+    sub-communities that are well connected to the rest of it. A set C is well
+    connected to its community S when merging C with S - C does not lower the
+    score; for modularity that is E(C, S-C) >= deg(C) (deg(S) - deg(C)) / 2m.
     """
     refined = np.arange(level.n)
     sub_degree = level.degree.copy()
     sub_size = level.size.copy()
     members = np.ones(level.n, dtype=np.int64)  # units in each sub-community
+    if well_connected:
+        k = int(part.max()) + 1
+        comm_degree = np.bincount(part, weights=level.degree, minlength=k)
+        comm_size = np.bincount(part, weights=level.size, minlength=k)
+        rows = np.repeat(np.arange(level.n), np.diff(level.ptr))
+        inside = part[rows] == part[level.nbr]
+        # edges from each sub-community to the rest of its community
+        external = np.bincount(rows[inside], weights=level.weight[inside], minlength=level.n)
+
+        def connected(c, community):
+            return gain(m, n, sub_degree[c], sub_size[c], external[c], 0.0,
+                        comm_degree[community] - sub_degree[c],
+                        comm_size[community] - sub_size[c], 0.0, 0.0) >= -1e-12
+
     for v in rng.permutation(level.n):
         if members[refined[v]] > 1:
             continue  # only singletons move, as in Leiden
+        if well_connected and not connected(np.array([v]), part[v])[0]:
+            continue
         lo, hi = level.ptr[v], level.ptr[v + 1]
         nbr = level.nbr[lo:hi]
         same = part[nbr] == part[v]
@@ -135,6 +158,11 @@ def refine_partition(level: Level, part: np.ndarray, gain, m: int, n: int,
         if mine.all():
             continue
         targets, links = targets[~mine], links[~mine]
+        if well_connected:
+            keep = connected(targets, part[v])
+            if not keep.any():
+                continue
+            targets, links = targets[keep], links[keep]
         gains = gain(m, n, level.degree[v], level.size[v], links, 0.0,
                      sub_degree[targets], sub_size[targets], 0.0, 0.0)
         ok = np.flatnonzero(gains >= -1e-12)
@@ -147,6 +175,9 @@ def refine_partition(level: Level, part: np.ndarray, gain, m: int, n: int,
         else:
             i = int(ok[np.argmax(gains[ok])])
         source, target = refined[v], targets[i]
+        if well_connected:
+            external[target] += external[source] - 2.0 * links[i]
+            external[source] = 0.0
         sub_degree[target] += level.degree[v]
         sub_size[target] += level.size[v]
         members[target] += 1
@@ -157,7 +188,8 @@ def refine_partition(level: Level, part: np.ndarray, gain, m: int, n: int,
 
 def multilevel(base: Level, labels: np.ndarray, gain, m: int, n: int,
                rng: np.random.Generator, aggregate: bool = True,
-               refine: bool = True, theta: float = 0.0, max_levels: int = 64) -> np.ndarray:
+               refine: bool = True, theta: float = 0.0, well_connected: bool = False,
+               max_levels: int = 64) -> np.ndarray:
     """Louvain/Leiden-style search starting from ``labels`` (one per original node).
 
     Level 0 moves single nodes. With ``aggregate``, each later level works on
@@ -174,7 +206,8 @@ def multilevel(base: Level, labels: np.ndarray, gain, m: int, n: int,
         part, moved = local_moving(level, part, gain, m, n, rng)
         if (not moved and depth > 0) or not aggregate:
             break
-        units = refine_partition(level, part, gain, m, n, rng, theta) if refine else part
+        units = (refine_partition(level, part, gain, m, n, rng, theta, well_connected)
+                 if refine else part)
         level, groups = level.aggregate(units)
         membership = groups[membership]
         start = np.empty(level.n, dtype=part.dtype)

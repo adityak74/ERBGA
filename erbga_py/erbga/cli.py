@@ -55,6 +55,8 @@ def build_parser() -> argparse.ArgumentParser:
                      help="Leiden-style refinement before each aggregation (opt-in)")
     det.add_argument("--refinement-theta", type=float, default=d.refinement_theta,
                      help="randomness of refinement merges, in edge units (0 = greedy)")
+    det.add_argument("--no-well-connected", action="store_true",
+                     help="drop Leiden's well-connectedness condition from refinement")
     det.add_argument("--patience", type=int, default=d.patience,
                      help="stop after N generations without improvement (0 = never)")
     det.add_argument("--seed", type=int, default=None)
@@ -135,7 +137,7 @@ def cmd_detect(args, as_json: bool) -> int:
         crossover_rate=args.crossover_rate, mutation_rate=args.mutation_rate,
         init=args.init, local_search=not args.no_local_search,
         aggregate=not args.no_aggregate, refinement=args.refinement,
-        refinement_theta=args.refinement_theta,
+        refinement_theta=args.refinement_theta, well_connected=not args.no_well_connected,
         patience=args.patience or None, seed=args.seed, islands=args.islands,
         migration_interval=args.migration_interval, migrants=args.migrants,
     )

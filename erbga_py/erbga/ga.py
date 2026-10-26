@@ -40,6 +40,7 @@ class GAConfig:
     aggregate: bool = True  # local search also moves whole communities (Louvain-style)
     refinement: bool = False  # refine communities before aggregating (Leiden-style)
     refinement_theta: float = 0.01  # randomness of refinement merges (0 = greedy)
+    well_connected: bool = True  # Leiden's well-connectedness condition in refinement
     patience: int | None = 100  # stop after this many generations without improvement
     seed: int | None = None
     # island model: pop_size is split across islands that evolve separately; every
@@ -262,7 +263,8 @@ class ERBGA:
             new_labels = multilevel(self._base_level, labels, gain, g.m, g.n, self.rng,
                                     aggregate=self.config.aggregate,
                                     refine=self.config.refinement,
-                                    theta=self.config.refinement_theta)
+                                    theta=self.config.refinement_theta,
+                                    well_connected=self.config.well_connected)
             # decoding splits any community a move disconnected; that only adds gain
             t_cut, t_fit, t_labels = self.evaluate(canonical_cut(g, new_labels))
             if t_fit <= best + 1e-12:

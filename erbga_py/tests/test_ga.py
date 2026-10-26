@@ -222,3 +222,45 @@ def test_cli_refinement_theta_flag(capsys):
     assert main([str(DATA / "karate.gml"), "--seed", "0", "--refinement",
                  "--refinement-theta", "0", "--format", "json"]) == 0
     assert json.loads(capsys.readouterr().out)["config"]["refinement_theta"] == 0
+
+
+def test_well_connectedness_keeps_weakly_tied_unit_alone(karate):
+    """A unit with 1 of its edges inside a big community fails Leiden's
+    condition (1 < deg(v)(deg(S) - deg(v)) / 2m), so refinement leaves it alone."""
+    from erbga.multilevel import Level, refine_partition
+    from erbga.objectives import MOVE_GAINS, modularity
+
+    gain = MOVE_GAINS[modularity]
+    level = Level.from_graph(karate)
+    v = int(np.argmax(karate.degree >= 5))
+    nbrs = karate.neighbours(v)
+    part = np.zeros(karate.n, dtype=np.int64)
+    part[nbrs[1:]] = 1  # only nbrs[0] shares v's community
+    deg_s = karate.degree[part == part[v]].sum()
+    assert 1 < karate.degree[v] * (deg_s - karate.degree[v]) / (2 * karate.m)  # really weak
+
+    for seed in range(5):
+        refined = refine_partition(level, part, gain, karate.m, karate.n,
+                                   np.random.default_rng(seed), theta=0.01, well_connected=True)
+        assert (refined == refined[v]).sum() == 1  # v was never merged
+        for r in np.unique(refined):  # still nested and connected
+            assert len(np.unique(part[refined == r])) == 1
+        assert is_connected_partition(karate, np.unique(refined, return_inverse=True)[1])
+
+
+@pytest.mark.parametrize("objective", ["modularity", "qs"])
+def test_refine_with_well_connectedness_never_worse(football, objective):
+    ga = ERBGA(football, objective, GAConfig(seed=0, refinement=True, well_connected=True))
+    rng = np.random.default_rng(2)
+    for _ in range(3):
+        start, start_fit, _ = ga.evaluate(rng.random(football.m) < 0.4)
+        cut, fit = ga.refine(start)
+        assert fit >= start_fit - 1e-12
+        assert fit == pytest.approx(ga.evaluate(cut)[1])
+
+
+def test_cli_no_well_connected_flag(capsys):
+    from conftest import DATA
+    assert main([str(DATA / "karate.gml"), "--seed", "0", "--refinement",
+                 "--no-well-connected", "--format", "json"]) == 0
+    assert json.loads(capsys.readouterr().out)["config"]["well_connected"] is False
