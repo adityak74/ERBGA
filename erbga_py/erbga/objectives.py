@@ -55,52 +55,40 @@ OBJECTIVES: dict[str, Objective] = {
 }
 
 
-# ---- incremental scoring of single-node moves ---------------------------
+# ---- incremental scoring of moves ----------------------------------------
 
-class CommunityStats:
-    """Labels plus per-community degree sums and sizes, kept current under
-    single-node moves, so a move can be scored in O(degree) instead of O(m)."""
-
-    def __init__(self, graph: Graph, labels: np.ndarray):
-        self.labels = labels.copy()
-        k = int(labels.max()) + 1
-        self.degree = np.bincount(labels, weights=graph.degree, minlength=k)
-        self.size = np.bincount(labels, minlength=k)
-
-    def links(self, graph: Graph, v: int) -> tuple[np.ndarray, np.ndarray]:
-        """Communities adjacent to v and how many of v's edges go to each."""
-        return np.unique(self.labels[graph.neighbours(v)], return_counts=True)
-
-    def move(self, graph: Graph, v: int, target: int) -> None:
-        source, kv = self.labels[v], graph.degree[v]
-        self.degree[source] -= kv
-        self.degree[target] += kv
-        self.size[source] -= 1
-        self.size[target] += 1
-        self.labels[v] = target
-
-
-# A move gain gives, for node v and each community in ``targets``, the
-# objective change from moving v there: ``links[i]`` is the number of v's edges
-# into ``targets[i]`` and ``own`` the number into v's current community.
-# Signature: gain(graph, stats, v, targets, links, own) -> array.
-# Both gains below treat the partition as given. If the move disconnects v's
-# old community, decoding splits it, and for these objectives splitting a
+# A move gain scores moving one unit (a node, or at coarser levels of
+# multilevel local search a whole group of nodes) from its community into each
+# of several neighbouring communities, without recomputing the objective.
+#
+#     gain(m, n, unit_degree, unit_size, links, own_links,
+#          target_degree, target_size, own_degree, own_size) -> array
+#
+# m, n: edges and nodes of the original graph. unit_degree / unit_size: the
+# unit's summed degree and node count. links[i]: edges between the unit and
+# target community i; own_links: edges between the unit and the rest of its own
+# community. target_*: degree sum and node count of each target; own_*: the
+# same for the unit's community *without* the unit.
+#
+# Gains are exact for the labelling as given. If a move disconnects a
+# community, decoding splits it, and for these objectives splitting a
 # community with no edges between the pieces only raises the score, so the
 # gain is a lower bound on the decoded result.
 
-def modularity_gain(graph: Graph, stats: CommunityStats, v: int, targets: np.ndarray,
-                    links: np.ndarray, own: int) -> np.ndarray:
-    m, kv = graph.m, graph.degree[v]
-    d_own = stats.degree[stats.labels[v]] - kv
-    return (links - own) / m - kv * (stats.degree[targets] - d_own) / (2.0 * m * m)
+def modularity_gain(m, n, unit_degree, unit_size, links, own_links,
+                    target_degree, target_size, own_degree, own_size):
+    return ((links - own_links) / m
+            - unit_degree * (target_degree - own_degree) / (2.0 * m * m))
 
 
-def qs_gain(graph: Graph, stats: CommunityStats, v: int, targets: np.ndarray,
-            links: np.ndarray, own: int) -> np.ndarray:
-    m, n = graph.m, graph.n
-    n_own = stats.size[stats.labels[v]] - 1
-    return (links - own) / m - 2.0 * (stats.size[targets] - n_own) / (n * (n - 1.0))
+def qs_gain(m, n, unit_degree, unit_size, links, own_links,
+            target_degree, target_size, own_degree, own_size):
+    def pairs(x):
+        return x * (x - 1.0)
+
+    size_change = (pairs(target_size + unit_size) - pairs(target_size)
+                   + pairs(own_size) - pairs(own_size + unit_size))
+    return (links - own_links) / m - size_change / (n * (n - 1.0))
 
 
 MOVE_GAINS = {modularity: modularity_gain, qs: qs_gain}

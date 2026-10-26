@@ -36,7 +36,7 @@ pip install "erbga @ git+https://github.com/adityak74/ERBGA.git#subdirectory=erb
 
 erbga detect karate --seed 0
 # karate: 34 nodes, 78 edges, objective=modularity
-# best modularity = 0.419790 with 4 communities (61 generations, 1104 evaluations, 0.76s)
+# best modularity = 0.419790 with 4 communities (111 generations, 1532 evaluations, 1.46s)
 ```
 
 Bring your own graph as an edge list (`u v` per line), `.gml`, or `.json`:
@@ -53,7 +53,7 @@ from erbga import detect_communities
 from erbga.api import load_graph
 
 result = detect_communities(load_graph("football"), "modularity", seed=0)
-result.fitness            # 0.6046
+result.fitness            # 0.6044 (the proven optimum is 0.6046)
 result.communities        # {node_id: community}
 
 # any objective: higher is better
@@ -69,18 +69,19 @@ detect_communities(load_graph("football"), fewer_big_communities, seed=0)
 
 | Graph | Nodes | Edges | Proven optimum | ERBGA best | Mean of 10 | Time per run |
 |---|---:|---:|---:|---:|---:|---:|
-| Karate club | 34 | 78 | 0.4198 | **0.4198** | 0.4198 | 0.8 s |
-| Dolphins | 62 | 159 | 0.5285 | **0.5285** | 0.5272 | 1.3 s |
-| Political books | 105 | 441 | 0.5272 | **0.5272** | 0.5270 | 1.3 s |
-| College football | 115 | 613 | 0.6046 | **0.6046** | 0.6045 | 3.1 s |
+| Karate club | 34 | 78 | 0.4198 | **0.4198** | 0.4198 | 1.4 s |
+| Dolphins | 62 | 159 | 0.5285 | **0.5285** | 0.5274 | 2.4 s |
+| Political books | 105 | 441 | 0.5272 | **0.5272** | 0.5272 | 2.2 s |
+| College football | 115 | 613 | 0.6046 | **0.6046** | 0.6045 | 4.0 s |
 
 **Scaling.** Graphs with 10 planted communities and average degree about 7. ERBGA finds partitions that score higher than the planted ones.
 
 | Nodes | Edges | Planted modularity | ERBGA | Time |
 |---:|---:|---:|---:|---:|
 | 500 | 1,668 | 0.6363 | **0.6400** | 5 s |
-| 1,000 | 3,407 | 0.6290 | **0.6313** | 16 s |
-| 2,000 | 6,857 | 0.6374 | **0.6404** | 36 s |
+| 1,000 | 3,407 | 0.6290 | **0.6323** | 9 s |
+| 2,000 | 6,857 | 0.6374 | **0.6411** | 17 s |
+| 5,000 | 16,961 | 0.6344 | **0.6370** | 33 s |
 
 Reproduce both tables with `python benchmarks/run_datasets.py` and `python benchmarks/scaling.py` (run from `erbga_py/`).
 
@@ -90,8 +91,8 @@ Reproduce both tables with `python benchmarks/run_datasets.py` and `python bench
 |---|---|---|---|---|
 | Objective | modularity (and variants) | modularity, CPM | map equation | **any Python function** |
 | Communities guaranteed connected | no | yes | not guaranteed | **yes, by construction** |
-| Speed | milliseconds, millions of nodes | milliseconds, millions of nodes | fast | seconds at 1–2k nodes |
-| Search | greedy + aggregation | greedy + refinement + aggregation | greedy + aggregation | population-based (genetic) |
+| Speed | milliseconds, millions of nodes | milliseconds, millions of nodes | fast | seconds to tens of seconds at 1–5k nodes |
+| Search | greedy + aggregation | greedy + refinement + aggregation | greedy + aggregation | genetic population + greedy + aggregation |
 
 Reach for Leiden when you need modularity on a huge graph, fast. Reach for ERBGA when you want to optimise something those methods can't, such as a reduced-bias score, a domain-specific quality measure, or a constraint written as a penalty, without losing connectivity.
 
@@ -112,7 +113,7 @@ flowchart LR
 1. **Encoding.** A chromosome has one bit per edge. Decoding removes the cut edges and labels the connected components with vectorised union-find.
 2. **Canonical repair.** Cut edges inside a community change nothing, so they are restored. Every chromosome then maps to exactly one partition, and fitness is cached on it.
 3. **Variation.** Tournament selection and crossover, plus mutation operators that work at the community level: move a node, split a community, or merge two. Elitism keeps the best score from ever going down. Optionally, the population is split into islands that swap their best members every few generations (`--islands 4`).
-4. **Local search.** Greedy node moves on the best individual. For modularity and Qs, each move is scored in O(degree) from per-community totals, which made the 2,000-node run 39× faster.
+4. **Local search.** Greedy moves on the best individual, Louvain-style: first single nodes, then, once those stall, whole communities on a collapsed graph, so communities can merge. For modularity and Qs each move is scored in O(degree) from per-community totals. The result is decoded again, so communities stay connected.
 
 The [package README](erbga_py/README.md) covers the design in depth and compares it with the 2018 C++ implementation.
 
@@ -160,7 +161,7 @@ This is a FunSearch-style loop. Claude writes `mutate(graph, labels, rng)` funct
 - [x] Incremental local search (up to 39× faster)
 - [x] Island model (`--islands`), ported from the 2018 branch
 - [ ] Faster decoding past ~10k nodes (incremental components or compiled code)
-- [ ] Louvain-style aggregation inside local search
+- [x] Louvain-style aggregation inside local search
 - [ ] LFR benchmarks with NMI/ARI against Louvain, Leiden and Infomap
 - [ ] Multi-objective search (NSGA-II over modularity and Qs)
 - [ ] Weighted graphs
