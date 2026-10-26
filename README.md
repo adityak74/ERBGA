@@ -113,7 +113,7 @@ flowchart LR
 1. **Encoding.** A chromosome has one bit per edge. Decoding removes the cut edges and labels the connected components with vectorised union-find.
 2. **Canonical repair.** Cut edges inside a community change nothing, so they are restored. Every chromosome then maps to exactly one partition, and fitness is cached on it.
 3. **Variation.** Tournament selection and crossover, plus mutation operators that work at the community level: move a node, split a community, or merge two. Elitism keeps the best score from ever going down. Optionally, the population is split into islands that swap their best members every few generations (`--islands 4`).
-4. **Local search.** Greedy moves on the best individual, Louvain-style: first single nodes, then, once those stall, whole communities on a collapsed graph, so communities can merge. For modularity and Qs each move is scored in O(degree) from per-community totals. The result is decoded again, so communities stay connected. `--refinement` adds Leiden's refinement step, with its randomized merges, before each aggregation.
+4. **Local search.** Greedy moves on the best individual, Louvain-style: first single nodes, then, once those stall, whole communities on a collapsed graph, so communities can merge. For modularity and Qs each move is scored in O(degree) from per-community totals. The result is decoded again, so communities stay connected. `--refinement` adds Leiden's refinement step, with its randomized merges and well-connectedness condition, before each aggregation.
 
 The [package README](erbga_py/README.md) covers the design in depth and compares it with the 2018 C++ implementation.
 
