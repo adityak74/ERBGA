@@ -173,3 +173,36 @@ def test_cli_no_aggregate_flag(capsys):
     assert main([str(DATA / "karate.gml"), "--seed", "0", "--no-aggregate",
                  "--format", "json"]) == 0
     assert json.loads(capsys.readouterr().out)["config"]["aggregate"] is False
+
+
+@pytest.mark.parametrize("objective", ["modularity", "qs"])
+def test_refined_subcommunities_are_nested_and_connected(football, objective):
+    """Leiden refinement only merges a unit into an adjacent sub-community of
+    its own community, so every refined piece is connected and nested."""
+    from erbga.multilevel import Level, local_moving, refine_partition
+    from erbga.objectives import MOVE_GAINS, OBJECTIVES
+
+    gain = MOVE_GAINS[OBJECTIVES[objective]]
+    rng = np.random.default_rng(3)
+    level = Level.from_graph(football)
+    part, _ = local_moving(level, np.arange(football.n), gain, football.m, football.n, rng)
+    refined = refine_partition(level, part, gain, football.m, football.n, rng)
+    for r in np.unique(refined):
+        members = np.flatnonzero(refined == r)
+        assert len(np.unique(part[members])) == 1  # nested in one community
+    assert is_connected_partition(football, np.unique(refined, return_inverse=True)[1])
+    assert len(np.unique(refined)) < football.n  # it did merge something
+
+
+def test_refinement_flag(karate):
+    on = ERBGA(karate, config=GAConfig(seed=0, refinement=True)).refine(
+        np.ones(karate.m, dtype=bool))
+    off = ERBGA(karate, config=GAConfig(seed=0, refinement=False)).refine(
+        np.ones(karate.m, dtype=bool))
+    assert on[1] > 0.4 and off[1] > 0.4
+
+
+def test_cli_refinement_flag(capsys):
+    from conftest import DATA
+    assert main([str(DATA / "karate.gml"), "--seed", "0", "--refinement", "--format", "json"]) == 0
+    assert json.loads(capsys.readouterr().out)["config"]["refinement"] is True

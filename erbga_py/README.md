@@ -148,6 +148,30 @@ Two things make this fast:
   guarantee holds. `--no-aggregate` (or `GAConfig(aggregate=False)`) turns
   aggregation off.
 
+### Leiden-style refinement (opt-in)
+
+`--refinement` (or `GAConfig(refinement=True)`) adds Leiden's refinement
+step to multilevel local search. Before each aggregation, every community is
+rebuilt from singletons by merging each unit into an adjacent sub-community
+of the *same* community, and those connected sub-communities, not whole
+communities, become the next level's units. Each unit starts the next level
+in its parent community, so later moves can shift part of a community
+instead of only merging whole ones.
+
+Measured with default settings otherwise:
+
+| | Louvain (default) | with refinement |
+|---|---|---|
+| Optimum hits, 4 datasets × 10 seeds | 26 | 27 (dolphins 2 → 4, football 6 → 5) |
+| Football, worst seed | 0.6044 | 0.5972 (2 of 10 seeds) |
+| 1,000 / 2,000 / 5,000 nodes, mean of 3 seeds | 0.6322 / 0.6407 / 0.6376 | **0.6325 / 0.6413 / 0.6384** |
+| 2,000 nodes, mean time | 20.0 s | 18.2 s |
+
+It is slightly better on large graphs, at no extra time, but on football 2 of
+10 seeds settle on a partition with two conferences merged, so it is off by
+default. Choosing between Louvain and Leiden at random on each local search
+call did worse than either (25 hits).
+
 ### Island model
 
 `GAConfig(islands=4)` (or `erbga detect GRAPH --islands 4`) splits the
@@ -201,10 +225,11 @@ llms.txt, AGENTS.md  docs for models using / agents editing the package
   evaluation still decodes the whole chromosome (O(m) numpy work), and that is
   what dominates at scale. Options: update components incrementally for
   single-node moves, or move the hot loops to compiled code.
-- **Leiden-style refinement.** Aggregation can build communities that are only
-  held together by a few nodes; ERBGA's decoder splits any that fall apart,
-  but refining inside communities before aggregating (as Leiden does) could
-  find better partitions sooner.
+- **Leiden refinement on small graphs.** `--refinement` helps large graphs, but
+  on football 2 of 10 seeds settle on a partition with two conferences merged
+  (0.5972). Leiden's randomised merge choice, which picks among good merges
+  with probability rising with gain instead of always taking the best, might
+  avoid this.
 - **Multilevel search for custom objectives.** Aggregated moves currently need a
   move gain; custom objectives use single-node moves with full evaluation.
 - **LFR benchmarks** with NMI/ARI against Louvain, Leiden and Infomap.

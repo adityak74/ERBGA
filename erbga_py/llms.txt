@@ -56,6 +56,9 @@
 - Runs stall at slightly different scores across seeds: try `islands=4` (island
   model; same total population). It helps on some graphs (dolphins) and costs a
   little on others (football), so compare with a few seeds.
+- Large graphs (1,000+ nodes): `refinement=true` (Leiden-style) gives slightly
+  better partitions at about the same speed; on small graphs it occasionally
+  settles lower, so it is off by default.
 - Harder graphs: raise `pop_size` and `generations`. `local_search=false` is slower
   but sometimes finds better optima.
 - Compare methods: run another algorithm, then `score_partition` its result to get
