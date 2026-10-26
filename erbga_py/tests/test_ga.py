@@ -175,8 +175,9 @@ def test_cli_no_aggregate_flag(capsys):
     assert json.loads(capsys.readouterr().out)["config"]["aggregate"] is False
 
 
+@pytest.mark.parametrize("theta", [0.0, 0.01, 1.0])
 @pytest.mark.parametrize("objective", ["modularity", "qs"])
-def test_refined_subcommunities_are_nested_and_connected(football, objective):
+def test_refined_subcommunities_are_nested_and_connected(football, objective, theta):
     """Leiden refinement only merges a unit into an adjacent sub-community of
     its own community, so every refined piece is connected and nested."""
     from erbga.multilevel import Level, local_moving, refine_partition
@@ -186,7 +187,7 @@ def test_refined_subcommunities_are_nested_and_connected(football, objective):
     rng = np.random.default_rng(3)
     level = Level.from_graph(football)
     part, _ = local_moving(level, np.arange(football.n), gain, football.m, football.n, rng)
-    refined = refine_partition(level, part, gain, football.m, football.n, rng)
+    refined = refine_partition(level, part, gain, football.m, football.n, rng, theta)
     for r in np.unique(refined):
         members = np.flatnonzero(refined == r)
         assert len(np.unique(part[members])) == 1  # nested in one community
@@ -206,3 +207,18 @@ def test_cli_refinement_flag(capsys):
     from conftest import DATA
     assert main([str(DATA / "karate.gml"), "--seed", "0", "--refinement", "--format", "json"]) == 0
     assert json.loads(capsys.readouterr().out)["config"]["refinement"] is True
+
+
+def test_randomized_refinement_reproducible_and_validated(karate):
+    cfg = dict(seed=5, refinement=True, refinement_theta=0.5, generations=10)
+    a, b = detect_communities(karate, **cfg), detect_communities(karate, **cfg)
+    assert a.history == b.history and np.array_equal(a.labels, b.labels)
+    with pytest.raises(ValueError):
+        GAConfig(refinement_theta=-0.1)
+
+
+def test_cli_refinement_theta_flag(capsys):
+    from conftest import DATA
+    assert main([str(DATA / "karate.gml"), "--seed", "0", "--refinement",
+                 "--refinement-theta", "0", "--format", "json"]) == 0
+    assert json.loads(capsys.readouterr().out)["config"]["refinement_theta"] == 0

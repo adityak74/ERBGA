@@ -104,13 +104,18 @@ def local_moving(level: Level, part: np.ndarray, gain, m: int, n: int,
 
 
 def refine_partition(level: Level, part: np.ndarray, gain, m: int, n: int,
-                     rng: np.random.Generator) -> np.ndarray:
+                     rng: np.random.Generator, theta: float = 0.0) -> np.ndarray:
     """Leiden-style refinement: rebuild each community of ``part`` from singletons.
 
     A unit that is still on its own may join an adjacent sub-community of the
     *same* community when the gain is non-negative. Sub-communities grow only
     along edges, so each one is connected, and aggregating them (instead of the
     communities) gives units that never straddle a split.
+
+    With ``theta > 0`` the target is drawn at random among the non-negative
+    merges with probability proportional to exp(gain / theta), as in Leiden,
+    instead of always taking the best one. Gains are scaled by m first, so
+    theta is in edge units like Leiden's (0.01 there). ``theta = 0`` is greedy.
     """
     refined = np.arange(level.n)
     sub_degree = level.degree.copy()
@@ -132,20 +137,27 @@ def refine_partition(level: Level, part: np.ndarray, gain, m: int, n: int,
         targets, links = targets[~mine], links[~mine]
         gains = gain(m, n, level.degree[v], level.size[v], links, 0.0,
                      sub_degree[targets], sub_size[targets], 0.0, 0.0)
-        i = int(np.argmax(gains))
-        if gains[i] >= -1e-12:
-            source, target = refined[v], targets[i]
-            sub_degree[target] += level.degree[v]
-            sub_size[target] += level.size[v]
-            members[target] += 1
-            sub_degree[source] = sub_size[source] = members[source] = 0
-            refined[v] = target
+        ok = np.flatnonzero(gains >= -1e-12)
+        if len(ok) == 0:
+            continue
+        if theta > 0 and len(ok) > 1:
+            z = gains[ok] * m / theta
+            p = np.exp(z - z.max())
+            i = int(ok[rng.choice(len(ok), p=p / p.sum())])
+        else:
+            i = int(ok[np.argmax(gains[ok])])
+        source, target = refined[v], targets[i]
+        sub_degree[target] += level.degree[v]
+        sub_size[target] += level.size[v]
+        members[target] += 1
+        sub_degree[source] = sub_size[source] = members[source] = 0
+        refined[v] = target
     return refined
 
 
 def multilevel(base: Level, labels: np.ndarray, gain, m: int, n: int,
                rng: np.random.Generator, aggregate: bool = True,
-               refine: bool = True, max_levels: int = 64) -> np.ndarray:
+               refine: bool = True, theta: float = 0.0, max_levels: int = 64) -> np.ndarray:
     """Louvain/Leiden-style search starting from ``labels`` (one per original node).
 
     Level 0 moves single nodes. With ``aggregate``, each later level works on
@@ -162,7 +174,7 @@ def multilevel(base: Level, labels: np.ndarray, gain, m: int, n: int,
         part, moved = local_moving(level, part, gain, m, n, rng)
         if (not moved and depth > 0) or not aggregate:
             break
-        units = refine_partition(level, part, gain, m, n, rng) if refine else part
+        units = refine_partition(level, part, gain, m, n, rng, theta) if refine else part
         level, groups = level.aggregate(units)
         membership = groups[membership]
         start = np.empty(level.n, dtype=part.dtype)

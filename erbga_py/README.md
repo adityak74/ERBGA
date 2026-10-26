@@ -158,19 +158,28 @@ communities, become the next level's units. Each unit starts the next level
 in its parent community, so later moves can shift part of a community
 instead of only merging whole ones.
 
+As in Leiden, a unit picks among the merges that don't lower the score at
+random, with probability proportional to exp(gain / θ), where gains are in
+edge units and θ = `refinement_theta` (default 0.01, Leiden's default, set
+with `--refinement-theta`). θ = 0 always takes the best merge.
+
 Measured with default settings otherwise:
 
-| | Louvain (default) | with refinement |
-|---|---|---|
-| Optimum hits, 4 datasets × 10 seeds | 26 | 27 (dolphins 2 → 4, football 6 → 5) |
-| Football, worst seed | 0.6044 | 0.5972 (2 of 10 seeds) |
-| 1,000 / 2,000 / 5,000 nodes, mean of 3 seeds | 0.6322 / 0.6407 / 0.6376 | **0.6325 / 0.6413 / 0.6384** |
-| 2,000 nodes, mean time | 20.0 s | 18.2 s |
+| | Louvain (default) | greedy refinement (θ = 0) | **randomized refinement (θ = 0.01)** |
+|---|---|---|---|
+| Optimum hits, 4 datasets × 10 seeds | 26 | 27 | **28** |
+| Football: hits, worst seed | 6/10, 0.6044 | 5/10, 0.5972 | **7/10, 0.6044** |
+| Dolphins: hits, worst seed | 2/10, **0.5265** | 4/10, 0.5201 | 3/10, 0.5201 |
+| 1,000 / 2,000 / 5,000 nodes, mean of 3 seeds | 0.6322 / 0.6407 / 0.6376 | 0.6325 / 0.6413 / 0.6384 | **0.6325 / 0.6413 / 0.6384** |
+| 1,000 / 2,000 / 5,000 nodes, mean time | 11.9 / 20.7 / 41.1 s | 9.2 / 18.2 / 43.0 s | 10.4 / 18.4 / 55.5 s |
 
-It is slightly better on large graphs, at no extra time, but on football 2 of
-10 seeds settle on a partition with two conferences merged, so it is off by
-default. Choosing between Louvain and Leiden at random on each local search
-call did worse than either (25 hits).
+The randomized merge fixes greedy refinement's football trap (2 of 10 seeds
+had settled at 0.5972, with two conferences merged). It gives the most
+optimum hits and the best large-graph scores. One dolphins seed in ten still
+lands at 0.5201, which the Louvain default never does, so refinement stays
+opt-in. Use it for graphs of 1,000+ nodes, or run a few seeds and keep the
+best. (Choosing Louvain or Leiden at random on each local search call did
+worse than either: 25 hits.)
 
 ### Island model
 
@@ -225,11 +234,11 @@ llms.txt, AGENTS.md  docs for models using / agents editing the package
   evaluation still decodes the whole chromosome (O(m) numpy work), and that is
   what dominates at scale. Options: update components incrementally for
   single-node moves, or move the hot loops to compiled code.
-- **Leiden refinement on small graphs.** `--refinement` helps large graphs, but
-  on football 2 of 10 seeds settle on a partition with two conferences merged
-  (0.5972). Leiden's randomised merge choice, which picks among good merges
-  with probability rising with gain instead of always taking the best, might
-  avoid this.
+- **Leiden refinement on small graphs.** With the randomized merge, `--refinement`
+  gives the most optimum hits overall, but 1 dolphins seed in 10 settles at
+  0.5201. Leiden's well-connectedness condition (merge only into
+  sub-communities well connected to the rest of their community) is the
+  untried part of Leiden that might close this gap.
 - **Multilevel search for custom objectives.** Aggregated moves currently need a
   move gain; custom objectives use single-node moves with full evaluation.
 - **LFR benchmarks** with NMI/ARI against Louvain, Leiden and Infomap.
